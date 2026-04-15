@@ -1,0 +1,66 @@
+
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Segoe UI Variable Display", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  color: #E8EAF0;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+h1 { font-size: 2rem;   font-weight: 800; }
+h2 { font-size: 1.5rem; font-weight: 700; }
+h3 { font-size: 1.125rem; font-weight: 600; }
+h4 { font-size: 1rem;  font-weight: 600; }
+h5 { font-size: 0.9375rem; font-weight: 600; }
+h6 { font-size: 0.875rem;  font-weight: 600; }
+
+
+.text-display { font-size: 2.25rem; font-weight: 800; line-height: 1.05; letter-spacing: -0.04em; }
+.text-hero    { font-size: 1.625rem; font-weight: 750; line-height: 1.15; letter-spacing: -0.03em; }
+
+
+.txt-primary   { color: #E8EAF0; }
+.txt-secondary { color: #8991A4; }
+.txt-muted     { color: #4A5166; }
+.txt-faint     { color: #2D3347; }
+.txt-violet    { color: #A78BFA; }
+.txt-cyan      { color: #22D3EE; }
+.txt-rose      { color: #F472B6; }
+.txt-success   { color: #10B981; }
+.txt-warning   { color: #F59E0B; }
+.txt-danger    { color: #EF4444; }
+
+
+.text-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: #8991A4;
+}
+
+.text-caption {
+  font-size: 0.6875rem;
+  font-weight: 400;
+  color: #4A5166;
+}
+
+.text-overline {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: #4A5166;
+}
+
+
+.font-mono {
+  font-family: "Cascadia Code", "Consolas", "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.85em;
+  letter-spacing: -0.02em;
+}
+
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}

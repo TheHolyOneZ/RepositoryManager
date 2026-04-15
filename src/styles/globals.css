@@ -1,0 +1,149 @@
+@import "tailwindcss";
+@import "./glass.css";
+@import "./animations.css";
+@import "./typography.css";
+@import "./design-tokens.css";
+
+@theme {
+
+  --color-bg-base:    #06080F;
+  --color-bg-depth:   #08091A;
+  --color-bg-surface: #0E1020;
+
+
+  --color-glass-1: rgba(255,255,255,0.025);
+  --color-glass-2: rgba(255,255,255,0.045);
+  --color-glass-3: rgba(255,255,255,0.07);
+  --color-glass-4: rgba(255,255,255,0.11);
+
+
+  --color-primary-300: #C4B5FD;
+  --color-primary-400: #A78BFA;
+  --color-primary-500: #8B5CF6;
+  --color-primary-600: #7C3AED;
+  --color-primary-700: #6D28D9;
+
+
+  --color-secondary-400: #22D3EE;
+  --color-secondary-500: #06B6D4;
+
+
+  --color-accent-400: #F472B6;
+  --color-accent-500: #EC4899;
+
+
+  --color-success-400: #34D399;
+  --color-success-500: #10B981;
+  --color-warning-400: #FBBF24;
+  --color-warning-500: #F59E0B;
+  --color-danger-400: #F87171;
+  --color-danger-500: #EF4444;
+  --color-danger-600: #DC2626;
+  --color-info-500:   #3B82F6;
+
+
+  --color-text-primary:   #E8EAF0;
+  --color-text-secondary: #8991A4;
+  --color-text-muted:     #4A5166;
+  --color-text-faint:     #2D3347;
+
+
+  --font-sans: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+  --font-mono: "Cascadia Code", "Consolas", "JetBrains Mono", ui-monospace, monospace;
+
+
+  --radius-xs:  4px;
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  14px;
+  --radius-xl:  18px;
+  --radius-2xl: 24px;
+}
+
+
+:root {
+  --glass-border:        rgba(255,255,255,0.08);
+  --glass-border-mid:    rgba(255,255,255,0.11);
+  --glass-border-accent: rgba(139,92,246,0.40);
+  --primary-glow:        rgba(139,92,246,0.22);
+  --secondary-glow:      rgba(6,182,212,0.18);
+  --success-glow:        rgba(16,185,129,0.18);
+  --warning-glow:        rgba(245,158,11,0.18);
+  --danger-glow:         rgba(239,68,68,0.22);
+  --sidebar-width:       232px;
+  --topbar-height:       48px;
+}
+
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background-color: #06080F;
+  color: #E8EAF0;
+  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  letter-spacing: -0.008em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  position: relative;
+}
+
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 55% at 15% 15%, rgba(139,92,246,0.09) 0%, transparent 65%),
+    radial-gradient(ellipse 55% 75% at 85% 75%, rgba(6,182,212,0.06) 0%, transparent 65%),
+    radial-gradient(ellipse 45% 45% at 50% 105%, rgba(236,72,153,0.04) 0%, transparent 55%);
+  animation: bgDrift 28s ease-in-out infinite alternate;
+}
+
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.018;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar          { width: 5px; height: 5px; }
+::-webkit-scrollbar-track    { background: transparent; }
+::-webkit-scrollbar-thumb    { background: rgba(255,255,255,0.10); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
+
+/* ─── Selection ─── */
+::selection {
+  background: rgba(139,92,246,0.32);
+  color: #E8EAF0;
+}
+
+/* ─── Focus visible ─── */
+:focus-visible {
+  outline: 2px solid rgba(139,92,246,0.55);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
