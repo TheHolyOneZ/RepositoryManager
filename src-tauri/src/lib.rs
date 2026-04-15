@@ -5,7 +5,7 @@ mod queue_engine;
 mod suggestions;
 mod commands;
 
-use commands::{auth::*, repos::*, queue::*, actions::*, analytics::*, logs::*, shell::*, upload::*};
+use commands::{auth::*, repos::*, queue::*, actions::*, analytics::*, logs::*, shell::*, upload::*, files::*};
 use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -72,6 +72,9 @@ pub fn run() {
 
             read_local_dir,
             upload_files_to_repo,
+
+            repo_get_tree,
+            repo_apply_file_ops,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

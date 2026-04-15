@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   GitFork, LayoutDashboard, Zap, Lightbulb, GitBranch, Webhook,
   Users, Network, Calendar, ArrowRightLeft, ScanSearch, Settings,
-  ChevronLeft, ChevronRight, Bell, Info, FolderUp,
+  ChevronLeft, ChevronRight, Bell, Info, FolderUp, FilePen,
 } from "lucide-react";
 import { AppLogoMark } from "../icons/AppLogoMark";
 import { useAccountStore, selectActiveAccount } from "../../stores/accountStore";
@@ -37,7 +37,8 @@ const NAV_SECTIONS = [
       { path: "/scheduler", label: "Scheduler", icon: Calendar },
       { path: "/migration", label: "Migration",  icon: ArrowRightLeft },
       { path: "/scanner",   label: "Scanner",    icon: ScanSearch },
-      { path: "/upload",    label: "Upload",     icon: FolderUp },
+      { path: "/upload",    label: "Upload",       icon: FolderUp },
+      { path: "/files",     label: "File Manager", icon: FilePen },
     ],
   },
 ];

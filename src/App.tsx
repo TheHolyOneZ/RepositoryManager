@@ -17,6 +17,7 @@ import { ScannerPage } from "./routes/scanner/ScannerPage";
 import { SettingsPage } from "./routes/settings/SettingsPage";
 import { AboutPage } from "./routes/about/AboutPage";
 import { UploadPage } from "./routes/upload/UploadPage";
+import { FilesPage } from "./routes/files/FilesPage";
 import { ErrorBoundary } from "./components/shared/ErrorBoundary";
 import { useAccountStore } from "./stores/accountStore";
 
@@ -62,6 +63,7 @@ function App() {
               <Route path="/scanner" element={<ScannerPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/upload" element={<UploadPage />} />
+              <Route path="/files" element={<FilesPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="*" element={<Navigate to="/repos" replace />} />
             </Route>

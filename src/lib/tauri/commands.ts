@@ -173,3 +173,31 @@ export const uploadFilesToRepo = (
   commitMessage: string,
 ): Promise<UploadResult> =>
   invoke("upload_files_to_repo", { owner, repo, branch, targetPath, files, commitMessage });
+
+export interface RepoFile {
+  path: string;
+  sha: string;
+  size: number;
+}
+
+export type FileOp =
+  | { op: "delete"; path: string }
+  | { op: "rename"; old_path: string; new_path: string };
+
+export interface FileOpsResult {
+  commit_sha: string;
+  commit_url: string;
+  ops_applied: number;
+}
+
+export const repoGetTree = (owner: string, repo: string, branch: string): Promise<RepoFile[]> =>
+  invoke("repo_get_tree", { owner, repo, branch });
+
+export const repoApplyFileOps = (
+  owner: string,
+  repo: string,
+  branch: string,
+  ops: FileOp[],
+  commitMessage: string,
+): Promise<FileOpsResult> =>
+  invoke("repo_apply_file_ops", { owner, repo, branch, ops, commitMessage });

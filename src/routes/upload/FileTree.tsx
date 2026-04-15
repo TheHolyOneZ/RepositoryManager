@@ -26,9 +26,10 @@ interface FileNodeProps {
   selected: Set<string>;
   onToggle: (paths: string[], checked: boolean) => void;
   depth: number;
+  onCtxMenu?: (e: React.MouseEvent, entry: FileEntry, paths: string[]) => void;
 }
 
-const FileNode: React.FC<FileNodeProps> = ({ entry, selected, onToggle, depth }) => {
+const FileNode: React.FC<FileNodeProps> = ({ entry, selected, onToggle, depth, onCtxMenu }) => {
   const [expanded, setExpanded] = useState(depth < 2);
 
   if (entry.is_dir) {
@@ -48,6 +49,7 @@ const FileNode: React.FC<FileNodeProps> = ({ entry, selected, onToggle, depth })
           }}
           onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.04)"; }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = "transparent"; }}
+          onContextMenu={onCtxMenu ? (e) => { e.preventDefault(); onCtxMenu(e, entry, allPaths); } : undefined}
         >
           <input
             type="checkbox"
@@ -77,7 +79,7 @@ const FileNode: React.FC<FileNodeProps> = ({ entry, selected, onToggle, depth })
           </div>
         </div>
         {expanded && entry.children.map(child => (
-          <FileNode key={child.path} entry={child} selected={selected} onToggle={onToggle} depth={depth + 1} />
+          <FileNode key={child.path} entry={child} selected={selected} onToggle={onToggle} depth={depth + 1} onCtxMenu={onCtxMenu} />
         ))}
       </div>
     );
@@ -95,6 +97,7 @@ const FileNode: React.FC<FileNodeProps> = ({ entry, selected, onToggle, depth })
       }}
       onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = isChecked ? "rgba(139,92,246,0.08)" : "rgba(255,255,255,0.03)"; }}
       onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = isChecked ? "rgba(139,92,246,0.05)" : "transparent"; }}
+      onContextMenu={onCtxMenu ? (e) => { e.preventDefault(); onCtxMenu(e, entry, [entry.path]); } : undefined}
     >
       <input
         type="checkbox"
@@ -119,14 +122,15 @@ interface FileTreeProps {
   entries: FileEntry[];
   selected: Set<string>;
   onToggle: (paths: string[], checked: boolean) => void;
+  onCtxMenu?: (e: React.MouseEvent, entry: FileEntry, paths: string[]) => void;
 }
 
-export const FileTree: React.FC<FileTreeProps> = ({ entries, selected, onToggle }) => {
+export const FileTree: React.FC<FileTreeProps> = ({ entries, selected, onToggle, onCtxMenu }) => {
   if (entries.length === 0) return null;
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
       {entries.map(entry => (
-        <FileNode key={entry.path} entry={entry} selected={selected} onToggle={onToggle} depth={0} />
+        <FileNode key={entry.path} entry={entry} selected={selected} onToggle={onToggle} depth={0} onCtxMenu={onCtxMenu} />
       ))}
     </div>
   );

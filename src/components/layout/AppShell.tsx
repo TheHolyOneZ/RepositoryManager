@@ -23,7 +23,7 @@ export const AppShell: React.FC = () => {
       <Sidebar />
       <div style={{ display: "flex", minWidth: 0, flex: 1, flexDirection: "column" }}>
         <TopBar />
-        <main style={{ minHeight: 0, flex: 1, overflow: "hidden" }}>
+        <main style={{ minHeight: 0, flex: 1, overflow: "hidden", position: "relative" }}>
           <Outlet />
         </main>
       </div>

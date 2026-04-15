@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
-import { Search, Eye, EyeOff, ChevronDown, Bell, GitFork, Zap, LayoutDashboard, Lightbulb, GitBranch, Webhook, Users, Network, Calendar, ArrowRightLeft, ScanSearch, Settings as SettingsIcon, Info, FolderUp } from "lucide-react";
+import { Search, Eye, EyeOff, ChevronDown, Bell, GitFork, Zap, LayoutDashboard, Lightbulb, GitBranch, Webhook, Users, Network, Calendar, ArrowRightLeft, ScanSearch, Settings as SettingsIcon, Info, FolderUp, FilePen } from "lucide-react";
 import { useUIStore } from "../../stores/uiStore";
 import { useAccountStore, selectActiveAccount } from "../../stores/accountStore";
 import { useNotificationStore, selectUnreadCount } from "../../stores/notificationStore";
@@ -19,6 +19,7 @@ const pageTitles: Record<string, string> = {
   "/scanner": "Scanner",
   "/settings": "Settings",
   "/upload": "Upload to Repository",
+  "/files": "File Manager",
   "/about": "About",
 };
 
@@ -37,6 +38,7 @@ const pageAccents: Record<string, [string, string]> = {
   "/scanner":      ["#4ADE80", "#16A34A"],
   "/settings":     ["#94A3B8", "#64748B"],
   "/upload":       ["#F59E0B", "#D97706"],
+  "/files":        ["#38BDF8", "#0284C7"],
   "/about":        ["#A78BFA", "#7C3AED"],
 };
 
@@ -54,6 +56,7 @@ const pageIcons: Record<string, React.ElementType> = {
   "/scanner": ScanSearch,
   "/settings": SettingsIcon,
   "/upload": FolderUp,
+  "/files": FilePen,
   "/about": Info,
 };
 

@@ -22,6 +22,9 @@ Bulk operations. Analytics. Queued execution. Smart cleanup suggestions. All fro
 | **Tag System** | Custom persistent tags on any repo — survives app restarts, applies in bulk, filters the repo table |
 | **Command Palette** | Hit `⌘K` / `Ctrl+K` anywhere to search repos, navigate, or trigger actions instantly |
 | **Upload to Repository** | Pick a local folder, select/deselect individual files via a full file tree, and push only what you want as one atomic commit — no GitHub 100-file drag limit |
+| **Repository File Manager** | Browse all files inside any repo, then rename, move, or delete them — all changes batched into one atomic commit, no clicking through GitHub's UI file by file |
+| **Tree View Toggle** | Switch the File Manager between a flat list and a hierarchical folder-tree view — expand/collapse directories with the same rename/move/delete actions in both modes |
+| **Custom Context Menus** | Right-click any repository row, file manager file, or upload tree entry for context-aware actions — the default WebView context menu is fully disabled |
 
 ### Analytics
 
@@ -157,4 +160,6 @@ ZRepoManager/
 
 ## License
 
-MIT
+GPL-3.0 — see [LICENSE](./LICENSE) for full terms.
+
+Copyright (C) 2026 TheHolyOneZ
