@@ -2,7 +2,7 @@
 
 > A blazing-fast desktop app for managing every GitHub repository you've ever touched.
 
-![ZRepoManager Main Interface](./landing/main.png)
+![ZRepoManager Main Interface](main.png)
 
 Bulk operations. Analytics. Queued execution. Smart cleanup suggestions. All from a single native window — no browser tabs, no rate-limit anxiety, no clicking through GitHub's UI 50 times.
 
