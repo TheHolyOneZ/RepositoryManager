@@ -85,7 +85,7 @@ Built with Tauri + WebKitGTK — runs on any modern x64 distro.
 ## Screenshot
 
 <div align="center">
-  <img src="./landing/main.png" alt="ZRepoManager UI" width="900" />
+  <img src="main.png" alt="ZRepoManager UI" width="900" />
 </div>
 
 ---
