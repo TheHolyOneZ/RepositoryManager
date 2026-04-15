@@ -1,165 +1,160 @@
-# ZRepoManager
+<div align="center">
 
-> A blazing-fast desktop app for managing every GitHub repository you've ever touched.
+<img src="main.png" alt="ZRepoManager" width="100%" />
 
-![ZRepoManager Main Interface](main.png)
+<h1>ZRepoManager</h1>
 
-Bulk operations. Analytics. Queued execution. Smart cleanup suggestions. All from a single native window — no browser tabs, no rate-limit anxiety, no clicking through GitHub's UI 50 times.
+<p>A blazing-fast desktop app for managing every GitHub repository you've ever touched.<br/>
+Bulk operations, smart queues, analytics, file management — all from one native window.</p>
 
-**Windows native. Linux supported.**
+<p>
+  <a href="https://zsync.eu/repomanager/">🌐 Website</a> &nbsp;·&nbsp;
+  <a href="https://zsync.eu/repomanager/">⬇️ Download Builds</a> &nbsp;·&nbsp;
+  <a href="https://github.com/TheHolyOneZ/RepositoryManager/">📦 Repository</a> &nbsp;·&nbsp;
+  <a href="./LICENSE">GPL-3.0</a>
+</p>
+
+<p>
+  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue?style=flat-square" />
+  <img src="https://img.shields.io/badge/built%20with-Tauri%202%20%2B%20Rust-orange?style=flat-square" />
+  <img src="https://img.shields.io/badge/license-GPL--3.0-green?style=flat-square" />
+  <img src="https://img.shields.io/badge/version-0.1.0-purple?style=flat-square" />
+</p>
+
+</div>
+
+---
+
+## What it does
+
+ZRepoManager replaces 50 browser tabs and endless GitHub UI clicking. Connect your GitHub account, load all your repos, and do in seconds what normally takes minutes:
+
+- **Select hundreds of repos** and archive, delete, rename, transfer, or change visibility in one shot
+- **Queue complex batches** with dry-run preview, grace periods, pause/resume/skip/cancel mid-run
+- **Browse and manage files** inside any repo — rename, move, delete, commit atomically
+- **Upload local folders** straight to a repo without hitting GitHub's 100-file drag limit
+- **Analyze your portfolio** — language stats, growth timeline, health decay, per-repo breakdowns
+- **Get smart suggestions** — surfaces dead repos, empty repos, abandoned forks, near-duplicate names
+- **Right-click anywhere** for context menus on repos, files, and upload entries
 
 ---
 
 ## Features
 
-### Core
+<details>
+<summary><strong>Repositories & Bulk Operations</strong></summary>
 
-| Feature | Description |
-|---------|-------------|
-| **Bulk Operations** | Select any number of repos and archive, delete, rename, transfer, or change visibility in one shot — with a configurable grace period before execution |
-| **Operation Queue** | Build a queue of complex batches, dry-run first, then execute with pause, resume, skip, and cancel support mid-run |
-| **Smart Filtering** | Filter repos by language, health status, fork/mirror, visibility, star count, tags, and more simultaneously |
-| **Tag System** | Custom persistent tags on any repo — survives app restarts, applies in bulk, filters the repo table |
-| **Command Palette** | Hit `⌘K` / `Ctrl+K` anywhere to search repos, navigate, or trigger actions instantly |
-| **Upload to Repository** | Pick a local folder, select/deselect individual files via a full file tree, and push only what you want as one atomic commit — no GitHub 100-file drag limit |
-| **Repository File Manager** | Browse all files inside any repo, then rename, move, or delete them — all changes batched into one atomic commit, no clicking through GitHub's UI file by file |
-| **Tree View Toggle** | Switch the File Manager between a flat list and a hierarchical folder-tree view — expand/collapse directories with the same rename/move/delete actions in both modes |
-| **Custom Context Menus** | Right-click any repository row, file manager file, or upload tree entry for context-aware actions — the default WebView context menu is fully disabled |
+- Multi-select with checkboxes, keyboard shortcuts, and `Ctrl+K` command palette
+- Bulk: archive, unarchive, delete, rename, transfer, change visibility, update topics
+- Configurable grace period countdown before destructive operations execute
+- Operation queue with dry-run mode — preview exactly what will happen before committing
+- Pause, resume, skip, and cancel running queues at any point
+- Custom persistent tags on any repo — filter, bulk-apply, survives restarts
 
-### Analytics
+</details>
+
+<details>
+<summary><strong>File Manager & Upload</strong></summary>
+
+- Browse every file inside any repo in a flat list or hierarchical folder tree
+- Rename, move, and delete files — all changes staged and committed as one atomic operation
+- Upload local folders to any repo: full file tree with checkboxes, select exactly what you want, single atomic commit via the Git Tree API — no 100-file drag limit
+- Right-click context menus on files and folders for instant actions
+
+</details>
+
+<details>
+<summary><strong>Analytics</strong></summary>
 
 - Language distribution across your entire portfolio
 - Repo growth timeline (new repos per month)
 - Health decay curve (activity over time)
-- Per-repo full language breakdown when you open a repo detail
+- Per-repo full language breakdown in the detail panel
 
-### Cleanup Suggestions
+</details>
 
-Automatically surfaces:
-- Dead repos (no activity 6+ months)
-- Empty repos (no content)
-- Abandoned forks (no stars, inactive)
-- Near-duplicate repo names (Levenshtein similarity)
+<details>
+<summary><strong>Cleanup Suggestions</strong></summary>
 
-### Migration
+Automatically surfaces repos that need attention:
 
-Batch operations through the safe queue system:
-- Transfer repos to another account or org
-- Rename repos in bulk
-- Change visibility (public ↔ private) at scale
+- Dead repos — no activity in 6+ months
+- Empty repos — no content at all
+- Abandoned forks — no stars, inactive
+- Near-duplicate names — Levenshtein similarity detection
 
-### Advanced Export
+</details>
 
-- Export README files from multiple repos to a local folder
-- Download release assets in batch
-- Dump full repo metadata as structured JSON
+<details>
+<summary><strong>Multi-Account & Export</strong></summary>
 
-### Multi-Account
+- Connect multiple GitHub accounts side by side
+- PAT tokens and OAuth both supported — sessions persist across restarts
+- Export READMEs, release assets, and full repo metadata in batch
 
-- Connect multiple GitHub accounts side-by-side
-- PAT tokens and OAuth both supported
-- Instant account switching — sessions persist across restarts
+</details>
 
 ---
 
-## Installation
+## Download
 
-### Windows *(native)*
+Pre-built installers are available at **[zsync.eu/repomanager](https://zsync.eu/repomanager/)**.
 
-| Format | Link |
-|--------|------|
-| `.msi` installer *(recommended)* | [Download](https://zsync.eu/github/manager/releases/zrepomanager_0.1.0_x64_en-US.msi) |
-| `.exe` NSIS installer | [Download](https://zsync.eu/github/manager/releases/zrepomanager_0.1.0_x64-setup.exe) |
-
-### Linux *(supported)*
-
-Built with Tauri + WebKitGTK — runs on any modern x64 distro.
-
-| Format | Distro | Link |
-|--------|--------|------|
-| `.deb` | Ubuntu / Debian | [Download](https://zsync.eu/github/manager/releases/zrepomanager_0.1.0_amd64.deb) |
-| `.rpm` | Fedora / RHEL | [Download](https://zsync.eu/github/manager/releases/zrepomanager-0.1.0-1.x86_64.rpm) |
+| Platform | Format | |
+|----------|--------|---|
+| Windows | `.msi` installer *(recommended)* | [Download](https://zsync.eu/repomanager/) |
+| Windows | `.exe` NSIS installer | [Download](https://zsync.eu/repomanager/) |
+| Ubuntu / Debian | `.deb` | [Download](https://zsync.eu/repomanager/) |
+| Fedora / RHEL | `.rpm` | [Download](https://zsync.eu/repomanager/) |
 
 ---
 
-## Screenshot
+## Build from source
 
-<div align="center">
-  <img src="main.png" alt="ZRepoManager UI" width="900" />
-</div>
+**Requirements:** Node.js 18+, Rust 1.70+, pnpm
+
+```bash
+# Clone
+git clone https://github.com/TheHolyOneZ/RepositoryManager.git
+cd RepositoryManager
+
+# Install frontend dependencies
+pnpm install
+
+# Dev server with hot reload
+pnpm tauri dev
+
+# Build release installers (output: src-tauri/target/release/bundle/)
+pnpm tauri build
+```
 
 ---
 
-## Tech Stack
+## Tech stack
 
 | Layer | Technology |
 |-------|-----------|
-| Backend | **Rust** — native GitHub API calls, file I/O, credential storage |
-| Desktop shell | **Tauri 2** — native webview, OS credential paths, ~8MB installer |
+| Backend | **Rust** — GitHub API, file I/O, credential storage |
+| Desktop shell | **Tauri 2** — native webview, OS credential paths, ~8 MB installer |
 | Frontend | **React 18** + **TypeScript** |
 | State | **Zustand** |
 | Animations | **Framer Motion** |
-| Virtualization | **TanStack Virtual** (handles thousands of repos without lag) |
+| Virtualization | **TanStack Virtual** — handles thousands of repos without lag |
 | Build | **Vite** + **pnpm** |
 
 ---
 
 ## Roadmap
 
-These four modules are in active development:
-
 - [ ] **GitHub Actions** — view, trigger, and manage workflows across all repos
-- [ ] **Webhooks** — create, inspect, re-deliver webhooks at scale
+- [ ] **Webhooks** — create, inspect, and re-deliver webhooks at scale
 - [ ] **Collaborators** — audit and bulk-manage repo access permissions
 - [ ] **Branch Governance** — apply protection rules and rename branches across your portfolio
 
 ---
 
-## Development
-
-```bash
-# Install dependencies
-pnpm install
-
-# Start dev server (hot reload)
-pnpm tauri dev
-
-# Build release installers
-pnpm tauri build
-
-# Strip all comments from source files
-node strip-comments.mjs --dry-run   # preview
-node strip-comments.mjs             # apply
-```
-
-**Requirements**: Node.js 18+, Rust 1.70+, pnpm
-
----
-
-## Project Structure
-
-```
-ZRepoManager/
-├── src/                        # React/TypeScript frontend
-│   ├── components/             # UI components (glass, layout, repos, queue)
-│   ├── routes/                 # Page components
-│   ├── stores/                 # Zustand state stores
-│   ├── lib/tauri/              # Tauri command bindings
-│   └── styles/                 # CSS (tokens, glass, typography, animations)
-├── src-tauri/src/              # Rust backend
-│   ├── commands/               # Tauri command handlers
-│   ├── github/                 # GitHub API client
-│   ├── models/                 # Shared data types
-│   ├── queue_engine/           # Operation queue state machine
-│   └── health/                 # Repo health scoring
-├── landing/                    # Landing page (static HTML)
-└── strip-comments.mjs          # Dev tool: strip source comments
-```
-
----
-
 ## License
 
-GPL-3.0 — see [LICENSE](./LICENSE) for full terms.
+**GPL-3.0** — see [LICENSE](./LICENSE) for full terms.
 
-Copyright (C) 2026 TheHolyOneZ
+Copyright © 2026 [TheHolyOneZ](https://github.com/TheHolyOneZ)
