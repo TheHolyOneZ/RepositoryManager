@@ -7,3 +7,7 @@ pub mod logs;
 pub mod shell;
 pub mod upload;
 pub mod files;
+pub mod actions_gh;
+pub mod webhooks;
+pub mod collaborators;
+pub mod branches;

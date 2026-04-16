@@ -32,7 +32,7 @@ pub async fn repo_get_tree(owner: String, repo: String, branch: String) -> Resul
     headers.insert("Authorization", format!("Bearer {}", token).parse().unwrap());
     headers.insert("Accept", "application/vnd.github+json".parse().unwrap());
     headers.insert("X-GitHub-Api-Version", "2022-11-28".parse().unwrap());
-    headers.insert("User-Agent", "ZRepoManager/0.1.0".parse().unwrap());
+    headers.insert("User-Agent", "ZRepoManager/0.2.0".parse().unwrap());
 
     let base_url = format!("https://api.github.com/repos/{}/{}", owner, repo);
 
@@ -90,7 +90,7 @@ pub async fn repo_apply_file_ops(
     headers.insert("Authorization", format!("Bearer {}", token).parse().unwrap());
     headers.insert("Accept", "application/vnd.github+json".parse().unwrap());
     headers.insert("X-GitHub-Api-Version", "2022-11-28".parse().unwrap());
-    headers.insert("User-Agent", "ZRepoManager/0.1.0".parse().unwrap());
+    headers.insert("User-Agent", "ZRepoManager/0.2.0".parse().unwrap());
 
     let base_url = format!("https://api.github.com/repos/{}/{}", owner, repo);
     let _ = app.emit("files://progress", serde_json::json!({ "status": "loading_tree" }));

@@ -1,3 +1,8 @@
+pub mod actions;
+pub mod webhooks;
+pub mod collaborators;
+pub mod branches;
+
 use reqwest::{Client, header};
 use serde::Deserialize;
 use crate::models::{Repo, Account, AppError, ReleaseInfo, ReleaseAsset};
@@ -15,7 +20,50 @@ pub fn get_token() -> Option<String> {
     ACTIVE_TOKEN.lock().unwrap().clone()
 }
 
-fn build_client(token: &str) -> Result<Client, AppError> {
+/// Extract a human-readable message from a raw response body (GitHub JSON or plain text).
+fn extract_gh_message(status: reqwest::StatusCode, body: &str) -> String {
+    if let Ok(v) = serde_json::from_str::<serde_json::Value>(body) {
+        if let Some(msg) = v.get("message").and_then(|m| m.as_str()) {
+
+            let errors = v.get("errors")
+                .and_then(|e| e.as_array())
+                .map(|arr| {
+                    let parts: Vec<String> = arr.iter()
+                        .filter_map(|e| e.get("message").and_then(|m| m.as_str()).map(|s| s.to_string()))
+                        .collect();
+                    if parts.is_empty() { String::new() } else { format!(" ({})", parts.join("; ")) }
+                })
+                .unwrap_or_default();
+            return format!("{}{}", msg, errors);
+        }
+    }
+    let snippet: String = body.chars().take(300).collect();
+    format!("HTTP {}: {}", status, snippet)
+}
+
+/// Parse a response as JSON. On error status OR on a 200 that carries a GitHub error object,
+/// returns a clean AppError with GitHub's own message instead of a cryptic serde/reqwest error.
+pub(crate) async fn check_json<T: serde::de::DeserializeOwned>(resp: reqwest::Response) -> Result<T, AppError> {
+    let status = resp.status();
+    let body = resp.text().await.unwrap_or_default();
+    if !status.is_success() {
+        return Err(AppError { code: "API_ERROR".into(), message: extract_gh_message(status, &body) });
+    }
+    serde_json::from_str::<T>(&body).map_err(|_| {
+
+        AppError { code: "API_ERROR".into(), message: extract_gh_message(status, &body) }
+    })
+}
+
+/// Assert a response is successful; on failure extract GitHub's error message from the body.
+pub(crate) async fn check_ok(resp: reqwest::Response) -> Result<(), AppError> {
+    let status = resp.status();
+    if status.is_success() { return Ok(()); }
+    let body = resp.text().await.unwrap_or_default();
+    Err(AppError { code: "API_ERROR".into(), message: extract_gh_message(status, &body) })
+}
+
+pub(crate) fn build_client(token: &str) -> Result<Client, AppError> {
     let mut headers = header::HeaderMap::new();
     headers.insert(
         header::AUTHORIZATION,

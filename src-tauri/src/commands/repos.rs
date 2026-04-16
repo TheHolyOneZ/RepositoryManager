@@ -9,6 +9,23 @@ use strsim::normalized_levenshtein;
 
 
 static REPO_CACHE: Lazy<Mutex<Vec<Repo>>> = Lazy::new(|| Mutex::new(Vec::new()));
+static EXTRA_SUGGESTIONS: Lazy<Mutex<Vec<CleanupSuggestion>>> = Lazy::new(|| Mutex::new(Vec::new()));
+
+pub fn inject_stale_branch_suggestions(repo_ids: Vec<String>, repo_names: Vec<String>) {
+    let mut extras = EXTRA_SUGGESTIONS.lock().unwrap();
+    extras.retain(|s| s.reason != "stale_branches");
+    for (id, name) in repo_ids.into_iter().zip(repo_names.into_iter()) {
+        extras.push(CleanupSuggestion {
+            id: Uuid::new_v4().to_string(),
+            repo_id: id,
+            repo_name: name,
+            reason: "stale_branches".into(),
+            description: "Repository has branches with no commit activity in 90+ days".into(),
+            suggested_action: "review".into(),
+            priority: "low".into(),
+        });
+    }
+}
 
 #[tauri::command]
 pub async fn repos_fetch_all(_account_id: String, force_refresh: bool) -> Result<Vec<Repo>, AppError> {
@@ -107,6 +124,9 @@ pub async fn repos_get_suggestions() -> Result<Vec<CleanupSuggestion>, AppError>
             }
         }
     }
+
+    let extras = EXTRA_SUGGESTIONS.lock().unwrap().clone();
+    suggestions.extend(extras);
 
     Ok(suggestions)
 }

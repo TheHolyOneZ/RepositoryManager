@@ -1,4 +1,9 @@
 #[tauri::command]
+pub async fn save_text_file(path: String, content: String) -> Result<(), String> {
+    std::fs::write(&path, content).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 pub async fn open_url_external(url: String) -> Result<(), String> {
     open_url_impl(url)
 }

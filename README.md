@@ -18,7 +18,7 @@ Bulk operations, smart queues, analytics, file management — all from one nativ
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue?style=flat-square" />
   <img src="https://img.shields.io/badge/built%20with-Tauri%202%20%2B%20Rust-orange?style=flat-square" />
   <img src="https://img.shields.io/badge/license-GPL--3.0-green?style=flat-square" />
-  <img src="https://img.shields.io/badge/version-0.1.0-purple?style=flat-square" />
+  <img src="https://img.shields.io/badge/version-0.2.0-purple?style=flat-square" />
 </p>
 
 </div>
@@ -94,6 +94,46 @@ Automatically surfaces repos that need attention:
 
 </details>
 
+<details>
+<summary><strong>GitHub Actions</strong></summary>
+
+- View all workflow runs across every repo from a single tab
+- Trigger workflows manually with optional input payloads
+- Enable or disable workflows in bulk across your portfolio
+- Monitor live run status and download workflow artifacts
+
+</details>
+
+<details>
+<summary><strong>Collaborators</strong></summary>
+
+- View every collaborator and their permission level per repo
+- Bulk add or remove access across multiple repos at once
+- Track pending invites and accept/decline from the UI
+- Full permission level overview — read, write, admin
+
+</details>
+
+<details>
+<summary><strong>Webhooks</strong></summary>
+
+- List all webhooks attached to any repo
+- Bulk-create webhooks from templates across many repos
+- Inspect delivery history and spot failed payloads
+- Re-deliver any failed webhook payload with one click
+
+</details>
+
+<details>
+<summary><strong>Branch Governance</strong></summary>
+
+- View default branches across your entire portfolio at a glance
+- Apply branch protection rules in bulk
+- Rename default branches across many repos in one operation
+- Stale branch detection to identify branches with no recent activity
+
+</details>
+
 ---
 
 ## Download
@@ -106,6 +146,7 @@ Pre-built installers are available at **[zsync.eu/repomanager](https://zsync.eu/
 | Windows | `.exe` NSIS installer | [Download](https://zsync.eu/repomanager/) |
 | Ubuntu / Debian | `.deb` | [Download](https://zsync.eu/repomanager/) |
 | Fedora / RHEL | `.rpm` | [Download](https://zsync.eu/repomanager/) |
+| Linux (universal) | `.AppImage` | [Download](https://zsync.eu/repomanager/) |
 
 ---
 
@@ -146,10 +187,7 @@ pnpm tauri build
 
 ## Roadmap
 
-- [ ] **GitHub Actions** — view, trigger, and manage workflows across all repos
-- [ ] **Webhooks** — create, inspect, and re-deliver webhooks at scale
-- [ ] **Collaborators** — audit and bulk-manage repo access permissions
-- [ ] **Branch Governance** — apply protection rules and rename branches across your portfolio
+All planned features for v0.2.0 have shipped. Future versions will be announced in the repository.
 
 ---
 

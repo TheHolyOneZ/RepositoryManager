@@ -4,6 +4,7 @@ import type { Repo, RepoTag } from "../../types/repo";
 import type { QueueItem, QueueItemInput, QueueState, DryRunResult, ExecutionMode, OperationLog, RepoExportInput, ExportBatchResult, ReleaseResult } from "../../types/queue";
 import type { AnalyticsSummary, LanguageStat, GrowthPoint, DecayPoint } from "../../types/analytics";
 import type { Account, AuthToken, CleanupSuggestion, DeviceFlowStart, GitHubSession } from "./types";
+import type { Workflow, WorkflowRun, WorkflowArtifact, Webhook, WebhookDelivery, Collaborator, PendingInvite, Branch, BranchProtection } from "../../types/governance";
 
 function invoke<T>(cmd: string, args: Record<string, unknown> = {}): Promise<T> {
   assertTauriApp();
@@ -201,3 +202,97 @@ export const repoApplyFileOps = (
   commitMessage: string,
 ): Promise<FileOpsResult> =>
   invoke("repo_apply_file_ops", { owner, repo, branch, ops, commitMessage });
+
+
+export const ghListWorkflows = (owner: string, repo: string): Promise<Workflow[]> =>
+  invoke("gh_list_workflows", { owner, repo });
+
+export const ghListWorkflowRuns = (owner: string, repo: string, perPage: number): Promise<WorkflowRun[]> =>
+  invoke("gh_list_workflow_runs", { owner, repo, perPage });
+
+export const ghEnableWorkflow = (owner: string, repo: string, workflowId: number): Promise<void> =>
+  invoke("gh_enable_workflow", { owner, repo, workflowId });
+
+export const ghDisableWorkflow = (owner: string, repo: string, workflowId: number): Promise<void> =>
+  invoke("gh_disable_workflow", { owner, repo, workflowId });
+
+export const ghTriggerWorkflow = (owner: string, repo: string, workflowId: number, branch: string): Promise<void> =>
+  invoke("gh_trigger_workflow", { owner, repo, workflowId, branch });
+
+export const ghRerunFailedJobs = (owner: string, repo: string, runId: number): Promise<void> =>
+  invoke("gh_rerun_failed_jobs", { owner, repo, runId });
+
+export const ghListRunArtifacts = (owner: string, repo: string, runId: number): Promise<WorkflowArtifact[]> =>
+  invoke("gh_list_run_artifacts", { owner, repo, runId });
+
+
+export const ghListWebhooks = (owner: string, repo: string): Promise<Webhook[]> =>
+  invoke("gh_list_webhooks", { owner, repo });
+
+export const ghCreateWebhook = (
+  owner: string, repo: string, url: string,
+  events: string[], secret: string | null, contentType: string,
+): Promise<Webhook> =>
+  invoke("gh_create_webhook", { owner, repo, url, events, secret, contentType });
+
+export const ghUpdateWebhook = (
+  owner: string, repo: string, hookId: number,
+  url: string, events: string[], secret: string | null, contentType: string, active: boolean,
+): Promise<import("../../types/governance").Webhook> =>
+  invoke("gh_update_webhook", { owner, repo, hookId, url, events, secret, contentType, active });
+
+export const ghDeleteWebhook = (owner: string, repo: string, hookId: number): Promise<void> =>
+  invoke("gh_delete_webhook", { owner, repo, hookId });
+
+export const ghPingWebhook = (owner: string, repo: string, hookId: number): Promise<void> =>
+  invoke("gh_ping_webhook", { owner, repo, hookId });
+
+export const ghListWebhookDeliveries = (owner: string, repo: string, hookId: number): Promise<WebhookDelivery[]> =>
+  invoke("gh_list_webhook_deliveries", { owner, repo, hookId });
+
+export const ghRedeliverWebhook = (owner: string, repo: string, hookId: number, deliveryId: number): Promise<void> =>
+  invoke("gh_redeliver_webhook", { owner, repo, hookId, deliveryId });
+
+
+export const ghListCollaborators = (owner: string, repo: string): Promise<Collaborator[]> =>
+  invoke("gh_list_collaborators", { owner, repo });
+
+export const ghAddCollaborator = (owner: string, repo: string, username: string, permission: string): Promise<void> =>
+  invoke("gh_add_collaborator", { owner, repo, username, permission });
+
+export const ghRemoveCollaborator = (owner: string, repo: string, username: string): Promise<void> =>
+  invoke("gh_remove_collaborator", { owner, repo, username });
+
+export const ghListPendingInvitations = (owner: string, repo: string): Promise<PendingInvite[]> =>
+  invoke("gh_list_pending_invitations", { owner, repo });
+
+export const ghCancelInvitation = (owner: string, repo: string, invitationId: number): Promise<void> =>
+  invoke("gh_cancel_invitation", { owner, repo, invitationId });
+
+
+export const ghListBranches = (owner: string, repo: string, defaultBranch: string): Promise<Branch[]> =>
+  invoke("gh_list_branches", { owner, repo, defaultBranch });
+
+export const ghGetBranchCommitDate = (owner: string, repo: string, sha: string): Promise<string | null> =>
+  invoke("gh_get_branch_commit_date", { owner, repo, sha });
+
+export const ghGetBranchProtection = (owner: string, repo: string, branch: string): Promise<BranchProtection | null> =>
+  invoke("gh_get_branch_protection", { owner, repo, branch });
+
+export const ghSetBranchProtection = (owner: string, repo: string, branch: string, protection: BranchProtection): Promise<void> =>
+  invoke("gh_set_branch_protection", { owner, repo, branch, protection });
+
+export const ghRemoveBranchProtection = (owner: string, repo: string, branch: string): Promise<void> =>
+  invoke("gh_remove_branch_protection", { owner, repo, branch });
+
+export const ghRenameDefaultBranch = (owner: string, repo: string, newName: string): Promise<void> =>
+  invoke("gh_rename_default_branch", { owner, repo, newName });
+
+export const ghCreateBranch = (owner: string, repo: string, newBranch: string, fromBranch: string): Promise<void> =>
+  invoke("gh_create_branch", { owner, repo, newBranch, fromBranch });
+
+export const suggestionsRefreshFromBranches = (staleRepoIds: string[], staleRepoNames: string[]): Promise<void> =>
+  invoke("suggestions_refresh_from_branches", { staleRepoIds, staleRepoNames });
+
+export const saveTextFile = (path: string, content: string): Promise<void> =>
+  invoke("save_text_file", { path, content });

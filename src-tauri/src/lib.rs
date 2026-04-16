@@ -5,7 +5,7 @@ mod queue_engine;
 mod suggestions;
 mod commands;
 
-use commands::{auth::*, repos::*, queue::*, actions::*, analytics::*, logs::*, shell::*, upload::*, files::*};
+use commands::{auth::*, repos::*, queue::*, actions::*, analytics::*, logs::*, shell::*, upload::*, files::*, actions_gh::*, webhooks::*, collaborators::*, branches::*};
 use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -75,6 +75,39 @@ pub fn run() {
 
             repo_get_tree,
             repo_apply_file_ops,
+
+            gh_list_workflows,
+            gh_list_workflow_runs,
+            gh_enable_workflow,
+            gh_disable_workflow,
+            gh_trigger_workflow,
+            gh_rerun_failed_jobs,
+            gh_list_run_artifacts,
+
+            gh_list_webhooks,
+            gh_create_webhook,
+            gh_update_webhook,
+            gh_delete_webhook,
+            gh_ping_webhook,
+            gh_list_webhook_deliveries,
+            gh_redeliver_webhook,
+
+            gh_list_collaborators,
+            gh_add_collaborator,
+            gh_remove_collaborator,
+            gh_list_pending_invitations,
+            gh_cancel_invitation,
+
+            gh_list_branches,
+            gh_get_branch_commit_date,
+            gh_get_branch_protection,
+            gh_set_branch_protection,
+            gh_remove_branch_protection,
+            gh_rename_default_branch,
+            gh_create_branch,
+            suggestions_refresh_from_branches,
+
+            save_text_file,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

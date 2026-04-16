@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import {
   GitFork, Globe, Heart, Code2, Layers, Cpu, Box, Zap, ExternalLink,
   FolderUp, FilePen, MousePointer2, FolderTree,
+  Play, Webhook, Users, GitBranch,
 } from "lucide-react";
 import { openUrlExternal } from "../../lib/tauri/commands";
 
@@ -19,28 +20,52 @@ const stack = [
 
 const features = [
   {
-    icon: FolderUp,
+    icon: Play,
     color: "#F59E0B",
+    title: "GitHub Actions",
+    desc: "View all workflows and recent runs per repo. Enable, disable, or trigger workflows with a custom branch. Re-run only the failed jobs on any run. Live status polling every 8 s while runs are in progress. Bulk enable/disable workflows by name across any number of repos at once.",
+  },
+  {
+    icon: Webhook,
+    color: "#38BDF8",
+    title: "Webhooks",
+    desc: "List, create, edit, and delete webhooks across all your repos. Ping any webhook to test delivery, view the full delivery history with status codes, and re-deliver failed payloads. Bulk-create a webhook from a template (URL, events, secret, content type) across multiple repos in parallel.",
+  },
+  {
+    icon: Users,
+    color: "#A78BFA",
+    title: "Collaborators",
+    desc: "View all direct collaborators with permission badges (Read, Triage, Write, Maintain, Admin). Change a collaborator's role via right-click or the pen icon. Add or remove collaborators in bulk — enter multiple usernames at once, applied across all selected repos. View and cancel pending invites. Export a full access audit as CSV.",
+  },
+  {
+    icon: GitBranch,
+    color: "#34D399",
+    title: "Branch Governance",
+    desc: "Overview of every branch across all repos with last-commit date and stale detection (>90 days). Bulk-apply branch protection rules (required reviews, code owner reviews, enforce admins) to default branches. Remove protection in bulk. Rename the default branch across multiple repos. Create new branches from a source branch across all selected repos.",
+  },
+  {
+    icon: FolderUp,
+    color: "#EF4444",
     title: "Upload to Repository",
     desc: "Pick a local folder, browse the full file tree, select exactly what you want, and push it as one atomic commit — no 100-file GitHub drag limit.",
   },
   {
     icon: FilePen,
-    color: "#38BDF8",
+    color: "#60A5FA",
     title: "Repository File Manager",
-    desc: "Browse every file inside any repo, rename, move, or delete them — all changes staged and committed in a single atomic operation.",
-  },
-  {
-    icon: FolderTree,
-    color: "#A78BFA",
-    title: "Tree View Toggle",
-    desc: "Switch the File Manager between a flat list and a hierarchical folder tree — expand/collapse directories, same actions in both views.",
+    desc: "Browse every file inside any repo, rename, move, or delete them — all changes staged and committed in a single atomic operation. Flat list or hierarchical tree view with expand/collapse.",
   },
   {
     icon: MousePointer2,
-    color: "#34D399",
+    color: "#F472B6",
     title: "Custom Context Menus",
-    desc: "Right-click any repo row, file, or upload entry for context-aware actions. The default WebView context menu is fully suppressed.",
+    desc: "Right-click any repo row, collaborator, webhook, file, or upload entry for context-aware actions — edit, open on GitHub, delete, and more. The default WebView context menu is fully suppressed.",
+  },
+  {
+    icon: FolderTree,
+    color: "#FB923C",
+    title: "Bulk Repo Operations",
+    desc: "Rename, archive, change visibility, transfer ownership, update topics, delete, and tag repos in bulk. Queue operations across hundreds of repos with concurrency control and per-item results.",
   },
 ];
 
@@ -81,7 +106,7 @@ export const AboutPage: React.FC = () => {
                 About ZRepoManager
               </h2>
               <p style={{ margin: "3px 0 0", fontSize: "0.8125rem", color: "#4A5580" }}>
-                v0.1.0 — Windows Native · Linux Supported
+                v0.2.0 — Windows Native · Linux Supported
               </p>
             </div>
           </div>
@@ -226,7 +251,7 @@ export const AboutPage: React.FC = () => {
             padding: "14px 24px",
             display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap",
           }}>
-            <span style={{ fontSize: "0.75rem", color: "#2D3450" }}>GPL-3.0 License · Open Source · v0.1.0</span>
+            <span style={{ fontSize: "0.75rem", color: "#2D3450" }}>GPL-3.0 License · Open Source · v0.2.0</span>
             <button
               onClick={() => openLink(GITHUB_URL)}
               style={{
