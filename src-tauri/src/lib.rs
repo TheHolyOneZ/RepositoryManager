@@ -75,6 +75,12 @@ pub fn run() {
 
             repo_get_tree,
             repo_apply_file_ops,
+            repo_get_file_content,
+            repo_update_file_content,
+            open_editor_window,
+            repo_get_artifact_download_url,
+            repo_create_workflow,
+            read_text_file,
 
             gh_list_workflows,
             gh_list_workflow_runs,
@@ -108,6 +114,7 @@ pub fn run() {
             suggestions_refresh_from_branches,
 
             save_text_file,
+            repo_delete_file,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

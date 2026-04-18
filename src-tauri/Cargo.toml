@@ -1,6 +1,6 @@
 [package]
 name = "zrepomanager"
-version = "0.2.0"
+version = "0.3.0"
 description = "ZRepoManager — GitHub Repository Lifecycle Manager"
 authors = ["ZRepoManager"]
 edition = "2021"
@@ -25,3 +25,4 @@ uuid = { version = "1", features = ["v4"] }
 chrono = { version = "0.4", features = ["serde"] }
 strsim = "0.11"
 once_cell = "1"
+base64 = "0.22"

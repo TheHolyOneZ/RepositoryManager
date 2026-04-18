@@ -15,10 +15,10 @@ Bulk operations, smart queues, analytics, file management — all from one nativ
 </p>
 
 <p>
-  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue?style=flat-square" />
+  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue?style=flat-square" />
   <img src="https://img.shields.io/badge/built%20with-Tauri%202%20%2B%20Rust-orange?style=flat-square" />
   <img src="https://img.shields.io/badge/license-GPL--3.0-green?style=flat-square" />
-  <img src="https://img.shields.io/badge/version-0.2.0-purple?style=flat-square" />
+  <img src="https://img.shields.io/badge/version-0.3.0-purple?style=flat-square" />
 </p>
 
 </div>
@@ -54,12 +54,14 @@ ZRepoManager replaces 50 browser tabs and endless GitHub UI clicking. Connect yo
 </details>
 
 <details>
-<summary><strong>File Manager & Upload</strong></summary>
+<summary><strong>File Manager, Upload & Code Editor</strong></summary>
 
 - Browse every file inside any repo in a flat list or hierarchical folder tree
 - Rename, move, and delete files — all changes staged and committed as one atomic operation
 - Upload local folders to any repo: full file tree with checkboxes, select exactly what you want, single atomic commit via the Git Tree API — no 100-file drag limit
 - Right-click context menus on files and folders for instant actions
+- **Inline code editor** — click any file to open a Monaco editor split-view inside the File Manager; Ctrl+S saves directly to GitHub with a custom commit message
+- **Pop-out editor window** — fully detached VS Code-style window with collapsible file tree, file search, Markdown preview (with sync scroll), and bottom status bar
 
 </details>
 
@@ -97,10 +99,13 @@ Automatically surfaces repos that need attention:
 <details>
 <summary><strong>GitHub Actions</strong></summary>
 
-- View all workflow runs across every repo from a single tab
-- Trigger workflows manually with optional input payloads
+- View all workflows and runs across every repo from a single tab
+- Trigger workflows manually — button shows "Running" state; click again to jump to the Runs tab
 - Enable or disable workflows in bulk across your portfolio
-- Monitor live run status and download workflow artifacts
+- Right-click any workflow row for enable/disable, trigger, or delete options
+- Right-click any run row to rerun failed jobs or open the run link
+- Click the artifact badge on any completed run to expand and download workflow artifacts
+- **Create Workflow tab** — author YAML in a Monaco editor, pick from CI/Tauri Release/Deploy/Manual templates, and commit to one or many repos at once
 
 </details>
 
@@ -144,6 +149,8 @@ Pre-built installers are available at **[zsync.eu/repomanager](https://zsync.eu/
 |----------|--------|---|
 | Windows | `.msi` installer *(recommended)* | [Download](https://zsync.eu/repomanager/) |
 | Windows | `.exe` NSIS installer | [Download](https://zsync.eu/repomanager/) |
+| macOS (Apple Silicon) | `.dmg` | [Download](https://zsync.eu/repomanager/) |
+| macOS (Intel) | `.dmg` | [Download](https://zsync.eu/repomanager/) |
 | Ubuntu / Debian | `.deb` | [Download](https://zsync.eu/repomanager/) |
 | Fedora / RHEL | `.rpm` | [Download](https://zsync.eu/repomanager/) |
 | Linux (universal) | `.AppImage` | [Download](https://zsync.eu/repomanager/) |
@@ -187,7 +194,7 @@ pnpm tauri build
 
 ## Roadmap
 
-All planned features for v0.2.0 have shipped. Future versions will be announced in the repository.
+All planned features for v0.3.0 have shipped. Future versions will be announced in the repository.
 
 ---
 

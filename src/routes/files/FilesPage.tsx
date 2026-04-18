@@ -1,11 +1,13 @@
 import React, { useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Editor from "@monaco-editor/react";
 import {
   FilePen, ChevronDown, Search, Trash2, Pencil, MoveRight,
   CheckCircle, XCircle, X, ExternalLink, FileText, File,
   FolderOpen, RefreshCw, List, Folder, ChevronRight, Clipboard,
+  Code2, Maximize2, Save,
 } from "lucide-react";
-import { repoGetTree, repoApplyFileOps, openUrlExternal } from "../../lib/tauri/commands";
+import { repoGetTree, repoApplyFileOps, openUrlExternal, repoGetFileContent, repoUpdateFileContent, openEditorWindow } from "../../lib/tauri/commands";
 import type { RepoFile, FileOp } from "../../lib/tauri/commands";
 import { PendingOps } from "./PendingOps";
 import { useRepoStore } from "../../stores/repoStore";
@@ -91,6 +93,8 @@ interface TreeNodeComponentProps {
   startEdit: (path: string, type: "rename" | "move") => void;
   markDelete: (path: string) => void;
   onContextMenu: (e: React.MouseEvent, file: RepoFile) => void;
+  onFileClick?: (file: RepoFile) => void;
+  selectedPath?: string | null;
 }
 
 const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
@@ -99,6 +103,7 @@ const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
   editingPath, editingType, editValue, editInputRef,
   setEditValue, commitEdit, setEditingPath,
   startEdit, markDelete, onContextMenu,
+  onFileClick, selectedPath,
 }) => {
   const [expanded, setExpanded] = useState(depth < 2);
 
@@ -139,6 +144,7 @@ const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
             setEditValue={setEditValue} commitEdit={commitEdit}
             setEditingPath={setEditingPath} startEdit={startEdit}
             markDelete={markDelete} onContextMenu={onContextMenu}
+            onFileClick={onFileClick} selectedPath={selectedPath}
           />
         ))}
       </div>
@@ -150,6 +156,7 @@ const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
   const isDeleted = pendingDeletes.has(file.path);
   const renamedTo = pendingRenames.get(file.path);
   const isEditing = editingPath === file.path;
+  const isSelected = selectedPath === file.path;
 
   return (
     <div
@@ -157,11 +164,12 @@ const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
         display: "flex", alignItems: "center", gap: 8,
         paddingLeft: 14 + depth * 16, paddingRight: 10,
         height: 28, transition: "background 100ms",
-        background: isDeleted ? "rgba(239,68,68,0.04)" : "transparent",
-        borderRadius: 6,
+        background: isSelected ? "rgba(139,92,246,0.14)" : isDeleted ? "rgba(239,68,68,0.04)" : "transparent",
+        borderRadius: 6, cursor: "pointer",
       }}
-      onMouseEnter={e => { if (!isDeleted) (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.025)"; }}
-      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = isDeleted ? "rgba(239,68,68,0.04)" : "transparent"; }}
+      onClick={() => { if (!isEditing) onFileClick?.(file); }}
+      onMouseEnter={e => { if (!isDeleted && !isSelected) (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.025)"; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = isSelected ? "rgba(139,92,246,0.14)" : isDeleted ? "rgba(239,68,68,0.04)" : "transparent"; }}
       onContextMenu={e => { e.preventDefault(); onContextMenu(e, file); }}
     >
       {fileIcon(node.name)}
@@ -233,6 +241,16 @@ export const FilesPage: React.FC = () => {
 
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [ctxMenu, setCtxMenu] = useState<CtxMenuState | null>(null);
+
+  const [editorFile, setEditorFile] = useState<RepoFile | null>(null);
+  const [editorContent, setEditorContent] = useState("");
+  const [editorOriginal, setEditorOriginal] = useState("");
+  const [editorSha, setEditorSha] = useState("");
+  const [editorLoading, setEditorLoading] = useState(false);
+  const [editorSaving, setEditorSaving] = useState(false);
+  const [editorSaveUrl, setEditorSaveUrl] = useState("");
+  const [editorError, setEditorError] = useState("");
+  const [editorCommitMsg, setEditorCommitMsg] = useState("Edit via ZRepoManager");
 
   const [editingPath, setEditingPath] = useState<string | null>(null);
   const [editingType, setEditingType] = useState<"rename" | "move">("rename");
@@ -320,6 +338,58 @@ export const FilesPage: React.FC = () => {
   }, [targetRepo, branch, ops, commitMessage, loadTree]);
 
   const canApply = targetRepo && ops.length > 0 && (pageState === "ready" || pageState === "done");
+
+  const openFileInEditor = useCallback(async (file: RepoFile) => {
+    if (!targetRepo) return;
+    const [owner, repo] = targetRepo.split("/");
+    setEditorFile(file);
+    setEditorLoading(true);
+    setEditorError("");
+    setEditorSaveUrl("");
+    try {
+      const result = await repoGetFileContent(owner, repo, file.path, branch);
+      setEditorContent(result.content);
+      setEditorOriginal(result.content);
+      setEditorSha(result.sha);
+    } catch (e) {
+      setEditorError(String(e));
+    } finally {
+      setEditorLoading(false);
+    }
+  }, [targetRepo, branch]);
+
+  const saveEditorFile = useCallback(async () => {
+    if (!editorFile || !targetRepo || editorSaving) return;
+    const [owner, repo] = targetRepo.split("/");
+    setEditorSaving(true);
+    setEditorError("");
+    setEditorSaveUrl("");
+    try {
+      const result = await repoUpdateFileContent(owner, repo, branch, editorFile.path, editorContent, editorSha, editorCommitMsg);
+      setEditorOriginal(editorContent);
+      setEditorSha(result.commit_sha);
+      setEditorSaveUrl(result.commit_url);
+    } catch (e) {
+      setEditorError(String(e));
+    } finally {
+      setEditorSaving(false);
+    }
+  }, [editorFile, targetRepo, branch, editorContent, editorSha, editorCommitMsg, editorSaving]);
+
+  const editorDirty = editorContent !== editorOriginal;
+
+  function getLanguage(filename: string): string {
+    const ext = filename.split(".").pop()?.toLowerCase() ?? "";
+    const map: Record<string, string> = {
+      ts: "typescript", tsx: "typescript", js: "javascript", jsx: "javascript",
+      rs: "rust", py: "python", go: "go", java: "java", cpp: "cpp", c: "c",
+      cs: "csharp", rb: "ruby", swift: "swift", kt: "kotlin", json: "json",
+      toml: "toml", yaml: "yaml", yml: "yaml", md: "markdown", html: "html",
+      css: "css", scss: "scss", sh: "shell", sql: "sql", xml: "xml",
+    };
+    if (filename.toLowerCase() === "dockerfile") return "dockerfile";
+    return map[ext] ?? "plaintext";
+  }
 
 
   const buildCtxItems = useCallback((file: RepoFile): ContextMenuItemDef[] => {
@@ -434,7 +504,7 @@ export const FilesPage: React.FC = () => {
         </div>
 
 
-        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
+        <div style={{ width: editorFile ? 260 : undefined, flex: editorFile ? undefined : 1, flexShrink: 0, minWidth: 0, display: "flex", flexDirection: "column" }}>
           <div style={{ flex: 1, minHeight: 0, borderRadius: 12, background: "rgba(255,255,255,0.028)", border: "1px solid rgba(255,255,255,0.065)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
 
@@ -496,12 +566,14 @@ export const FilesPage: React.FC = () => {
                 const isDeleted = pendingDeletes.has(file.path);
                 const renamedTo = pendingRenames.get(file.path);
                 const isEditing = editingPath === file.path;
+                const isSelected = editorFile?.path === file.path;
 
                 return (
                   <div key={file.path}
-                    style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 14px", transition: "background 100ms", background: isDeleted ? "rgba(239,68,68,0.04)" : "transparent" }}
-                    onMouseEnter={e => { if (!isDeleted) (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.025)"; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = isDeleted ? "rgba(239,68,68,0.04)" : "transparent"; }}
+                    style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 14px", transition: "background 100ms", cursor: "pointer", background: isSelected ? "rgba(139,92,246,0.14)" : isDeleted ? "rgba(239,68,68,0.04)" : "transparent" }}
+                    onClick={() => { if (!isEditing) openFileInEditor(file); }}
+                    onMouseEnter={e => { if (!isDeleted && !isSelected) (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.025)"; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = isSelected ? "rgba(139,92,246,0.14)" : isDeleted ? "rgba(239,68,68,0.04)" : "transparent"; }}
                     onContextMenu={e => handleFileCtxMenu(e, file)}
                   >
                     {fileIcon(file.path)}
@@ -561,6 +633,8 @@ export const FilesPage: React.FC = () => {
                       startEdit={startEdit}
                       markDelete={markDelete}
                       onContextMenu={handleFileCtxMenu}
+                      onFileClick={openFileInEditor}
+                      selectedPath={editorFile?.path ?? null}
                     />
                   ))}
                 </div>
@@ -568,6 +642,129 @@ export const FilesPage: React.FC = () => {
             </div>
           </div>
         </div>
+
+
+        <AnimatePresence>
+          {editorFile && (
+            <motion.div
+              initial={{ opacity: 0, width: 0 }}
+              animate={{ opacity: 1, width: "auto" }}
+              exit={{ opacity: 0, width: 0 }}
+              transition={{ duration: 0.2 }}
+              style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", borderRadius: 12, background: "rgba(255,255,255,0.022)", border: "1px solid rgba(255,255,255,0.065)", overflow: "hidden" }}
+            >
+
+              <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 10px", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0, minWidth: 0 }}>
+                <Code2 size={12} style={{ color: "#8B5CF6", flexShrink: 0 }} />
+                <span style={{ fontSize: "0.78125rem", color: "#C8CDD8", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
+                  {editorFile.path.split("/").pop()}
+                  {editorDirty && <span style={{ color: "#C4B5FD", marginLeft: 5, fontSize: "0.65rem" }}>●</span>}
+                </span>
+
+                <button
+                  onClick={saveEditorFile}
+                  disabled={!editorDirty || editorSaving}
+                  title={editorSaving ? "Saving…" : "Save (Ctrl+S)"}
+                  style={{ display: "flex", padding: "4px 5px", borderRadius: 5, cursor: editorDirty && !editorSaving ? "pointer" : "not-allowed", background: "none", border: "none", color: editorDirty ? "#C4B5FD" : "#3A4060", transition: "color 100ms", flexShrink: 0 }}
+                  onMouseEnter={e => { if (editorDirty) (e.currentTarget as HTMLButtonElement).style.color = "#A78BFA"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = editorDirty ? "#C4B5FD" : "#3A4060"; }}
+                >
+                  {editorSaving
+                    ? <RefreshCw size={13} style={{ animation: "spin 0.8s linear infinite" }} />
+                    : <Save size={13} />
+                  }
+                </button>
+
+                {targetRepo && (
+                  <button
+                    onClick={() => { const [o, r] = targetRepo.split("/"); openEditorWindow(o, r, branch); setEditorFile(null); }}
+                    title="Pop out to new window"
+                    style={{ display: "flex", padding: "4px 5px", borderRadius: 5, cursor: "pointer", background: "none", border: "none", color: "#7DD3FC", transition: "color 100ms", flexShrink: 0 }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = "#38BDF8"; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = "#7DD3FC"; }}
+                  >
+                    <Maximize2 size={13} />
+                  </button>
+                )}
+
+                <button
+                  onClick={() => setEditorFile(null)}
+                  title="Close editor"
+                  style={{ display: "flex", padding: "4px 5px", borderRadius: 5, cursor: "pointer", background: "none", border: "none", color: "#3A4060", transition: "color 100ms", flexShrink: 0 }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = "#C8CDD8"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = "#3A4060"; }}
+                >
+                  <X size={13} />
+                </button>
+              </div>
+
+              {editorDirty && !editorSaving && (
+                <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 10px", borderBottom: "1px solid rgba(255,255,255,0.04)", flexShrink: 0, background: "rgba(139,92,246,0.04)" }}>
+                  <input
+                    value={editorCommitMsg}
+                    onChange={e => setEditorCommitMsg(e.target.value)}
+                    placeholder="Commit message…"
+                    style={{ flex: 1, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 5, padding: "4px 8px", color: "#C8CDD8", fontSize: "0.72rem", outline: "none", fontFamily: "inherit" }}
+                    onFocus={e => { (e.target as HTMLInputElement).style.borderColor = "rgba(139,92,246,0.40)"; }}
+                    onBlur={e => { (e.target as HTMLInputElement).style.borderColor = "rgba(255,255,255,0.07)"; }}
+                  />
+                </div>
+              )}
+
+              {editorSaveUrl && (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 14px", background: "rgba(16,185,129,0.07)", borderBottom: "1px solid rgba(16,185,129,0.15)", flexShrink: 0 }}>
+                  <CheckCircle size={12} style={{ color: "#10B981" }} />
+                  <span style={{ fontSize: "0.75rem", color: "#34D399", flex: 1 }}>Saved</span>
+                  <button onClick={() => openUrlExternal(editorSaveUrl)} style={{ display: "flex", alignItems: "center", gap: 3, fontSize: "0.7rem", color: "#34D399", background: "none", border: "none", cursor: "pointer" }}>
+                    <ExternalLink size={10} /> View commit
+                  </button>
+                  <button onClick={() => setEditorSaveUrl("")} style={{ background: "none", border: "none", cursor: "pointer", color: "#3A4060", display: "flex" }}><X size={11} /></button>
+                </div>
+              )}
+              {editorError && (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 14px", background: "rgba(239,68,68,0.07)", borderBottom: "1px solid rgba(239,68,68,0.15)", flexShrink: 0 }}>
+                  <XCircle size={12} style={{ color: "#EF4444" }} />
+                  <span style={{ fontSize: "0.75rem", color: "#F87171", flex: 1 }}>{editorError}</span>
+                  <button onClick={() => setEditorError("")} style={{ background: "none", border: "none", cursor: "pointer", color: "#3A4060", display: "flex" }}><X size={11} /></button>
+                </div>
+              )}
+
+              {editorLoading ? (
+                <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                  <div style={{ width: 18, height: 18, borderRadius: "50%", border: "2px solid rgba(139,92,246,0.15)", borderTopColor: "#8B5CF6", animation: "spin 0.8s linear infinite" }} />
+                  <span style={{ fontSize: "0.8125rem", color: "#4A5580" }}>Loading…</span>
+                </div>
+              ) : (
+                <Editor
+                  height="100%"
+                  language={getLanguage(editorFile.path.split("/").pop() ?? "")}
+                  value={editorContent}
+                  onChange={v => setEditorContent(v ?? "")}
+                  theme="vs-dark"
+                  options={{
+                    fontSize: 13,
+                    fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
+                    fontLigatures: true,
+                    minimap: { enabled: false },
+                    scrollBeyondLastLine: false,
+                    wordWrap: "off",
+                    lineNumbers: "on",
+                    renderLineHighlight: "all",
+                    smoothScrolling: true,
+                    bracketPairColorization: { enabled: true },
+                    padding: { top: 8, bottom: 8 },
+                  }}
+                  onMount={(_editor, monaco) => {
+                    monaco.editor.addKeybindingRule({
+                      keybinding: monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
+                      command: null,
+                    });
+                  }}
+                />
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
 
 

@@ -18,12 +18,21 @@ import { SettingsPage } from "./routes/settings/SettingsPage";
 import { AboutPage } from "./routes/about/AboutPage";
 import { UploadPage } from "./routes/upload/UploadPage";
 import { FilesPage } from "./routes/files/FilesPage";
+import { EditorWindow } from "./routes/editor/EditorWindow";
 import { ErrorBoundary } from "./components/shared/ErrorBoundary";
 import { useAccountStore } from "./stores/accountStore";
 
 function App() {
   const sessionReady = useSessionSync();
   const hasAccount = useAccountStore((s) => s.accounts.length > 0);
+
+  if (window.location.pathname === "/editor") {
+    return (
+      <ErrorBoundary>
+        <EditorWindow />
+      </ErrorBoundary>
+    );
+  }
 
   if (!sessionReady) {
     return (

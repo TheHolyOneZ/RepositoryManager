@@ -93,7 +93,7 @@ pub async fn upload_files_to_repo(
         h.insert("Authorization", format!("Bearer {}", token).parse().unwrap());
         h.insert("Accept", "application/vnd.github+json".parse().unwrap());
         h.insert("X-GitHub-Api-Version", "2022-11-28".parse().unwrap());
-        h.insert("User-Agent", "ZRepoManager/0.2.0".parse().unwrap());
+        h.insert("User-Agent", "ZRepoManager/0.3.0".parse().unwrap());
         h
     };
 

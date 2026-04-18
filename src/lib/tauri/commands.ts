@@ -203,6 +203,62 @@ export const repoApplyFileOps = (
 ): Promise<FileOpsResult> =>
   invoke("repo_apply_file_ops", { owner, repo, branch, ops, commitMessage });
 
+export interface FileContent {
+  content: string;
+  sha: string;
+}
+
+export interface FileUpdateResult {
+  commit_sha: string;
+  commit_url: string;
+}
+
+export const repoGetFileContent = (
+  owner: string,
+  repo: string,
+  path: string,
+  refName: string,
+): Promise<FileContent> =>
+  invoke("repo_get_file_content", { owner, repo, path, refName });
+
+export const repoUpdateFileContent = (
+  owner: string,
+  repo: string,
+  branch: string,
+  path: string,
+  content: string,
+  sha: string,
+  commitMessage: string,
+): Promise<FileUpdateResult> =>
+  invoke("repo_update_file_content", { owner, repo, branch, path, content, sha, commitMessage });
+
+export const openEditorWindow = (
+  owner: string,
+  repo: string,
+  branch: string,
+): Promise<void> =>
+  invoke("open_editor_window", { owner, repo, branch });
+
+export const repoGetArtifactDownloadUrl = (
+  owner: string,
+  repo: string,
+  artifactId: number,
+): Promise<string> =>
+  invoke("repo_get_artifact_download_url", { owner, repo, artifactId });
+
+export const readTextFile = (path: string): Promise<string> =>
+  invoke("read_text_file", { path });
+
+export const repoCreateWorkflow = (
+  owner: string,
+  repo: string,
+  branch: string,
+  filename: string,
+  content: string,
+  commitMessage: string,
+): Promise<FileUpdateResult> =>
+  invoke("repo_create_workflow", { owner, repo, branch, filename, content, commitMessage });
+
 
 export const ghListWorkflows = (owner: string, repo: string): Promise<Workflow[]> =>
   invoke("gh_list_workflows", { owner, repo });
@@ -296,3 +352,12 @@ export const suggestionsRefreshFromBranches = (staleRepoIds: string[], staleRepo
 
 export const saveTextFile = (path: string, content: string): Promise<void> =>
   invoke("save_text_file", { path, content });
+
+export const repoDeleteFile = (
+  owner: string,
+  repo: string,
+  branch: string,
+  path: string,
+  commitMessage: string,
+): Promise<void> =>
+  invoke("repo_delete_file", { owner, repo, branch, path, commitMessage });

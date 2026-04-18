@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   GitBranch, Play, StopCircle, RefreshCw, ExternalLink,
   RotateCcw, CheckCircle2, XCircle, Clock, Loader2, ChevronRight,
-  Info, ChevronDown,
+  Info, ChevronDown, Package, Download, Plus, Trash2,
 } from "lucide-react";
 import { RepoPicker } from "../../components/repos/RepoPicker";
 import { useRepoStore } from "../../stores/repoStore";
@@ -12,11 +12,17 @@ import { formatInvokeError } from "../../lib/formatError";
 import {
   ghListWorkflows, ghListWorkflowRuns, ghEnableWorkflow, ghDisableWorkflow,
   ghTriggerWorkflow, ghRerunFailedJobs, openUrlExternal,
+  ghListRunArtifacts, repoGetArtifactDownloadUrl, repoDeleteFile,
 } from "../../lib/tauri/commands";
-import type { Workflow, WorkflowRun } from "../../types/governance";
+import type { Workflow, WorkflowRun, WorkflowArtifact } from "../../types/governance";
 import type { Repo } from "../../types/repo";
+import { CreateWorkflowPanel } from "./CreateWorkflowPanel";
 
-type Tab = "workflows" | "runs" | "bulk";
+type Tab = "workflows" | "runs" | "bulk" | "create";
+
+type CtxMenu =
+  | { kind: "workflow"; x: number; y: number; item: Workflow; active: boolean }
+  | { kind: "run"; x: number; y: number; item: WorkflowRun };
 
 const STATUS_COLOR: Record<string, string> = {
   completed: "#10B981", in_progress: "#F59E0B", queued: "#60A5FA",
@@ -48,6 +54,12 @@ const INPUT_STYLE: React.CSSProperties = {
   fontSize: "0.875rem", padding: "0 12px", outline: "none",
 };
 
+const CTX_ITEM: React.CSSProperties = {
+  display: "flex", alignItems: "center", gap: 8,
+  padding: "7px 12px", cursor: "pointer", fontSize: "0.8125rem",
+  borderRadius: 6, transition: "background 80ms",
+};
+
 export const ActionsPage: React.FC = () => {
   const repos = useRepoStore((s) => s.repos);
   const addToast = useUIStore((s) => s.addToast);
@@ -64,11 +76,19 @@ export const ActionsPage: React.FC = () => {
   const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number } | null>(null);
   const [bulkResults, setBulkResults] = useState<Array<{ repo: string; ok: boolean; error?: string }> | null>(null);
   const [triggerBranch, setTriggerBranch] = useState("main");
+  const [expandedRunId, setExpandedRunId] = useState<number | null>(null);
+  const [runArtifacts, setRunArtifacts] = useState<Map<number, WorkflowArtifact[]>>(new Map());
+  const [loadingArtifacts, setLoadingArtifacts] = useState<Set<number>>(new Set());
+  const [downloadingArtifact, setDownloadingArtifact] = useState<Set<number>>(new Set());
+
+  const [triggeringWf, setTriggeringWf] = useState<Set<number>>(new Set());
+
+  const [ctxMenu, setCtxMenu] = useState<CtxMenu | null>(null);
+  const [deletingWf, setDeletingWf] = useState<Set<number>>(new Set());
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const selectedRepos = repos.filter((r) => selectedIds.has(r.id));
   const viewingRepo: Repo | undefined = repos.find((r) => r.id === viewingId) ?? selectedRepos[0];
-
 
   useEffect(() => {
     if (viewingId && !selectedIds.has(viewingId)) {
@@ -77,6 +97,7 @@ export const ActionsPage: React.FC = () => {
       setViewingId(selectedRepos[0].id);
     }
   }, [selectedIds]);
+
 
   const toggleRepo = (id: string) => {
     setSelectedIds((prev) => {
@@ -139,12 +160,33 @@ export const ActionsPage: React.FC = () => {
 
   const handleTrigger = async (wf: Workflow) => {
     if (!viewingRepo) return;
+
+    if (triggeringWf.has(wf.id)) {
+      setActiveTab("runs");
+      return;
+    }
+    setTriggeringWf(prev => new Set(prev).add(wf.id));
     try {
       await ghTriggerWorkflow(viewingRepo.owner, viewingRepo.name, wf.id, triggerBranch);
       addToast({ type: "success", title: "Workflow dispatched", message: `${wf.name} → ${triggerBranch}` });
-      setTimeout(() => fetchRuns(viewingRepo), 2000);
     } catch (e) {
       addToast({ type: "error", title: "Dispatch failed", message: formatInvokeError(e) });
+      setTriggeringWf(prev => { const s = new Set(prev); s.delete(wf.id); return s; });
+    }
+  };
+
+  const handleDeleteWorkflow = async (wf: Workflow) => {
+    if (!viewingRepo || deletingWf.has(wf.id)) return;
+    setDeletingWf(prev => new Set(prev).add(wf.id));
+    try {
+      const branch = viewingRepo.default_branch;
+      await repoDeleteFile(viewingRepo.owner, viewingRepo.name, branch, wf.path, `chore: remove workflow ${wf.name}`);
+      setWorkflows(prev => prev.filter(w => w.id !== wf.id));
+      addToast({ type: "success", title: "Workflow deleted", message: wf.name });
+    } catch (e) {
+      addToast({ type: "error", title: "Delete failed", message: formatInvokeError(e) });
+    } finally {
+      setDeletingWf(prev => { const s = new Set(prev); s.delete(wf.id); return s; });
     }
   };
 
@@ -158,6 +200,35 @@ export const ActionsPage: React.FC = () => {
       addToast({ type: "error", title: "Re-run failed", message: formatInvokeError(e) });
     }
   };
+
+  const handleToggleArtifacts = useCallback(async (run: WorkflowRun) => {
+    if (expandedRunId === run.id) { setExpandedRunId(null); return; }
+    setExpandedRunId(run.id);
+    if (runArtifacts.has(run.id)) return;
+    if (!viewingRepo) return;
+    setLoadingArtifacts(prev => new Set(prev).add(run.id));
+    try {
+      const arts = await ghListRunArtifacts(viewingRepo.owner, viewingRepo.name, run.id);
+      setRunArtifacts(prev => new Map(prev).set(run.id, arts));
+    } catch (e) {
+      addToast({ type: "error", title: "Failed to load artifacts", message: formatInvokeError(e) });
+    } finally {
+      setLoadingArtifacts(prev => { const s = new Set(prev); s.delete(run.id); return s; });
+    }
+  }, [expandedRunId, runArtifacts, viewingRepo, addToast]);
+
+  const handleDownloadArtifact = useCallback(async (artifact: WorkflowArtifact) => {
+    if (!viewingRepo || downloadingArtifact.has(artifact.id)) return;
+    setDownloadingArtifact(prev => new Set(prev).add(artifact.id));
+    try {
+      const url = await repoGetArtifactDownloadUrl(viewingRepo.owner, viewingRepo.name, artifact.id);
+      await openUrlExternal(url);
+    } catch (e) {
+      addToast({ type: "error", title: "Download failed", message: formatInvokeError(e) });
+    } finally {
+      setDownloadingArtifact(prev => { const s = new Set(prev); s.delete(artifact.id); return s; });
+    }
+  }, [viewingRepo, downloadingArtifact, addToast]);
 
   const handleBulkApply = async () => {
     if (!selectedRepos.length || !bulkWorkflowName.trim()) return;
@@ -223,7 +294,7 @@ export const ActionsPage: React.FC = () => {
           borderBottom: "1px solid rgba(255,255,255,0.065)",
           background: "rgba(255,255,255,0.015)",
         }}>
-          {(["workflows", "runs", "bulk"] as Tab[]).map((t) => (
+          {(["workflows", "runs", "bulk", "create"] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setActiveTab(t)}
@@ -233,14 +304,15 @@ export const ActionsPage: React.FC = () => {
                 border: activeTab === t ? "1px solid rgba(139,92,246,0.28)" : "1px solid transparent",
                 color: activeTab === t ? "#C4B5FD" : "#4A5580",
                 fontSize: "0.8125rem", fontWeight: 500,
+                display: "flex", alignItems: "center", gap: 5,
               }}
             >
-              {t === "bulk" ? "Bulk Ops" : t.charAt(0).toUpperCase() + t.slice(1)}
+              {t === "create" && <Plus size={11} />}
+              {t === "bulk" ? "Bulk Ops" : t === "create" ? "Create Workflow" : t.charAt(0).toUpperCase() + t.slice(1)}
             </button>
           ))}
 
           <div style={{ flex: 1 }} />
-
 
           {activeTab !== "bulk" && selectedRepos.length > 0 && (
             <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 5 }}>
@@ -265,7 +337,7 @@ export const ActionsPage: React.FC = () => {
             </div>
           )}
 
-          {viewingRepo && activeTab !== "bulk" && (
+          {viewingRepo && activeTab !== "bulk" && activeTab !== "create" && (
             <button
               onClick={() => activeTab === "workflows" ? fetchWorkflows(viewingRepo) : fetchRuns(viewingRepo)}
               style={{
@@ -280,13 +352,14 @@ export const ActionsPage: React.FC = () => {
           )}
         </div>
 
-        <div style={{ flex: 1, overflow: "auto" }}>
-          {!selectedRepos.length && activeTab !== "bulk" && (
+        <div style={{ flex: 1, minHeight: 0, overflow: activeTab === "create" ? "hidden" : "auto", display: "flex", flexDirection: "column" }}>
+          {!selectedRepos.length && activeTab !== "bulk" && activeTab !== "create" && (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 10 }}>
               <GitBranch size={32} style={{ color: "#1D2436" }} />
               <p style={{ color: "#3A4560", fontSize: "0.875rem" }}>Select repos from the left to get started</p>
             </div>
           )}
+
 
           {viewingRepo && activeTab === "workflows" && (
             <div style={{ padding: "8px 0" }}>
@@ -309,8 +382,17 @@ export const ActionsPage: React.FC = () => {
                   </div>
                   {workflows.map((wf) => {
                     const active = wf.state === "active";
+                    const isTriggering = triggeringWf.has(wf.id);
+                    const isDeleting = deletingWf.has(wf.id);
                     return (
-                      <div key={wf.id} style={{ ...ROW_STYLE, background: "transparent" }}>
+                      <div
+                        key={wf.id}
+                        style={{ ...ROW_STYLE, background: "transparent" }}
+                        onContextMenu={(e) => {
+                          e.preventDefault();
+                          setCtxMenu({ kind: "workflow", x: e.clientX, y: e.clientY, item: wf, active });
+                        }}
+                      >
                         <span style={{
                           width: 7, height: 7, borderRadius: "50%", flexShrink: 0,
                           background: active ? "#10B981" : "#4A5580",
@@ -322,12 +404,23 @@ export const ActionsPage: React.FC = () => {
                           </p>
                           <p style={{ color: "#3A4560", fontSize: "0.6875rem" }}>{wf.path}</p>
                         </div>
+
                         <button
                           onClick={() => handleTrigger(wf)}
-                          title="Trigger workflow_dispatch on the branch above"
-                          style={{ display: "flex", alignItems: "center", gap: 4, height: 26, padding: "0 9px", borderRadius: 6, cursor: "pointer", background: "rgba(139,92,246,0.10)", border: "1px solid rgba(139,92,246,0.20)", color: "#A78BFA", fontSize: "0.6875rem", fontWeight: 600 }}
+                          title={isTriggering ? "Click to go to Runs tab" : "Trigger workflow_dispatch on the branch above"}
+                          style={{
+                            display: "flex", alignItems: "center", gap: 4,
+                            height: 26, padding: "0 9px", borderRadius: 6, cursor: "pointer",
+                            background: isTriggering ? "rgba(245,158,11,0.12)" : "rgba(139,92,246,0.10)",
+                            border: isTriggering ? "1px solid rgba(245,158,11,0.28)" : "1px solid rgba(139,92,246,0.20)",
+                            color: isTriggering ? "#F59E0B" : "#A78BFA",
+                            fontSize: "0.6875rem", fontWeight: 600, transition: "all 150ms",
+                          }}
                         >
-                          <Play size={10} /> Run
+                          {isTriggering
+                            ? <><Loader2 size={10} style={{ animation: "spin 1s linear infinite" }} /> Running…</>
+                            : <><Play size={10} /> Run</>
+                          }
                         </button>
                         <button
                           onClick={() => handleEnableDisable(wf, !active)}
@@ -346,6 +439,16 @@ export const ActionsPage: React.FC = () => {
                         >
                           <ExternalLink size={12} />
                         </button>
+                        <button
+                          onClick={() => handleDeleteWorkflow(wf)}
+                          disabled={isDeleting}
+                          title="Delete workflow file from repo"
+                          style={{ display: "flex", padding: 5, borderRadius: 5, cursor: isDeleting ? "not-allowed" : "pointer", background: "transparent", border: "none", color: isDeleting ? "#3A4560" : "#4A3560", transition: "color 120ms" }}
+                          onMouseEnter={e => { if (!isDeleting) (e.currentTarget as HTMLButtonElement).style.color = "#EF4444"; }}
+                          onMouseLeave={e => { if (!isDeleting) (e.currentTarget as HTMLButtonElement).style.color = "#4A3560"; }}
+                        >
+                          {isDeleting ? <Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} /> : <Trash2 size={12} />}
+                        </button>
                       </div>
                     );
                   })}
@@ -353,6 +456,7 @@ export const ActionsPage: React.FC = () => {
               )}
             </div>
           )}
+
 
           {viewingRepo && activeTab === "runs" && (
             <div style={{ padding: "8px 0" }}>
@@ -362,44 +466,119 @@ export const ActionsPage: React.FC = () => {
                 </div>
               ) : runs.length === 0 ? (
                 <p style={{ textAlign: "center", color: "#3A4560", padding: 40, fontSize: "0.875rem" }}>No runs found</p>
-              ) : runs.map((run) => (
-                <div key={run.id} style={{ ...ROW_STYLE }}>
-                  {runStatusIcon(run)}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ color: "#D4D8E8", fontWeight: 500, fontSize: "0.8125rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {run.name ?? `Run #${run.id}`}
-                    </p>
-                    <p style={{ color: "#3A4560", fontSize: "0.6875rem" }}>
-                      {run.event} · {run.head_branch ?? "—"} · {fmtDate(run.created_at)}
-                    </p>
-                  </div>
-                  <span style={{
-                    fontSize: "0.625rem", fontWeight: 700, padding: "2px 6px", borderRadius: 4,
-                    background: `${STATUS_COLOR[run.conclusion ?? run.status] ?? "#4A5580"}18`,
-                    color: STATUS_COLOR[run.conclusion ?? run.status] ?? "#4A5580",
-                    textTransform: "capitalize",
-                  }}>
-                    {run.conclusion ?? run.status}
-                  </span>
-                  {run.conclusion === "failure" && (
-                    <button
-                      onClick={() => handleRerunFailed(run)}
-                      title="Re-run failed jobs only"
-                      style={{ display: "flex", alignItems: "center", gap: 4, height: 26, padding: "0 8px", borderRadius: 6, cursor: "pointer", background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.18)", color: "#F59E0B", fontSize: "0.6875rem" }}
+              ) : runs.map((run) => {
+                const isExpanded = expandedRunId === run.id;
+                const artifacts = runArtifacts.get(run.id) ?? [];
+                const loadingArts = loadingArtifacts.has(run.id);
+                return (
+                  <div key={run.id}>
+                    <div
+                      style={{ ...ROW_STYLE }}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        setCtxMenu({ kind: "run", x: e.clientX, y: e.clientY, item: run });
+                      }}
                     >
-                      <RotateCcw size={10} />
-                    </button>
-                  )}
-                  <button
-                    onClick={() => openUrlExternal(run.html_url)}
-                    style={{ display: "flex", padding: 5, borderRadius: 5, cursor: "pointer", background: "transparent", border: "none", color: "#3A4560" }}
-                  >
-                    <ExternalLink size={12} />
-                  </button>
-                </div>
-              ))}
+                      {runStatusIcon(run)}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ color: "#D4D8E8", fontWeight: 500, fontSize: "0.8125rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {run.name ?? `Run #${run.id}`}
+                        </p>
+                        <p style={{ color: "#3A4560", fontSize: "0.6875rem" }}>
+                          {run.event} · {run.head_branch ?? "—"} · {fmtDate(run.created_at)}
+                        </p>
+                      </div>
+                      <span style={{
+                        fontSize: "0.625rem", fontWeight: 700, padding: "2px 6px", borderRadius: 4,
+                        background: `${STATUS_COLOR[run.conclusion ?? run.status] ?? "#4A5580"}18`,
+                        color: STATUS_COLOR[run.conclusion ?? run.status] ?? "#4A5580",
+                        textTransform: "capitalize",
+                      }}>
+                        {run.conclusion ?? run.status}
+                      </span>
+                      {run.conclusion === "failure" && (
+                        <button onClick={() => handleRerunFailed(run)} title="Re-run failed jobs only"
+                          style={{ display: "flex", alignItems: "center", gap: 4, height: 26, padding: "0 8px", borderRadius: 6, cursor: "pointer", background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.18)", color: "#F59E0B", fontSize: "0.6875rem" }}>
+                          <RotateCcw size={10} />
+                        </button>
+                      )}
+                      {run.conclusion === "success" && (
+                        <button onClick={() => handleToggleArtifacts(run)} title="Artifacts"
+                          style={{ display: "flex", alignItems: "center", gap: 4, height: 26, padding: "0 8px", borderRadius: 6, cursor: "pointer", background: isExpanded ? "rgba(56,189,248,0.12)" : "rgba(255,255,255,0.04)", border: isExpanded ? "1px solid rgba(56,189,248,0.22)" : "1px solid rgba(255,255,255,0.08)", color: isExpanded ? "#38BDF8" : "#4A5580", fontSize: "0.6875rem", transition: "all 120ms" }}>
+                          <Package size={10} />
+                          {loadingArts ? <Loader2 size={9} style={{ animation: "spin 1s linear infinite" }} /> : "Artifacts"}
+                        </button>
+                      )}
+                      <button onClick={() => openUrlExternal(run.html_url)}
+                        style={{ display: "flex", padding: 5, borderRadius: 5, cursor: "pointer", background: "transparent", border: "none", color: "#3A4560" }}>
+                        <ExternalLink size={12} />
+                      </button>
+                    </div>
+
+                    {isExpanded && !loadingArts && (
+                      <div style={{ margin: "4px 0 10px 32px", borderRadius: 10, border: "1px solid rgba(56,189,248,0.13)", background: "rgba(56,189,248,0.03)", overflow: "hidden" }}>
+                        {artifacts.length === 0 ? (
+                          <p style={{ fontSize: "0.71rem", color: "#3A4560", padding: "10px 14px" }}>No artifacts for this run</p>
+                        ) : artifacts.map((art, idx) => {
+                          const isDownloading = downloadingArtifact.has(art.id);
+                          const sizeMb = (art.size_in_bytes / 1024 / 1024).toFixed(1);
+                          return (
+                            <div key={art.id} style={{
+                              display: "flex", alignItems: "center", gap: 10,
+                              padding: "9px 14px",
+                              borderTop: idx > 0 ? "1px solid rgba(255,255,255,0.04)" : "none",
+                            }}>
+                              <Package size={12} style={{ color: "#38BDF8", flexShrink: 0 }} />
+                              <span style={{ fontSize: "0.8rem", color: "#A8B4CC", flex: 1, fontWeight: 500 }}>{art.name}</span>
+                              <span style={{ fontSize: "0.68rem", color: "#3A4A6A", background: "rgba(255,255,255,0.04)", padding: "2px 7px", borderRadius: 5, border: "1px solid rgba(255,255,255,0.06)" }}>{sizeMb} MB</span>
+                              {art.expired ? (
+                                <span style={{ fontSize: "0.68rem", color: "#EF4444", padding: "3px 8px", borderRadius: 5, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.15)" }}>Expired</span>
+                              ) : (
+                                <button onClick={() => handleDownloadArtifact(art)} disabled={isDownloading}
+                                  style={{
+                                    display: "flex", alignItems: "center", gap: 5,
+                                    height: 28, padding: "0 12px",
+                                    borderRadius: 7, cursor: isDownloading ? "not-allowed" : "pointer",
+                                    background: isDownloading ? "rgba(16,185,129,0.05)" : "rgba(16,185,129,0.10)",
+                                    border: "1px solid rgba(16,185,129,0.22)",
+                                    color: "#10B981", fontSize: "0.75rem", fontWeight: 600,
+                                    transition: "all 120ms",
+                                  }}
+                                  onMouseEnter={e => { if (!isDownloading) (e.currentTarget as HTMLButtonElement).style.background = "rgba(16,185,129,0.18)"; }}
+                                  onMouseLeave={e => { if (!isDownloading) (e.currentTarget as HTMLButtonElement).style.background = "rgba(16,185,129,0.10)"; }}
+                                >
+                                  {isDownloading ? <Loader2 size={11} style={{ animation: "spin 1s linear infinite" }} /> : <Download size={11} />}
+                                  {isDownloading ? "Downloading…" : "Download"}
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
+
+
+          {activeTab === "create" && (
+            <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+              {selectedRepos.length === 0 && (
+                <div style={{ padding: "10px 14px 4px", flexShrink: 0 }}>
+                  <div style={{ padding: "8px 12px", borderRadius: 8, background: "rgba(245,158,11,0.06)", border: "1px solid rgba(245,158,11,0.18)", display: "flex", gap: 8, alignItems: "center" }}>
+                    <Info size={13} style={{ color: "#F59E0B", flexShrink: 0 }} />
+                    <p style={{ fontSize: "0.75rem", color: "#A07830", margin: 0 }}>Select at least one repo on the left to create workflows.</p>
+                  </div>
+                </div>
+              )}
+              <div style={{ flex: 1, minHeight: 0 }}>
+                <CreateWorkflowPanel selectedRepos={selectedRepos} />
+              </div>
+            </div>
+          )}
+
 
           {activeTab === "bulk" && (
             <div style={{ padding: 24, maxWidth: 560 }}>
@@ -491,6 +670,103 @@ export const ActionsPage: React.FC = () => {
           )}
         </div>
       </div>
+
+
+      {ctxMenu && (
+        <>
+
+          <div
+            style={{ position: "fixed", inset: 0, zIndex: 9998 }}
+            onClick={() => setCtxMenu(null)}
+            onContextMenu={e => { e.preventDefault(); setCtxMenu(null); }}
+          />
+        <div
+          onClick={e => e.stopPropagation()}
+          style={{
+            position: "fixed", zIndex: 9999,
+            left: ctxMenu.x, top: ctxMenu.y,
+            background: "#0F1225",
+            border: "1px solid rgba(255,255,255,0.10)",
+            borderRadius: 10, padding: 5,
+            boxShadow: "0 8px 32px rgba(0,0,0,0.55)",
+            minWidth: 188,
+          }}
+        >
+          {ctxMenu.kind === "workflow" && (() => {
+            const wf = ctxMenu.item;
+            const active = ctxMenu.active;
+            return (
+              <>
+                <div style={{ padding: "5px 10px 6px", borderBottom: "1px solid rgba(255,255,255,0.07)", marginBottom: 4 }}>
+                  <p style={{ fontSize: "0.75rem", fontWeight: 600, color: "#A0AAC0", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 160 }}>{wf.name}</p>
+                  <p style={{ fontSize: "0.6rem", color: "#3A4A6A", margin: "1px 0 0" }}>{wf.path}</p>
+                </div>
+                <button style={{ ...CTX_ITEM, color: "#A78BFA", width: "100%" }}
+                  onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = "rgba(139,92,246,0.10)"}
+                  onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = "transparent"}
+                  onClick={() => { handleTrigger(wf); setCtxMenu(null); }}>
+                  <Play size={12} /> Run workflow
+                </button>
+                <button style={{ ...CTX_ITEM, color: active ? "#EF4444" : "#10B981", width: "100%" }}
+                  onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = active ? "rgba(239,68,68,0.08)" : "rgba(16,185,129,0.08)"}
+                  onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = "transparent"}
+                  onClick={() => { handleEnableDisable(wf, !active); setCtxMenu(null); }}>
+                  {active ? <StopCircle size={12} /> : <Play size={12} />}
+                  {active ? "Disable workflow" : "Enable workflow"}
+                </button>
+                <button style={{ ...CTX_ITEM, color: "#60A5FA", width: "100%" }}
+                  onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = "rgba(96,165,250,0.08)"}
+                  onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = "transparent"}
+                  onClick={() => { openUrlExternal(wf.html_url); setCtxMenu(null); }}>
+                  <ExternalLink size={12} /> Open on GitHub
+                </button>
+                <div style={{ height: 1, background: "rgba(255,255,255,0.07)", margin: "4px 0" }} />
+                <button style={{ ...CTX_ITEM, color: "#EF4444", width: "100%" }}
+                  onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = "rgba(239,68,68,0.08)"}
+                  onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = "transparent"}
+                  onClick={() => { handleDeleteWorkflow(wf); setCtxMenu(null); }}>
+                  <Trash2 size={12} /> Delete workflow file
+                </button>
+              </>
+            );
+          })()}
+
+          {ctxMenu.kind === "run" && (() => {
+            const run = ctxMenu.item;
+            return (
+              <>
+                <div style={{ padding: "5px 10px 6px", borderBottom: "1px solid rgba(255,255,255,0.07)", marginBottom: 4 }}>
+                  <p style={{ fontSize: "0.75rem", fontWeight: 600, color: "#A0AAC0", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 160 }}>{run.name ?? `Run #${run.id}`}</p>
+                  <p style={{ fontSize: "0.6rem", color: "#3A4A6A", margin: "1px 0 0" }}>{run.event} · {run.head_branch}</p>
+                </div>
+                {run.conclusion === "failure" && (
+                  <button style={{ ...CTX_ITEM, color: "#F59E0B", width: "100%" }}
+                    onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = "rgba(245,158,11,0.08)"}
+                    onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = "transparent"}
+                    onClick={() => { handleRerunFailed(run); setCtxMenu(null); }}>
+                    <RotateCcw size={12} /> Re-run failed jobs
+                  </button>
+                )}
+                {run.conclusion === "success" && (
+                  <button style={{ ...CTX_ITEM, color: "#38BDF8", width: "100%" }}
+                    onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = "rgba(56,189,248,0.08)"}
+                    onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = "transparent"}
+                    onClick={() => { handleToggleArtifacts(run); setCtxMenu(null); }}>
+                    <Package size={12} /> {expandedRunId === run.id ? "Hide artifacts" : "View artifacts"}
+                  </button>
+                )}
+                <button style={{ ...CTX_ITEM, color: "#60A5FA", width: "100%" }}
+                  onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = "rgba(96,165,250,0.08)"}
+                  onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = "transparent"}
+                  onClick={() => { openUrlExternal(run.html_url); setCtxMenu(null); }}>
+                  <ExternalLink size={12} /> Open on GitHub
+                </button>
+              </>
+            );
+          })()}
+        </div>
+        </>
+      )}
     </div>
   );
 };

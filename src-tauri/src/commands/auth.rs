@@ -175,7 +175,7 @@ pub async fn github_device_flow_start(client_id: String) -> Result<DeviceFlowSta
         .header("Accept", "application/json")
         .form(&[
             ("client_id", client_id.as_str()),
-            ("scope", "repo delete_repo read:user"),
+            ("scope", "repo delete_repo workflow read:user"),
         ])
         .send()
         .await?

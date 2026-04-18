@@ -153,7 +153,7 @@ export const AuthPage: React.FC = () => {
                   <BigAuthButton
                     icon={<Key size={22} strokeWidth={1.75} />}
                     label="Personal Access Token"
-                    sub="Paste a PAT with repo + delete_repo scope"
+                    sub="Paste a PAT with repo + delete_repo + workflow scope"
                     onClick={() => setStep("pat")}
                     disabled={!inTauri}
                   />
@@ -177,10 +177,10 @@ export const AuthPage: React.FC = () => {
                   Personal Access Token
                 </h2>
                 <p style={{ fontSize: "0.8125rem", color: "#556080", lineHeight: 1.6, marginBottom: 24 }}>
-                  Create a token at <span style={{ color: "#A78BFA" }}>GitHub → Settings → Developer settings → PATs</span> with{" "}
+                  Create a token at <span style={{ color: "#A78BFA" }}>GitHub → Settings → Developer settings → PATs</span> with these scopes:{" "}
                   <code style={{ background: "rgba(139,92,246,0.15)", color: "#A78BFA", padding: "1px 6px", borderRadius: 4, fontSize: 11 }}>repo</code>{" "}
-                  and{" "}
-                  <code style={{ background: "rgba(139,92,246,0.15)", color: "#A78BFA", padding: "1px 6px", borderRadius: 4, fontSize: 11 }}>delete_repo</code> scopes.
+                  <code style={{ background: "rgba(139,92,246,0.15)", color: "#A78BFA", padding: "1px 6px", borderRadius: 4, fontSize: 11 }}>delete_repo</code>{" "}
+                  <code style={{ background: "rgba(139,92,246,0.15)", color: "#A78BFA", padding: "1px 6px", borderRadius: 4, fontSize: 11 }}>workflow</code>
                 </p>
 
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
