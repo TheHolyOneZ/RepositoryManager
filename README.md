@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="main.png" alt="ZRepoManager" width="100%" />
+<img src="main__.png" alt="ZRepoManager" width="100%" />
 
 <h1>ZRepoManager</h1>
 
