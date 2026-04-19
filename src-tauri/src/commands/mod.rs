@@ -11,3 +11,7 @@ pub mod actions_gh;
 pub mod webhooks;
 pub mod collaborators;
 pub mod branches;
+pub mod prs;
+pub mod issues;
+pub mod releases;
+pub mod orgs;

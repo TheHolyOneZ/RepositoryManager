@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import {
   GitFork, Globe, Heart, Code2, Layers, Cpu, Box, Zap, ExternalLink,
   FolderUp, FilePen, MousePointer2, FolderTree,
-  Play, Webhook, Users, GitBranch,
+  Play, Webhook, Users, GitBranch, GitPullRequest, CircleDot, Tag, ScrollText, Building2, Settings,
 } from "lucide-react";
 import { openUrlExternal } from "../../lib/tauri/commands";
 
@@ -20,52 +20,64 @@ const stack = [
 
 const features = [
   {
-    icon: Play,
-    color: "#F59E0B",
-    title: "GitHub Actions",
-    desc: "View all workflows and recent runs per repo. Enable, disable, or trigger workflows with a custom branch. Re-run only the failed jobs on any run. Live status polling every 8 s while runs are in progress. Bulk enable/disable workflows by name across any number of repos at once.",
-  },
-  {
-    icon: Webhook,
-    color: "#38BDF8",
-    title: "Webhooks",
-    desc: "List, create, edit, and delete webhooks across all your repos. Ping any webhook to test delivery, view the full delivery history with status codes, and re-deliver failed payloads. Bulk-create a webhook from a template (URL, events, secret, content type) across multiple repos in parallel.",
-  },
-  {
-    icon: Users,
+    icon: GitPullRequest,
     color: "#A78BFA",
-    title: "Collaborators",
-    desc: "View all direct collaborators with permission badges (Read, Triage, Write, Maintain, Admin). Change a collaborator's role via right-click or the pen icon. Add or remove collaborators in bulk — enter multiple usernames at once, applied across all selected repos. View and cancel pending invites. Export a full access audit as CSV.",
+    title: "Pull Requests",
+    desc: "Full PR management: list open/closed PRs, Monaco inline diff viewer, create PRs with reviewer multi-select, review (approve/request changes/comment), merge with strategy selector. Details tab lets you toggle labels, add/remove assignees, set milestones, and convert drafts to ready — all live without reopening.",
+  },
+  {
+    icon: CircleDot,
+    color: "#34D399",
+    title: "Issues",
+    desc: "Issue tracking built-in: list, create, and close issues with label picker and milestone selector. Expand any issue into a chat-style thread with Markdown body, inline replies, and a full comment list. Bulk-close or bulk-label many issues at once.",
+  },
+  {
+    icon: Tag,
+    color: "#F59E0B",
+    title: "Release Manager",
+    desc: "Create releases and queue files to upload before clicking Create — they upload sequentially with a live progress bar. Manage assets (download, delete, upload more) in the expanded view. Cross-repo Overview shows each repo's latest tag sorted by staleness.",
+  },
+  {
+    icon: ScrollText,
+    color: "#38BDF8",
+    title: "Workflow Run Logs",
+    desc: "Click any completed run to expand a two-column log panel: job list with step-level status icons on the left, raw log output on the right with ANSI codes stripped, clipboard copy, and keyword search. Switching Logs/Artifacts tabs never closes the panel.",
+  },
+  {
+    icon: Building2,
+    color: "#F472B6",
+    title: "Organization Support",
+    desc: "Switch context between personal account and any GitHub org you belong to via the ContextSwitcher in the sidebar. Org repos load instantly and support all the same filtering, sorting, bulk ops, and analytics as personal repos.",
+  },
+  {
+    icon: Settings,
+    color: "#FB923C",
+    title: "Settings & Presets",
+    desc: "Configure grace window, execution mode, stale branch threshold, and cache TTL. Pick an accent color from six swatches or enter a custom hex — applied globally on launch. Save and restore filter presets. Desktop notifications for queue events (with graceful Tauri WebView fallback).",
+  },
+  {
+    icon: Play,
+    color: "#EF4444",
+    title: "GitHub Actions",
+    desc: "View workflows and runs per repo. Trigger with custom branch, enable/disable in bulk, re-run failed jobs, download artifacts. Create workflow YAML in Monaco with CI/Release/Deploy/Manual templates and commit to many repos at once. Live run-log viewer built in.",
   },
   {
     icon: GitBranch,
-    color: "#34D399",
-    title: "Branch Governance",
-    desc: "Overview of every branch across all repos with last-commit date and stale detection (>90 days). Bulk-apply branch protection rules (required reviews, code owner reviews, enforce admins) to default branches. Remove protection in bulk. Rename the default branch across multiple repos. Create new branches from a source branch across all selected repos.",
-  },
-  {
-    icon: FolderUp,
-    color: "#EF4444",
-    title: "Upload to Repository",
-    desc: "Pick a local folder, browse the full file tree, select exactly what you want, and push it as one atomic commit — no 100-file GitHub drag limit.",
-  },
-  {
-    icon: FilePen,
     color: "#60A5FA",
-    title: "Repository File Manager",
-    desc: "Browse every file inside any repo, rename, move, or delete them — all changes staged and committed in a single atomic operation. Flat list or hierarchical tree view with expand/collapse.",
+    title: "Branch Governance",
+    desc: "Overview every branch portfolio-wide with last-commit dates and configurable stale detection. Bulk-apply protection rules, rename default branches, create branches from a source — all across multiple repos in parallel with per-item results.",
   },
   {
-    icon: MousePointer2,
-    color: "#F472B6",
-    title: "Custom Context Menus",
-    desc: "Right-click any repo row, collaborator, webhook, file, or upload entry for context-aware actions — edit, open on GitHub, delete, and more. The default WebView context menu is fully suppressed.",
+    icon: Webhook,
+    color: "#67E8F9",
+    title: "Webhooks & Collaborators",
+    desc: "List, create, edit, and delete webhooks. Ping or re-deliver individual payloads. Manage collaborators with permission badges, bulk add/remove access, view pending invitations, and export a full access audit as CSV.",
   },
   {
     icon: FolderTree,
-    color: "#FB923C",
+    color: "#FCD34D",
     title: "Bulk Repo Operations",
-    desc: "Rename, archive, change visibility, transfer ownership, update topics, delete, and tag repos in bulk. Queue operations across hundreds of repos with concurrency control and per-item results.",
+    desc: "Rename, archive, change visibility, transfer ownership, update topics, star/unstar, and delete repos in bulk. Queued execution with dry-run preview, grace periods, pause/resume/skip/cancel, and per-item results — with background silent refresh every 30 s.",
   },
 ];
 
@@ -106,7 +118,7 @@ export const AboutPage: React.FC = () => {
                 About ZRepoManager
               </h2>
               <p style={{ margin: "3px 0 0", fontSize: "0.8125rem", color: "#4A5580" }}>
-                v0.2.0 — Windows Native · Linux Supported
+                v0.4.0 — Windows Native · Linux Supported
               </p>
             </div>
           </div>
@@ -128,7 +140,7 @@ export const AboutPage: React.FC = () => {
             </p>
           </div>
 
-          {/* ── Created by ─────────────────────────────────────── */}
+
           <div style={{
             borderRadius: 14,
             background: "rgba(255,255,255,0.028)",
@@ -185,7 +197,7 @@ export const AboutPage: React.FC = () => {
             </div>
           </div>
 
-          {/* ── Recent features ────────────────────────────────── */}
+
           <div style={{
             borderRadius: 14,
             background: "rgba(255,255,255,0.028)",
@@ -216,7 +228,7 @@ export const AboutPage: React.FC = () => {
             </div>
           </div>
 
-          {/* ── Tech stack ─────────────────────────────────────── */}
+
           <div style={{
             borderRadius: 14,
             background: "rgba(255,255,255,0.028)",
@@ -243,7 +255,7 @@ export const AboutPage: React.FC = () => {
             </div>
           </div>
 
-          {/* ── Footer ─────────────────────────────────────────── */}
+
           <div style={{
             borderRadius: 14,
             background: "rgba(255,255,255,0.018)",
@@ -251,7 +263,7 @@ export const AboutPage: React.FC = () => {
             padding: "14px 24px",
             display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap",
           }}>
-            <span style={{ fontSize: "0.75rem", color: "#2D3450" }}>GPL-3.0 License · Open Source · v0.2.0</span>
+            <span style={{ fontSize: "0.75rem", color: "#2D3450" }}>GPL-3.0 License · Open Source · v0.4.0</span>
             <button
               onClick={() => openLink(GITHUB_URL)}
               style={{

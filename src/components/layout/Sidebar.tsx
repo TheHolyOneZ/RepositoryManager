@@ -5,7 +5,9 @@ import {
   GitFork, LayoutDashboard, Zap, Lightbulb, GitBranch, Webhook,
   Users, Network, Calendar, ArrowRightLeft, ScanSearch, Settings,
   ChevronLeft, ChevronRight, Bell, Info, FolderUp, FilePen,
+  GitPullRequest, CircleDot, Tag,
 } from "lucide-react";
+import { ContextSwitcher } from "./ContextSwitcher";
 import { AppLogoMark } from "../icons/AppLogoMark";
 import { useAccountStore, selectActiveAccount } from "../../stores/accountStore";
 import { useQueueStore, selectPending } from "../../stores/queueStore";
@@ -25,10 +27,13 @@ const NAV_SECTIONS = [
   {
     label: "Governance",
     items: [
-      { path: "/actions",       label: "Actions",       icon: GitBranch },
-      { path: "/webhooks",      label: "Webhooks",      icon: Webhook },
-      { path: "/collaborators", label: "Collaborators", icon: Users },
-      { path: "/branches",      label: "Branches",      icon: Network },
+      { path: "/actions",       label: "Actions",        icon: GitBranch },
+      { path: "/prs",           label: "Pull Requests",  icon: GitPullRequest },
+      { path: "/issues",        label: "Issues",         icon: CircleDot },
+      { path: "/releases",      label: "Releases",       icon: Tag },
+      { path: "/webhooks",      label: "Webhooks",       icon: Webhook },
+      { path: "/collaborators", label: "Collaborators",  icon: Users },
+      { path: "/branches",      label: "Branches",       icon: Network },
     ],
   },
   {
@@ -296,6 +301,8 @@ export const Sidebar: React.FC = () => {
             </div>
           )}
         </NavLink>
+
+        {!collapsed && <div style={{ padding: "4px 2px 2px" }}><ContextSwitcher /></div>}
 
         {activeAccount && (
           <div style={{

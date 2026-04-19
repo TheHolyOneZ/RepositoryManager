@@ -1,8 +1,9 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Settings, Plus, Trash2, Key, Eye, EyeOff, Shield, Check,
-  Tag, X, Keyboard, FlaskConical,
+  Tag, X, Keyboard, FlaskConical, Sliders, Palette, Bell,
 } from "lucide-react";
+import { useSettingsStore, applyAccentColor } from "../../stores/settingsStore";
 import { GlassButton } from "../../components/glass/GlassButton";
 import { GlassInput } from "../../components/glass/GlassInput";
 import { useAccountStore } from "../../stores/accountStore";
@@ -37,9 +38,13 @@ export const SettingsPage: React.FC = () => {
   const addToast = useUIStore((s) => s.addToast);
   const isDryRun = useUIStore((s) => s.isDryRunMode);
   const setDryRun = useUIStore((s) => s.setDryRunMode);
+  const settings = useSettingsStore();
+  const setSetting = useSettingsStore((s) => s.setSetting);
   const customTagOptions = useRepoStore((s) => s.customTagOptions);
   const addCustomTagOption = useRepoStore((s) => s.addCustomTagOption);
   const removeCustomTagOption = useRepoStore((s) => s.removeCustomTagOption);
+
+  useEffect(() => { applyAccentColor(settings.accentColor); }, []);
 
   const [newPat, setNewPat] = useState("");
   const [newLabel, setNewLabel] = useState("");
@@ -351,6 +356,106 @@ export const SettingsPage: React.FC = () => {
                 <Plus size={13} /> New custom tag
               </button>
             )}
+          </div>
+        </Section>
+
+        <Section title="General Behavior" icon={<Sliders size={14} style={{ color: "#7A8AAE" }} />}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+              <label style={{ flex: 1, fontSize: "0.875rem", color: "#9AA5BE" }}>Default grace window (seconds)</label>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <input type="range" min={0} max={300} value={settings.defaultGraceSeconds} onChange={(e) => setSetting("defaultGraceSeconds", Number(e.target.value))} style={{ width: 120, accentColor: "#8B5CF6" }} />
+                <span style={{ fontSize: "0.875rem", color: "#C4B5FD", fontWeight: 600, minWidth: 30 }}>{settings.defaultGraceSeconds}s</span>
+              </div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+              <label style={{ flex: 1, fontSize: "0.875rem", color: "#9AA5BE" }}>Default execution mode</label>
+              <div style={{ display: "flex", gap: 6 }}>
+                {(["fast", "scheduled", "controlled"] as const).map((m) => (
+                  <button key={m} type="button" onClick={() => setSetting("defaultExecutionMode", m)}
+                    style={{ padding: "4px 12px", borderRadius: 7, cursor: "pointer", border: "none", background: settings.defaultExecutionMode === m ? "rgba(139,92,246,0.2)" : "rgba(255,255,255,0.05)", color: settings.defaultExecutionMode === m ? "#C4B5FD" : "#7A8AAE", fontSize: "0.8125rem", fontWeight: 500, textTransform: "capitalize" }}>
+                    {m}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+              <label style={{ flex: 1, fontSize: "0.875rem", color: "#9AA5BE" }}>Stale branch threshold</label>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <input type="number" min={7} max={365} value={settings.staleBranchDays} onChange={(e) => setSetting("staleBranchDays", Number(e.target.value))}
+                  style={{ width: 72, height: 32, borderRadius: 8, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)", color: "#C8CDD8", fontSize: "0.875rem", padding: "0 10px", outline: "none", textAlign: "center" }} />
+                <span style={{ fontSize: "0.8125rem", color: "#4A5580" }}>days</span>
+              </div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+              <label style={{ flex: 1, fontSize: "0.875rem", color: "#9AA5BE" }}>Repo cache TTL</label>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <input type="number" min={1} max={60} value={settings.repoCacheTtlMinutes} onChange={(e) => setSetting("repoCacheTtlMinutes", Number(e.target.value))}
+                  style={{ width: 72, height: 32, borderRadius: 8, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)", color: "#C8CDD8", fontSize: "0.875rem", padding: "0 10px", outline: "none", textAlign: "center" }} />
+                <span style={{ fontSize: "0.8125rem", color: "#4A5580" }}>minutes</span>
+              </div>
+            </div>
+          </div>
+        </Section>
+
+        <Section title="Appearance" icon={<Palette size={14} style={{ color: "#7A8AAE" }} />}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <div>
+              <p style={{ fontSize: "0.875rem", color: "#9AA5BE", marginBottom: 10 }}>Accent color</p>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                {["#8B5CF6", "#06B6D4", "#EC4899", "#10B981", "#F59E0B", "#EF4444"].map((c) => (
+                  <button key={c} type="button" onClick={() => { setSetting("accentColor", c); applyAccentColor(c); }}
+                    style={{ width: 32, height: 32, borderRadius: 8, cursor: "pointer", border: settings.accentColor === c ? `2.5px solid ${c}` : "2px solid rgba(255,255,255,0.10)", background: `${c}88`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    {settings.accentColor === c && <Check size={14} style={{ color: "#fff" }} />}
+                  </button>
+                ))}
+                <input type="text" value={settings.accentColor} maxLength={7}
+                  onChange={(e) => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) { setSetting("accentColor", e.target.value); if (e.target.value.length === 7) applyAccentColor(e.target.value); } }}
+                  style={{ width: 90, height: 32, borderRadius: 8, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)", color: "#C8CDD8", fontSize: "0.875rem", padding: "0 10px", outline: "none", fontFamily: "monospace" }} />
+              </div>
+            </div>
+          </div>
+        </Section>
+
+        <Section title="Notifications" icon={<Bell size={14} style={{ color: "#7A8AAE" }} />}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {([
+              ["desktopNotificationsEnabled", "Desktop notifications (system)"],
+              ["notifyOnQueueComplete", "Notify on queue complete"],
+              ["notifyOnQueueFailure", "Notify on queue failure"],
+            ] as const).map(([key, label]) => (
+              <label key={key} style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}>
+                <div
+                  onClick={() => {
+                    const newVal = !settings[key];
+                    if (key === "desktopNotificationsEnabled" && newVal) {
+                      try {
+                        if (typeof Notification !== "undefined" && Notification.permission !== "granted") {
+                          Notification.requestPermission().catch(() => {});
+                        }
+                      } catch { }
+                      setSetting(key, true);
+                    } else {
+                      setSetting(key, newVal);
+                    }
+                  }}
+                  style={{
+                    width: 38, height: 22, borderRadius: 11, position: "relative", cursor: "pointer",
+                    background: settings[key] ? "rgba(139,92,246,0.5)" : "rgba(255,255,255,0.10)",
+                    border: settings[key] ? "1px solid rgba(139,92,246,0.7)" : "1px solid rgba(255,255,255,0.15)",
+                    transition: "all 200ms ease",
+                  }}
+                >
+                  <div style={{
+                    position: "absolute", top: 2, left: settings[key] ? 18 : 2,
+                    width: 16, height: 16, borderRadius: "50%",
+                    background: settings[key] ? "#C4B5FD" : "#7A8AAE",
+                    transition: "left 200ms ease, background 200ms ease",
+                  }} />
+                </div>
+                <span style={{ fontSize: "0.875rem", color: "#9AA5BE" }}>{label}</span>
+              </label>
+            ))}
           </div>
         </Section>
 

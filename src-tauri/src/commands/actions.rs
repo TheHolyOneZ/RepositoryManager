@@ -1,6 +1,7 @@
 use crate::models::{Repo, AppError};
 use crate::github;
 use crate::commands::auth::get_active_token;
+use crate::github::build_client;
 
 #[tauri::command]
 pub async fn action_delete_repo(owner: String, repo: String) -> Result<(), AppError> {
@@ -30,6 +31,26 @@ pub async fn action_rename_repo(owner: String, repo: String, new_name: String) -
 pub async fn action_update_topics(owner: String, repo: String, topics: Vec<String>) -> Result<(), AppError> {
     let token = get_active_token()?;
     github::update_topics(&token, &owner, &repo, topics).await
+}
+
+#[tauri::command]
+pub async fn action_star_repo(owner: String, repo: String) -> Result<(), AppError> {
+    let token = get_active_token()?;
+    let client = build_client(&token)?;
+    crate::github::check_ok(
+        client.put(format!("https://api.github.com/user/starred/{}/{}", owner, repo))
+            .header("Content-Length", "0").send().await?,
+    ).await
+}
+
+#[tauri::command]
+pub async fn action_unstar_repo(owner: String, repo: String) -> Result<(), AppError> {
+    let token = get_active_token()?;
+    let client = build_client(&token)?;
+    crate::github::check_ok(
+        client.delete(format!("https://api.github.com/user/starred/{}/{}", owner, repo))
+            .send().await?,
+    ).await
 }
 
 #[tauri::command]

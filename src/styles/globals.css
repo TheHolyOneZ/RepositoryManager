@@ -129,21 +129,84 @@ body::after {
   z-index: 1;
 }
 
-/* ─── Scrollbar ─── */
+
 ::-webkit-scrollbar          { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track    { background: transparent; }
 ::-webkit-scrollbar-thumb    { background: rgba(255,255,255,0.10); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
 
-/* ─── Selection ─── */
+
 ::selection {
   background: rgba(139,92,246,0.32);
   color: #E8EAF0;
 }
 
-/* ─── Focus visible ─── */
+
 :focus-visible {
   outline: 2px solid rgba(139,92,246,0.55);
   outline-offset: 2px;
   border-radius: 4px;
+}
+
+
+select {
+  color-scheme: dark;
+  -webkit-appearance: none;
+  appearance: none;
+  background-color: #0D1025;
+  color: #C8CDD8;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234A5580' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 9px center;
+  padding-right: 28px;
+}
+select option {
+  background-color: #0D1025;
+  color: #C8CDD8;
+}
+select option:checked,
+select option:hover {
+  background-color: rgba(139,92,246,0.25);
+}
+
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+
+input[type="checkbox"].zrm-check {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1.5px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.05);
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+input[type="checkbox"].zrm-check:checked {
+  background: rgba(139,92,246,0.5);
+  border-color: rgba(139,92,246,0.8);
+}
+input[type="checkbox"].zrm-check:checked::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1.5px;
+  width: 5px;
+  height: 9px;
+  border: 2px solid #E0D7FF;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
 }

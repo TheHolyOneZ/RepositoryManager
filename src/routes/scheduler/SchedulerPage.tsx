@@ -128,7 +128,7 @@ const CreateForm: React.FC<CreateFormProps> = ({ repos, onSave, onCancel }) => {
 
   const fieldStyle: React.CSSProperties = {
     height: 34, borderRadius: 8, padding: "0 12px",
-    background: "rgba(255,255,255,0.04)",
+    backgroundColor: "rgba(255,255,255,0.04)",
     border: "1px solid rgba(255,255,255,0.10)",
     color: "#D4D8E8", fontSize: "0.8125rem", outline: "none",
     transition: "border-color 140ms",

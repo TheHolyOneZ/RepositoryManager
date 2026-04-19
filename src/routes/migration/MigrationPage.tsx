@@ -142,7 +142,7 @@ const EntryRow: React.FC<EntryRowProps> = ({ entry, onChange, onRemove }) => {
 
   const inputStyle: React.CSSProperties = {
     height: 30, borderRadius: 7, padding: "0 10px",
-    background: "rgba(255,255,255,0.04)",
+    backgroundColor: "rgba(255,255,255,0.04)",
     border: "1px solid rgba(255,255,255,0.10)",
     color: "#D4D8E8", fontSize: "0.75rem", outline: "none",
     transition: "border-color 140ms",
@@ -386,7 +386,7 @@ export const MigrationPage: React.FC = () => {
                 onChange={(e) => setDefaultOp(e.target.value as MigrationOp)}
                 style={{
                   height: 28, borderRadius: 7, padding: "0 8px",
-                  background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.10)",
+                  backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.10)",
                   color: "#D4D8E8", fontSize: "0.75rem", outline: "none", cursor: "pointer",
                 }}
               >

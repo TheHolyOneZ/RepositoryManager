@@ -98,3 +98,144 @@ export interface BranchProtection {
   enforce_admins: boolean;
   require_status_checks: boolean;
 }
+
+export interface PrLabel {
+  name: string;
+  color: string;
+}
+
+export interface PullRequest {
+  id: number;
+  number: number;
+  title: string;
+  body: string | null;
+  state: string;
+  draft: boolean;
+  html_url: string;
+  head_ref: string;
+  base_ref: string;
+  user_login: string;
+  user_avatar: string;
+  created_at: string;
+  updated_at: string;
+  mergeable: boolean | null;
+  labels: PrLabel[];
+  assignees: string[];
+  requested_reviewers: string[];
+}
+
+export interface PrFile {
+  filename: string;
+  status: string;
+  additions: number;
+  deletions: number;
+  patch: string | null;
+}
+
+export interface PrReview {
+  id: number;
+  user_login: string;
+  user_avatar: string;
+  state: string;
+  body: string | null;
+  submitted_at: string | null;
+}
+
+export interface PrComment {
+  id: number;
+  user_login: string;
+  user_avatar: string;
+  body: string;
+  created_at: string;
+}
+
+export interface IssueLabel {
+  name: string;
+  color: string;
+  description: string | null;
+}
+
+export interface Milestone {
+  id: number;
+  number: number;
+  title: string;
+  open_issues: number;
+  closed_issues: number;
+  due_on: string | null;
+}
+
+export interface Issue {
+  id: number;
+  number: number;
+  title: string;
+  body: string | null;
+  state: string;
+  html_url: string;
+  user_login: string;
+  user_avatar: string;
+  created_at: string;
+  updated_at: string;
+  comments: number;
+  labels: IssueLabel[];
+  assignees: string[];
+  milestone_title: string | null;
+  milestone_number: number | null;
+}
+
+export interface IssueComment {
+  id: number;
+  user_login: string;
+  user_avatar: string;
+  body: string;
+  created_at: string;
+}
+
+export interface ReleaseAssetFull {
+  id: number;
+  name: string;
+  size: number;
+  download_count: number;
+  browser_download_url: string;
+  content_type: string;
+  state: string;
+}
+
+export interface Release {
+  id: number;
+  tag_name: string;
+  name: string | null;
+  body: string | null;
+  draft: boolean;
+  prerelease: boolean;
+  html_url: string;
+  created_at: string;
+  published_at: string | null;
+  upload_url: string;
+  assets: ReleaseAssetFull[];
+  author_login: string;
+}
+
+export interface OrgSummary {
+  login: string;
+  avatar_url: string;
+  description: string | null;
+}
+
+export interface WorkflowStep {
+  name: string;
+  status: string;
+  conclusion: string | null;
+  number: number;
+  started_at: string | null;
+  completed_at: string | null;
+}
+
+export interface WorkflowJob {
+  id: number;
+  name: string;
+  status: string;
+  conclusion: string | null;
+  started_at: string | null;
+  completed_at: string | null;
+  steps: WorkflowStep[];
+}

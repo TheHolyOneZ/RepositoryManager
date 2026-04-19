@@ -326,6 +326,12 @@ pub async fn github_logout(account_id: String) -> Result<(), AppError> {
     Ok(())
 }
 
+#[tauri::command]
+pub async fn github_list_orgs() -> Result<Vec<crate::github::orgs::OrgSummary>, AppError> {
+    let token = get_active_token()?;
+    crate::github::orgs::list_user_orgs(&token).await
+}
+
 pub fn get_active_token() -> Result<String, AppError> {
     github::get_token().ok_or_else(|| AppError {
         code: "NO_AUTH".into(),

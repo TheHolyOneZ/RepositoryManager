@@ -56,10 +56,10 @@ export const QueueControls: React.FC = () => {
         </div>
       )}
 
-      {/* Control buttons */}
+
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
 
-        {/* Start */}
+
         {isIdle && pendingCount > 0 && (
           <button
             onClick={() => queueStart(mode, 0)}
@@ -81,7 +81,7 @@ export const QueueControls: React.FC = () => {
           </button>
         )}
 
-        {/* Waiting (no items) */}
+
         {isIdle && pendingCount === 0 && (
           <div style={{
             flex: 1, height: 38, borderRadius: 9,
@@ -93,7 +93,7 @@ export const QueueControls: React.FC = () => {
           </div>
         )}
 
-        {/* Grace period */}
+
         {status === "grace" && (
           <div style={{
             flex: 1, height: 38, borderRadius: 9,
@@ -105,7 +105,7 @@ export const QueueControls: React.FC = () => {
           </div>
         )}
 
-        {/* Pause */}
+
         {status === "running" && (
           <button
             onClick={queuePause}
@@ -123,7 +123,7 @@ export const QueueControls: React.FC = () => {
           </button>
         )}
 
-        {/* Resume */}
+
         {status === "paused" && (
           <button
             onClick={queueResume}
@@ -145,7 +145,7 @@ export const QueueControls: React.FC = () => {
           </button>
         )}
 
-        {/* Skip + Cancel — shown whenever queue is active */}
+
         {isActive && (
           <>
             <button

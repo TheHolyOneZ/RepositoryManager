@@ -2,6 +2,30 @@ use serde::{Deserialize, Serialize};
 use crate::models::AppError;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WorkflowStep {
+    pub name: String,
+    pub status: String,
+    pub conclusion: Option<String>,
+    pub number: u64,
+    pub started_at: Option<String>,
+    pub completed_at: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WorkflowJob {
+    pub id: u64,
+    pub name: String,
+    pub status: String,
+    pub conclusion: Option<String>,
+    pub started_at: Option<String>,
+    pub completed_at: Option<String>,
+    pub steps: Vec<WorkflowStep>,
+}
+
+#[derive(Deserialize)]
+struct JobsPage { jobs: Vec<WorkflowJob> }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Workflow {
     pub id: u64,
     pub name: String,
@@ -133,4 +157,27 @@ pub async fn list_run_artifacts(token: &str, owner: &str, repo: &str, run_id: u6
         .get(format!("https://api.github.com/repos/{}/{}/actions/runs/{}/artifacts", owner, repo, run_id))
         .send().await?.error_for_status()?.json().await?;
     Ok(page.artifacts.into_iter().map(WorkflowArtifact::from).collect())
+}
+
+pub async fn list_run_jobs(token: &str, owner: &str, repo: &str, run_id: u64) -> Result<Vec<WorkflowJob>, AppError> {
+    let client = super::build_client(token)?;
+    let page: JobsPage = super::check_json(
+        client.get(format!("https://api.github.com/repos/{}/{}/actions/runs/{}/jobs?per_page=100", owner, repo, run_id))
+            .send().await?,
+    ).await?;
+    Ok(page.jobs)
+}
+
+pub async fn get_job_logs(token: &str, owner: &str, repo: &str, job_id: u64) -> Result<String, AppError> {
+    let client = super::build_client(token)?;
+    let resp = client
+        .get(format!("https://api.github.com/repos/{}/{}/actions/jobs/{}/logs", owner, repo, job_id))
+        .send().await?;
+    if !resp.status().is_success() {
+        let status = resp.status();
+        let body = resp.text().await.unwrap_or_default();
+        let snippet: String = body.chars().take(200).collect();
+        return Err(crate::models::AppError { code: "API_ERROR".into(), message: format!("HTTP {}: {}", status, snippet) });
+    }
+    Ok(resp.text().await.unwrap_or_default())
 }

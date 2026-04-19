@@ -19,6 +19,9 @@ import { AboutPage } from "./routes/about/AboutPage";
 import { UploadPage } from "./routes/upload/UploadPage";
 import { FilesPage } from "./routes/files/FilesPage";
 import { EditorWindow } from "./routes/editor/EditorWindow";
+import { PullRequestsPage } from "./routes/prs/PullRequestsPage";
+import { IssuesPage } from "./routes/issues/IssuesPage";
+import { ReleasesPage } from "./routes/releases/ReleasesPage";
 import { ErrorBoundary } from "./components/shared/ErrorBoundary";
 import { useAccountStore } from "./stores/accountStore";
 
@@ -71,6 +74,9 @@ function App() {
               <Route path="/migration" element={<MigrationPage />} />
               <Route path="/scanner" element={<ScannerPage />} />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/prs" element={<PullRequestsPage />} />
+              <Route path="/issues" element={<IssuesPage />} />
+              <Route path="/releases" element={<ReleasesPage />} />
               <Route path="/upload" element={<UploadPage />} />
               <Route path="/files" element={<FilesPage />} />
               <Route path="/about" element={<AboutPage />} />

@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect, useCallback, useRef } from "react";
 import { RefreshCw, Search, ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { RepoTable } from "../../components/repos/RepoTable";
 import { RepoFilters } from "../../components/repos/RepoFilters";
@@ -8,9 +8,10 @@ import { useRepoStore, selectFilteredRepos } from "../../stores/repoStore";
 import { useAccountStore, selectActiveAccount } from "../../stores/accountStore";
 import { useShallow } from "zustand/react/shallow";
 import { useUIStore } from "../../stores/uiStore";
-import { reposFetchAll } from "../../lib/tauri/commands";
+import { reposFetchAll, reposFetchOrg } from "../../lib/tauri/commands";
 import { formatInvokeError } from "../../lib/formatError";
 import { useTauriEvent } from "../../hooks/useTauriEvent";
+import { useOrgStore } from "../../stores/orgStore";
 import type { SortField } from "../../types/repo";
 
 const SORT_FIELDS: { field: SortField; label: string }[] = [
@@ -34,6 +35,7 @@ export const ReposPage: React.FC = () => {
   const filteredRepos = useRepoStore(useShallow(selectFilteredRepos));
   const totalRepos = useRepoStore((s) => s.repos.length);
   const activeAccount = useAccountStore(selectActiveAccount);
+  const orgContext = useOrgStore((s) => s.activeContext);
   const addToast = useUIStore((s) => s.addToast);
   const activeSlideOver = useUIStore((s) => s.activeSlideOver);
   const slideOverData = useUIStore((s) => s.slideOverData);
@@ -43,7 +45,12 @@ export const ReposPage: React.FC = () => {
     if (!activeAccount) return;
     setLoading(true);
     try {
-      const repos = await reposFetchAll(activeAccount.id, force);
+      let repos;
+      if (orgContext.type === "org") {
+        repos = await reposFetchOrg(orgContext.login, 100, 1);
+      } else {
+        repos = await reposFetchAll(activeAccount.id, force);
+      }
       setRepos(repos);
       enrichHealthScores();
     } catch (e: unknown) {
@@ -51,12 +58,34 @@ export const ReposPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [activeAccount, setRepos, setLoading, enrichHealthScores, addToast]);
+  }, [activeAccount, orgContext, setRepos, setLoading, enrichHealthScores, addToast]);
 
   const repoRefreshToken = useUIStore((s) => s.repoRefreshToken);
-  const prevTokenRef = React.useRef(repoRefreshToken);
+  const prevTokenRef = useRef(repoRefreshToken);
+  const silentRefreshRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const fetchReposSilent = useCallback(async () => {
+    if (!activeAccount) return;
+    try {
+      let repos;
+      if (orgContext.type === "org") {
+        repos = await reposFetchOrg(orgContext.login, 100, 1);
+      } else {
+        repos = await reposFetchAll(activeAccount.id, false);
+      }
+      setRepos(repos);
+      enrichHealthScores();
+    } catch { }
+  }, [activeAccount, orgContext, setRepos, enrichHealthScores]);
 
   useEffect(() => { void fetchRepos(); }, [fetchRepos]);
+
+  useEffect(() => {
+    if (silentRefreshRef.current) clearInterval(silentRefreshRef.current);
+    silentRefreshRef.current = setInterval(() => { void fetchReposSilent(); }, 30_000);
+    return () => { if (silentRefreshRef.current) clearInterval(silentRefreshRef.current); };
+  }, [fetchReposSilent]);
+
   useTauriEvent<{ fetched: number; total: number }>("repos:fetch-progress", (p) => { setFetchProgress(p); });
   useTauriEvent("repos:cache-updated", () => { fetchRepos(); });
 

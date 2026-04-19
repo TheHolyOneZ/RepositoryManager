@@ -4,7 +4,7 @@ import type { Repo, RepoTag } from "../../types/repo";
 import type { QueueItem, QueueItemInput, QueueState, DryRunResult, ExecutionMode, OperationLog, RepoExportInput, ExportBatchResult, ReleaseResult } from "../../types/queue";
 import type { AnalyticsSummary, LanguageStat, GrowthPoint, DecayPoint } from "../../types/analytics";
 import type { Account, AuthToken, CleanupSuggestion, DeviceFlowStart, GitHubSession } from "./types";
-import type { Workflow, WorkflowRun, WorkflowArtifact, Webhook, WebhookDelivery, Collaborator, PendingInvite, Branch, BranchProtection } from "../../types/governance";
+import type { Workflow, WorkflowRun, WorkflowArtifact, Webhook, WebhookDelivery, Collaborator, PendingInvite, Branch, BranchProtection, PullRequest, PrFile, PrReview, PrComment, Issue, IssueComment, IssueLabel, Milestone, Release, ReleaseAssetFull, OrgSummary, WorkflowJob } from "../../types/governance";
 
 function invoke<T>(cmd: string, args: Record<string, unknown> = {}): Promise<T> {
   assertTauriApp();
@@ -361,3 +361,151 @@ export const repoDeleteFile = (
   commitMessage: string,
 ): Promise<void> =>
   invoke("repo_delete_file", { owner, repo, branch, path, commitMessage });
+
+
+export const githubListOrgs = (): Promise<OrgSummary[]> =>
+  invoke("github_list_orgs");
+
+export const reposFetchOrg = (orgLogin: string, perPage = 100, page = 1): Promise<Repo[]> =>
+  invoke("repos_fetch_org", { orgLogin, perPage, page });
+
+
+export const ghListReleases = (owner: string, repo: string): Promise<Release[]> =>
+  invoke("gh_list_releases", { owner, repo });
+
+export const ghGetLatestRelease = (owner: string, repo: string): Promise<Release | null> =>
+  invoke("gh_get_latest_release", { owner, repo });
+
+export const ghCreateRelease = (
+  owner: string, repo: string,
+  tagName: string, name: string, body: string,
+  draft: boolean, prerelease: boolean, targetCommitish: string,
+): Promise<Release> =>
+  invoke("gh_create_release", { owner, repo, tagName, name, body, draft, prerelease, targetCommitish });
+
+export const ghUpdateRelease = (
+  owner: string, repo: string, releaseId: number,
+  tagName: string, name: string, body: string, draft: boolean, prerelease: boolean,
+): Promise<Release> =>
+  invoke("gh_update_release", { owner, repo, releaseId, tagName, name, body, draft, prerelease });
+
+export const ghDeleteRelease = (owner: string, repo: string, releaseId: number): Promise<void> =>
+  invoke("gh_delete_release", { owner, repo, releaseId });
+
+export const ghUploadReleaseAsset = (
+  owner: string, repo: string, releaseId: number,
+  localPath: string, assetName: string,
+): Promise<ReleaseAssetFull> =>
+  invoke("gh_upload_release_asset", { owner, repo, releaseId, localPath, assetName });
+
+export const ghDeleteReleaseAsset = (owner: string, repo: string, assetId: number): Promise<void> =>
+  invoke("gh_delete_release_asset", { owner, repo, assetId });
+
+
+export const ghListIssues = (owner: string, repo: string, state: string, perPage: number): Promise<Issue[]> =>
+  invoke("gh_list_issues", { owner, repo, state, perPage });
+
+export const ghCreateIssue = (
+  owner: string, repo: string,
+  title: string, body: string, labels: string[], assignees: string[], milestone: number | null,
+): Promise<Issue> =>
+  invoke("gh_create_issue", { owner, repo, title, body, labels, assignees, milestone });
+
+export const ghUpdateIssue = (
+  owner: string, repo: string, number: number,
+  state?: string, title?: string, body?: string,
+): Promise<Issue> =>
+  invoke("gh_update_issue", { owner, repo, number, state: state ?? null, title: title ?? null, body: body ?? null });
+
+export const ghListIssueComments = (owner: string, repo: string, number: number): Promise<IssueComment[]> =>
+  invoke("gh_list_issue_comments", { owner, repo, number });
+
+export const ghCreateIssueComment = (owner: string, repo: string, number: number, body: string): Promise<IssueComment> =>
+  invoke("gh_create_issue_comment", { owner, repo, number, body });
+
+export const ghListLabels = (owner: string, repo: string): Promise<IssueLabel[]> =>
+  invoke("gh_list_labels", { owner, repo });
+
+export const ghCreateLabel = (owner: string, repo: string, name: string, color: string, description: string): Promise<IssueLabel> =>
+  invoke("gh_create_label", { owner, repo, name, color, description });
+
+export const ghListMilestones = (owner: string, repo: string): Promise<Milestone[]> =>
+  invoke("gh_list_milestones", { owner, repo });
+
+export const ghAddLabelsToIssue = (owner: string, repo: string, number: number, labels: string[]): Promise<void> =>
+  invoke("gh_add_labels_to_issue", { owner, repo, number, labels });
+
+export const ghSetIssueMilestone = (owner: string, repo: string, number: number, milestoneNumber: number): Promise<void> =>
+  invoke("gh_set_issue_milestone", { owner, repo, number, milestoneNumber });
+
+
+export const ghListPullRequests = (owner: string, repo: string, state: string, perPage: number): Promise<PullRequest[]> =>
+  invoke("gh_list_pull_requests", { owner, repo, state, perPage });
+
+export const ghCreatePullRequest = (
+  owner: string, repo: string,
+  title: string, body: string, head: string, base: string, draft: boolean,
+): Promise<PullRequest> =>
+  invoke("gh_create_pull_request", { owner, repo, title, body, head, base, draft });
+
+export const ghUpdatePullRequest = (
+  owner: string, repo: string, number: number,
+  state?: string, title?: string, body?: string,
+): Promise<PullRequest> =>
+  invoke("gh_update_pull_request", { owner, repo, number, state: state ?? null, title: title ?? null, body: body ?? null });
+
+export const ghMergePullRequest = (owner: string, repo: string, number: number, mergeMethod: string): Promise<void> =>
+  invoke("gh_merge_pull_request", { owner, repo, number, mergeMethod });
+
+export const ghListPrFiles = (owner: string, repo: string, number: number): Promise<PrFile[]> =>
+  invoke("gh_list_pr_files", { owner, repo, number });
+
+export const ghListPrReviews = (owner: string, repo: string, number: number): Promise<PrReview[]> =>
+  invoke("gh_list_pr_reviews", { owner, repo, number });
+
+export const ghCreatePrReview = (owner: string, repo: string, number: number, event: string, body: string): Promise<PrReview> =>
+  invoke("gh_create_pr_review", { owner, repo, number, event, body });
+
+export const ghListPrComments = (owner: string, repo: string, number: number): Promise<PrComment[]> =>
+  invoke("gh_list_pr_comments", { owner, repo, number });
+
+export const ghCreatePrComment = (owner: string, repo: string, number: number, body: string): Promise<PrComment> =>
+  invoke("gh_create_pr_comment", { owner, repo, number, body });
+
+export const ghRequestReviewers = (owner: string, repo: string, number: number, reviewers: string[]): Promise<void> =>
+  invoke("gh_request_reviewers", { owner, repo, number, reviewers });
+
+export const ghListRepoBranchesSimple = (owner: string, repo: string): Promise<string[]> =>
+  invoke("gh_list_repo_branches_simple", { owner, repo });
+
+export const ghListRepoCollaboratorsSimple = (owner: string, repo: string): Promise<string[]> =>
+  invoke("gh_list_repo_collaborators_simple", { owner, repo });
+
+export const ghConvertPrToReady = (owner: string, repo: string, number: number): Promise<PullRequest> =>
+  invoke("gh_convert_pr_to_ready", { owner, repo, number });
+
+export const ghAddPrAssignees = (owner: string, repo: string, number: number, assignees: string[]): Promise<void> =>
+  invoke("gh_add_pr_assignees", { owner, repo, number, assignees });
+
+export const ghRemovePrAssignees = (owner: string, repo: string, number: number, assignees: string[]): Promise<void> =>
+  invoke("gh_remove_pr_assignees", { owner, repo, number, assignees });
+
+export const ghRemovePrLabel = (owner: string, repo: string, number: number, label: string): Promise<void> =>
+  invoke("gh_remove_pr_label", { owner, repo, number, label });
+
+export const ghSetPrMilestone = (owner: string, repo: string, number: number, milestone: number | null): Promise<void> =>
+  invoke("gh_set_pr_milestone", { owner, repo, number, milestone });
+
+
+export const ghListRunJobs = (owner: string, repo: string, runId: number): Promise<WorkflowJob[]> =>
+  invoke("gh_list_run_jobs", { owner, repo, runId });
+
+export const ghGetJobLogs = (owner: string, repo: string, jobId: number): Promise<string> =>
+  invoke("gh_get_job_logs", { owner, repo, jobId });
+
+
+export const actionStarRepo = (owner: string, repo: string): Promise<void> =>
+  invoke("action_star_repo", { owner, repo });
+
+export const actionUnstarRepo = (owner: string, repo: string): Promise<void> =>
+  invoke("action_unstar_repo", { owner, repo });

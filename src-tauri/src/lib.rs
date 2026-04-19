@@ -5,7 +5,7 @@ mod queue_engine;
 mod suggestions;
 mod commands;
 
-use commands::{auth::*, repos::*, queue::*, actions::*, analytics::*, logs::*, shell::*, upload::*, files::*, actions_gh::*, webhooks::*, collaborators::*, branches::*};
+use commands::{auth::*, repos::*, queue::*, actions::*, analytics::*, logs::*, shell::*, upload::*, files::*, actions_gh::*, webhooks::*, collaborators::*, branches::*, prs::*, issues::*, releases::*, orgs::*};
 use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -115,6 +115,52 @@ pub fn run() {
 
             save_text_file,
             repo_delete_file,
+
+            github_list_orgs,
+            repos_fetch_org,
+
+            gh_list_releases,
+            gh_get_latest_release,
+            gh_create_release,
+            gh_update_release,
+            gh_delete_release,
+            gh_upload_release_asset,
+            gh_delete_release_asset,
+
+            gh_list_issues,
+            gh_create_issue,
+            gh_update_issue,
+            gh_list_issue_comments,
+            gh_create_issue_comment,
+            gh_list_labels,
+            gh_create_label,
+            gh_list_milestones,
+            gh_add_labels_to_issue,
+            gh_set_issue_milestone,
+
+            gh_list_pull_requests,
+            gh_create_pull_request,
+            gh_update_pull_request,
+            gh_merge_pull_request,
+            gh_list_pr_files,
+            gh_list_pr_reviews,
+            gh_create_pr_review,
+            gh_list_pr_comments,
+            gh_create_pr_comment,
+            gh_request_reviewers,
+            gh_list_repo_branches_simple,
+            gh_list_repo_collaborators_simple,
+            gh_convert_pr_to_ready,
+            gh_add_pr_assignees,
+            gh_remove_pr_assignees,
+            gh_remove_pr_label,
+            gh_set_pr_milestone,
+
+            gh_list_run_jobs,
+            gh_get_job_logs,
+
+            action_star_repo,
+            action_unstar_repo,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

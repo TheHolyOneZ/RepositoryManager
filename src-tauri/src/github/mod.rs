@@ -2,6 +2,10 @@ pub mod actions;
 pub mod webhooks;
 pub mod collaborators;
 pub mod branches;
+pub mod prs;
+pub mod issues;
+pub mod releases;
+pub mod orgs;
 
 use reqwest::{Client, header};
 use serde::Deserialize;

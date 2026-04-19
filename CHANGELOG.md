@@ -1,5 +1,81 @@
 # Changelog
 
+## v0.4.0 — 2026-04-19
+
+### New Features
+
+---
+
+#### Pull Requests
+
+Full PR management per repository.
+
+- List open, closed, or all PRs with author avatar, head→base branch, label chips, review status badge, and draft indicator
+- Inline diff viewer using Monaco `createDiffEditor` — click a changed file to see the patch rendered as a split diff
+- Create PRs from within the app: title, head/base branch selectors, draft toggle, Monaco markdown body editor, reviewer multi-select
+- Review panel: list reviews with state badges (APPROVED / CHANGES_REQUESTED / COMMENTED), submit new reviews, post comments
+- Merge with strategy selector (merge / squash / rebase)
+- Details tab: toggle labels, add/remove assignees, set milestone — all reflected live without reopening
+- Mark as Ready button converts draft PRs to ready-for-review in one click
+- Bulk close PRs, bulk request reviewer across selected PRs
+
+---
+
+#### Issues
+
+Issue tracking built-in, no browser needed.
+
+- List open/closed issues with label chips, assignee avatars, comment count, and date
+- Expand any issue for full Markdown-rendered body, label picker, milestone selector, and inline comment thread with reply box
+- Create issues with title, Monaco body editor, label multi-select, assignee multi-select, and milestone selector
+- Bulk close issues; bulk apply a label to many issues at once
+
+---
+
+#### Release Manager
+
+Create and manage GitHub Releases.
+
+- List releases per repo: tag badge, draft/prerelease badges, asset count, published date
+- Expand to read release notes (Markdown rendered), upload assets via native file dialog, download or delete individual assets, edit metadata inline, or delete the release
+- Create releases: tag name, release name, target branch selector, Markdown body editor, draft and pre-release toggles
+- Queue files before clicking Create — they upload sequentially with a live progress bar after the release is created; the button label shows "Create & Upload N file(s)" as a reminder
+- After creation the new release auto-expands so you can upload additional assets
+- Cross-repo Overview tab: table of selected repos with their latest release tag and date, sorted oldest-first to surface stale repos
+
+---
+
+#### Workflow Run Logs
+
+View full CI logs without leaving the app.
+
+- Click any completed run (success, failure, or cancelled) to expand a log panel
+- Left column: job list with step-level status icons; click a job to load its logs
+- Right column: raw log output with ANSI codes stripped, clipboard copy button, keyword search
+- Tabs: Logs | Artifacts — switching tabs never closes the panel
+
+---
+
+#### Organization Support
+
+Manage org repositories alongside personal repos.
+
+- ContextSwitcher in the sidebar lists all orgs you belong to
+- Select an org to load its repositories in the Repos page — same filtering, sorting, and bulk operations
+- Org context persists across sessions via localStorage
+
+---
+
+#### Settings Enhancements
+
+- **General Behavior**: default grace window slider, default execution mode, stale branch threshold, and repo cache TTL
+- **Appearance**: accent color picker with 6 presets + custom hex input; applied globally to `--accent` CSS variable on mount
+- **Notifications**: desktop notification toggle (graceful fallback on Linux Tauri WebView), notify-on-queue-complete and failure checkboxes
+- **Saved Filter Presets**: save current repo filter state as a named preset; recall or delete via dropdown in the filter panel
+- **Background refresh**: repo list silently refreshes every 30 seconds without showing a loading spinner
+
+---
+
 ## v0.3.0 — 2026-04-18
 
 ### New Features

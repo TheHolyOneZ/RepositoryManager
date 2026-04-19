@@ -325,7 +325,7 @@ export const ConfirmationModal: React.FC = () => {
             </div>
           )}
 
-          {/* Grace window — only shown for auto-start */}
+
           {!isDryRun && autoStart && (
             <div>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
@@ -353,7 +353,7 @@ export const ConfirmationModal: React.FC = () => {
             </div>
           )}
 
-          {/* Type to confirm (danger only) */}
+
           {isDanger && !isDryRun && (
             <div>
               <p style={{ fontSize: "0.625rem", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#3A4560", marginBottom: 8 }}>
@@ -368,7 +368,7 @@ export const ConfirmationModal: React.FC = () => {
             </div>
           )}
 
-          {/* Actions */}
+
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", paddingTop: 4 }}>
             <button
               onClick={handleClose}

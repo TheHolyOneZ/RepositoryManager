@@ -17,6 +17,7 @@ import {
 import type { Workflow, WorkflowRun, WorkflowArtifact } from "../../types/governance";
 import type { Repo } from "../../types/repo";
 import { CreateWorkflowPanel } from "./CreateWorkflowPanel";
+import { RunLogPanel } from "./RunLogPanel";
 
 type Tab = "workflows" | "runs" | "bulk" | "create";
 
@@ -77,6 +78,7 @@ export const ActionsPage: React.FC = () => {
   const [bulkResults, setBulkResults] = useState<Array<{ repo: string; ok: boolean; error?: string }> | null>(null);
   const [triggerBranch, setTriggerBranch] = useState("main");
   const [expandedRunId, setExpandedRunId] = useState<number | null>(null);
+  const [expandedRunTab, setExpandedRunTab] = useState<"logs" | "artifacts">("logs");
   const [runArtifacts, setRunArtifacts] = useState<Map<number, WorkflowArtifact[]>>(new Map());
   const [loadingArtifacts, setLoadingArtifacts] = useState<Set<number>>(new Set());
   const [downloadingArtifact, setDownloadingArtifact] = useState<Set<number>>(new Set());
@@ -201,11 +203,8 @@ export const ActionsPage: React.FC = () => {
     }
   };
 
-  const handleToggleArtifacts = useCallback(async (run: WorkflowRun) => {
-    if (expandedRunId === run.id) { setExpandedRunId(null); return; }
-    setExpandedRunId(run.id);
-    if (runArtifacts.has(run.id)) return;
-    if (!viewingRepo) return;
+  const ensureArtifactsLoaded = useCallback(async (run: WorkflowRun) => {
+    if (runArtifacts.has(run.id) || loadingArtifacts.has(run.id) || !viewingRepo) return;
     setLoadingArtifacts(prev => new Set(prev).add(run.id));
     try {
       const arts = await ghListRunArtifacts(viewingRepo.owner, viewingRepo.name, run.id);
@@ -215,7 +214,16 @@ export const ActionsPage: React.FC = () => {
     } finally {
       setLoadingArtifacts(prev => { const s = new Set(prev); s.delete(run.id); return s; });
     }
-  }, [expandedRunId, runArtifacts, viewingRepo, addToast]);
+  }, [runArtifacts, loadingArtifacts, viewingRepo, addToast]);
+
+  const handleToggleExpand = useCallback((run: WorkflowRun, defaultTab?: "logs" | "artifacts") => {
+    if (expandedRunId === run.id) {
+      setExpandedRunId(null);
+    } else {
+      setExpandedRunId(run.id);
+      if (defaultTab) setExpandedRunTab(defaultTab);
+    }
+  }, [expandedRunId]);
 
   const handleDownloadArtifact = useCallback(async (artifact: WorkflowArtifact) => {
     if (!viewingRepo || downloadingArtifact.has(artifact.id)) return;
@@ -502,11 +510,11 @@ export const ActionsPage: React.FC = () => {
                           <RotateCcw size={10} />
                         </button>
                       )}
-                      {run.conclusion === "success" && (
-                        <button onClick={() => handleToggleArtifacts(run)} title="Artifacts"
-                          style={{ display: "flex", alignItems: "center", gap: 4, height: 26, padding: "0 8px", borderRadius: 6, cursor: "pointer", background: isExpanded ? "rgba(56,189,248,0.12)" : "rgba(255,255,255,0.04)", border: isExpanded ? "1px solid rgba(56,189,248,0.22)" : "1px solid rgba(255,255,255,0.08)", color: isExpanded ? "#38BDF8" : "#4A5580", fontSize: "0.6875rem", transition: "all 120ms" }}>
-                          <Package size={10} />
-                          {loadingArts ? <Loader2 size={9} style={{ animation: "spin 1s linear infinite" }} /> : "Artifacts"}
+                      {(run.conclusion === "success" || run.conclusion === "failure" || run.conclusion === "cancelled") && (
+                        <button onClick={() => { handleToggleExpand(run, "logs"); if (!isExpanded && run.conclusion === "success") ensureArtifactsLoaded(run); }} title={isExpanded ? "Collapse" : "View logs & artifacts"}
+                          style={{ display: "flex", alignItems: "center", gap: 4, height: 26, padding: "0 8px", borderRadius: 6, cursor: "pointer", background: isExpanded ? "rgba(139,92,246,0.12)" : "rgba(255,255,255,0.04)", border: isExpanded ? "1px solid rgba(139,92,246,0.22)" : "1px solid rgba(255,255,255,0.08)", color: isExpanded ? "#A78BFA" : "#4A5580", fontSize: "0.6875rem", transition: "all 120ms" }}>
+                          <ChevronDown size={10} style={{ transform: isExpanded ? "rotate(180deg)" : "none", transition: "transform 150ms" }} />
+                          {loadingArts ? <Loader2 size={9} style={{ animation: "spin 1s linear infinite" }} /> : "Logs"}
                         </button>
                       )}
                       <button onClick={() => openUrlExternal(run.html_url)}
@@ -515,8 +523,21 @@ export const ActionsPage: React.FC = () => {
                       </button>
                     </div>
 
-                    {isExpanded && !loadingArts && (
+                    {isExpanded && (
                       <div style={{ margin: "4px 0 10px 32px", borderRadius: 10, border: "1px solid rgba(56,189,248,0.13)", background: "rgba(56,189,248,0.03)", overflow: "hidden" }}>
+                        <div style={{ display: "flex", gap: 4, padding: "8px 12px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                          {(["logs", "artifacts"] as const).map((t) => (
+                            <button key={t} type="button" onClick={() => { setExpandedRunTab(t); if (t === "artifacts") ensureArtifactsLoaded(run); }}
+                              style={{ padding: "3px 12px", borderRadius: 6, cursor: "pointer", border: "none", background: expandedRunTab === t ? "rgba(139,92,246,0.2)" : "transparent", color: expandedRunTab === t ? "#C4B5FD" : "#7A8AAE", fontSize: "0.75rem", fontWeight: 500, textTransform: "capitalize" }}>
+                              {t}
+                            </button>
+                          ))}
+                        </div>
+                        {expandedRunTab === "logs" && viewingRepo && (
+                          <RunLogPanel owner={viewingRepo.owner} repo={viewingRepo.name} runId={run.id} />
+                        )}
+                        {expandedRunTab === "artifacts" && !loadingArts && (
+                        <>
                         {artifacts.length === 0 ? (
                           <p style={{ fontSize: "0.71rem", color: "#3A4560", padding: "10px 14px" }}>No artifacts for this run</p>
                         ) : artifacts.map((art, idx) => {
@@ -554,6 +575,8 @@ export const ActionsPage: React.FC = () => {
                             </div>
                           );
                         })}
+                        </>
+                        )}
                       </div>
                     )}
                   </div>
@@ -747,12 +770,12 @@ export const ActionsPage: React.FC = () => {
                     <RotateCcw size={12} /> Re-run failed jobs
                   </button>
                 )}
-                {run.conclusion === "success" && (
+                {(run.conclusion === "success" || run.conclusion === "failure") && (
                   <button style={{ ...CTX_ITEM, color: "#38BDF8", width: "100%" }}
                     onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = "rgba(56,189,248,0.08)"}
                     onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = "transparent"}
-                    onClick={() => { handleToggleArtifacts(run); setCtxMenu(null); }}>
-                    <Package size={12} /> {expandedRunId === run.id ? "Hide artifacts" : "View artifacts"}
+                    onClick={() => { handleToggleExpand(run); setCtxMenu(null); }}>
+                    <Package size={12} /> {expandedRunId === run.id ? "Collapse panel" : "View logs & artifacts"}
                   </button>
                 )}
                 <button style={{ ...CTX_ITEM, color: "#60A5FA", width: "100%" }}

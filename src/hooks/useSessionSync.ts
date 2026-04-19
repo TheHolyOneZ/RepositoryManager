@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAccountStore } from "../stores/accountStore";
-import { githubGetSession, githubSwitchAccount } from "../lib/tauri/commands";
+import { useOrgStore } from "../stores/orgStore";
+import { githubGetSession, githubSwitchAccount, githubListOrgs } from "../lib/tauri/commands";
 import { isTauriApp } from "../lib/tauri/runtime";
 
 
@@ -24,6 +25,7 @@ export function useSessionSync(): boolean {
             activeAccountId: active,
           });
           await githubSwitchAccount(active);
+          githubListOrgs().then((orgs) => useOrgStore.getState().setOrgs(orgs)).catch(() => {});
         }
       } catch {
 
