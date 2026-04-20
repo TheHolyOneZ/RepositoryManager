@@ -48,11 +48,36 @@ pub async fn queue_get_state() -> Result<QueueState, AppError> {
 }
 
 #[tauri::command]
+pub async fn queue_clear(keep_pending: bool) -> Result<(), AppError> {
+    let mut q = QUEUE.lock().await;
+    if keep_pending {
+        q.retain(|i| i.status == "pending");
+    } else {
+        q.clear();
+    }
+    Ok(())
+}
+
+#[tauri::command]
 pub async fn queue_start(
     app: tauri::AppHandle,
     mode: String,
     grace_seconds: u32,
 ) -> Result<(), AppError> {
+
+    {
+        let current = QUEUE_STATUS.lock().await.clone();
+        if current == "running" || current == "grace" || current == "paused" {
+            return Err(AppError { code: "QUEUE_BUSY".into(), message: "Queue is already running".into() });
+        }
+    }
+
+
+    {
+        let mut q = QUEUE.lock().await;
+        q.retain(|i| i.status == "pending");
+    }
+
     *QUEUE_MODE.lock().await = mode.clone();
 
     let token = crate::commands::auth::get_active_token()?;

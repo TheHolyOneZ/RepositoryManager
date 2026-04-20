@@ -2,8 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import {
   GitFork, Globe, Heart, Code2, Layers, Cpu, Box, Zap, ExternalLink,
-  FolderUp, FilePen, MousePointer2, FolderTree,
-  Play, Webhook, Users, GitBranch, GitPullRequest, CircleDot, Tag, ScrollText, Building2, Settings,
+  KeyRound, Shield, ScanSearch, Keyboard, Trash2, Filter, Bell,
 } from "lucide-react";
 import { openUrlExternal } from "../../lib/tauri/commands";
 
@@ -20,64 +19,46 @@ const stack = [
 
 const features = [
   {
-    icon: GitPullRequest,
+    icon: KeyRound,
     color: "#A78BFA",
-    title: "Pull Requests",
-    desc: "Full PR management: list open/closed PRs, Monaco inline diff viewer, create PRs with reviewer multi-select, review (approve/request changes/comment), merge with strategy selector. Details tab lets you toggle labels, add/remove assignees, set milestones, and convert drafts to ready — all live without reopening.",
+    title: "Environments & Secrets",
+    desc: "Browse, create, update, and delete GitHub Actions secrets across repos in one place. Bulk-copy secrets from a source repo to multiple targets. Supports both repository secrets and environment-scoped secrets.",
   },
   {
-    icon: CircleDot,
+    icon: Shield,
+    color: "#F87171",
+    title: "Dependabot & Security Alerts",
+    desc: "Enable or disable Dependabot alerts and security advisories per repo. Portfolio-wide dependency scan across package.json, Cargo.toml, requirements.txt, go.mod, and pom.xml. Bulk-enable security features across many repos in one click.",
+  },
+  {
+    icon: ScanSearch,
     color: "#34D399",
-    title: "Issues",
-    desc: "Issue tracking built-in: list, create, and close issues with label picker and milestone selector. Expand any issue into a chat-style thread with Markdown body, inline replies, and a full comment list. Bulk-close or bulk-label many issues at once.",
+    title: "Dependency Scanner",
+    desc: "Fetch and parse dependency manifests directly from GitHub via the API — no local clone required. Detects npm, pnpm, yarn, cargo, pip, go modules, and Maven. Shows ecosystem, version, and dev/prod flag per dependency.",
   },
   {
-    icon: Tag,
-    color: "#F59E0B",
-    title: "Release Manager",
-    desc: "Create releases and queue files to upload before clicking Create — they upload sequentially with a live progress bar. Manage assets (download, delete, upload more) in the expanded view. Cross-repo Overview shows each repo's latest tag sorted by staleness.",
-  },
-  {
-    icon: ScrollText,
-    color: "#38BDF8",
-    title: "Workflow Run Logs",
-    desc: "Click any completed run to expand a two-column log panel: job list with step-level status icons on the left, raw log output on the right with ANSI codes stripped, clipboard copy, and keyword search. Switching Logs/Artifacts tabs never closes the panel.",
-  },
-  {
-    icon: Building2,
-    color: "#F472B6",
-    title: "Organization Support",
-    desc: "Switch context between personal account and any GitHub org you belong to via the ContextSwitcher in the sidebar. Org repos load instantly and support all the same filtering, sorting, bulk ops, and analytics as personal repos.",
-  },
-  {
-    icon: Settings,
-    color: "#FB923C",
-    title: "Settings & Presets",
-    desc: "Configure grace window, execution mode, stale branch threshold, and cache TTL. Pick an accent color from six swatches or enter a custom hex — applied globally on launch. Save and restore filter presets. Desktop notifications for queue events (with graceful Tauri WebView fallback).",
-  },
-  {
-    icon: Play,
-    color: "#EF4444",
-    title: "GitHub Actions",
-    desc: "View workflows and runs per repo. Trigger with custom branch, enable/disable in bulk, re-run failed jobs, download artifacts. Create workflow YAML in Monaco with CI/Release/Deploy/Manual templates and commit to many repos at once. Live run-log viewer built in.",
-  },
-  {
-    icon: GitBranch,
-    color: "#60A5FA",
-    title: "Branch Governance",
-    desc: "Overview every branch portfolio-wide with last-commit dates and configurable stale detection. Bulk-apply protection rules, rename default branches, create branches from a source — all across multiple repos in parallel with per-item results.",
-  },
-  {
-    icon: Webhook,
-    color: "#67E8F9",
-    title: "Webhooks & Collaborators",
-    desc: "List, create, edit, and delete webhooks. Ping or re-deliver individual payloads. Manage collaborators with permission badges, bulk add/remove access, view pending invitations, and export a full access audit as CSV.",
-  },
-  {
-    icon: FolderTree,
+    icon: Keyboard,
     color: "#FCD34D",
-    title: "Bulk Repo Operations",
-    desc: "Rename, archive, change visibility, transfer ownership, update topics, star/unstar, and delete repos in bulk. Queued execution with dry-run preview, grace periods, pause/resume/skip/cancel, and per-item results — with background silent refresh every 30 s.",
+    title: "Keyboard Shortcuts",
+    desc: "Full keyboard navigation: R to refresh, N to create a new repo, F to focus the filter search bar, Ctrl+Z to undo the last bulk action, Escape to clear selection. All shortcuts discoverable in the Settings panel.",
+  },
+  {
+    icon: Trash2,
+    color: "#60A5FA",
+    title: "Cleanup Mode Presets",
+    desc: "One-click cleanup presets (Stale Forks, Empty Repos, Old Archives, Inactive Repos) auto-populate the bulk queue. Each preset is configurable — adjust thresholds in Settings before running to tune what gets flagged.",
+  },
+  {
+    icon: Filter,
+    color: "#67E8F9",
+    title: "Saved Filter Presets",
+    desc: "Save any combination of text search, language filter, visibility, fork toggle, and sort order as a named preset. Load presets instantly from the filter bar. Presets persist across sessions via local storage.",
+  },
+  {
+    icon: Bell,
+    color: "#FB923C",
+    title: "Desktop Notifications",
+    desc: "Opt-in OS-level notifications for queue completion and per-item failures. Fires even when the app is in the background. Controlled per-event-type in Settings — toggle queue-complete and failure notifications independently.",
   },
 ];
 
@@ -118,7 +99,7 @@ export const AboutPage: React.FC = () => {
                 About ZRepoManager
               </h2>
               <p style={{ margin: "3px 0 0", fontSize: "0.8125rem", color: "#4A5580" }}>
-                v0.4.0 — Windows Native · Linux Supported
+                v0.5.0 — Windows Native · Linux Supported
               </p>
             </div>
           </div>
@@ -263,7 +244,7 @@ export const AboutPage: React.FC = () => {
             padding: "14px 24px",
             display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap",
           }}>
-            <span style={{ fontSize: "0.75rem", color: "#2D3450" }}>GPL-3.0 License · Open Source · v0.4.0</span>
+            <span style={{ fontSize: "0.75rem", color: "#2D3450" }}>GPL-3.0 License · Open Source · v0.5.0</span>
             <button
               onClick={() => openLink(GITHUB_URL)}
               style={{

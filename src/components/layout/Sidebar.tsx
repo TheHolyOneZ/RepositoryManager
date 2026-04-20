@@ -5,7 +5,7 @@ import {
   GitFork, LayoutDashboard, Zap, Lightbulb, GitBranch, Webhook,
   Users, Network, Calendar, ArrowRightLeft, ScanSearch, Settings,
   ChevronLeft, ChevronRight, Bell, Info, FolderUp, FilePen,
-  GitPullRequest, CircleDot, Tag,
+  GitPullRequest, CircleDot, Tag, ShieldCheck, ShieldAlert, PackageSearch,
 } from "lucide-react";
 import { ContextSwitcher } from "./ContextSwitcher";
 import { AppLogoMark } from "../icons/AppLogoMark";
@@ -34,6 +34,14 @@ const NAV_SECTIONS = [
       { path: "/webhooks",      label: "Webhooks",       icon: Webhook },
       { path: "/collaborators", label: "Collaborators",  icon: Users },
       { path: "/branches",      label: "Branches",       icon: Network },
+    ],
+  },
+  {
+    label: "Security",
+    items: [
+      { path: "/environments", label: "Secrets",     icon: ShieldCheck },
+      { path: "/security",     label: "Dependabot",  icon: ShieldAlert },
+      { path: "/deps",         label: "Dep Scanner", icon: PackageSearch },
     ],
   },
   {

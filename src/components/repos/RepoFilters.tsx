@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
-import { X, SlidersHorizontal, RotateCcw, Plus, Tag } from "lucide-react";
+import { X, SlidersHorizontal, RotateCcw, Plus, Tag, Bookmark, BookmarkCheck } from "lucide-react";
 import { useRepoStore, selectAvailableLanguages } from "../../stores/repoStore";
+import { useFilterPresetsStore } from "../../stores/filterPresetsStore";
 import { useShallow } from "zustand/react/shallow";
 import type { HealthStatus, RepoVisibility } from "../../types/repo";
 
@@ -21,15 +22,27 @@ const BUILTIN_TAG_COLORS: Record<string, string> = {
 export const RepoFilters: React.FC = () => {
   const filters = useRepoStore((s) => s.filters);
   const setFilter = useRepoStore((s) => s.setFilter);
+  const setFilters = useRepoStore((s) => s.setFilters);
   const resetFilters = useRepoStore((s) => s.resetFilters);
   const languages = useRepoStore(useShallow(selectAvailableLanguages));
   const customTagOptions = useRepoStore((s) => s.customTagOptions);
   const addCustomTagOption = useRepoStore((s) => s.addCustomTagOption);
   const removeCustomTagOption = useRepoStore((s) => s.removeCustomTagOption);
+  const { presets, savePreset, deletePreset } = useFilterPresetsStore();
 
   const [newTagInput, setNewTagInput] = useState("");
   const [showTagInput, setShowTagInput] = useState(false);
+  const [savePresetInput, setSavePresetInput] = useState("");
+  const [showSaveInput, setShowSaveInput] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleSavePreset = () => {
+    const name = savePresetInput.trim();
+    if (!name) return;
+    savePreset(name, filters);
+    setSavePresetInput("");
+    setShowSaveInput(false);
+  };
 
   const hasActiveFilters = filters.language || filters.visibility || filters.health ||
     filters.tags.length > 0 || filters.isFork !== null || filters.isTemplate !== null;
@@ -242,6 +255,77 @@ export const RepoFilters: React.FC = () => {
             </select>
           </FilterSection>
         )}
+
+        {presets.length > 0 && (
+          <FilterSection label="Saved Presets">
+            {presets.map((preset) => (
+              <div key={preset.id} style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                <button
+                  onClick={() => setFilters(preset.filters)}
+                  style={{
+                    flex: 1, display: "flex", alignItems: "center", gap: 6,
+                    padding: "5px 8px", borderRadius: 7, cursor: "pointer",
+                    background: "transparent", border: "none", transition: "all 130ms",
+                    color: "#6B7A9B", fontSize: "0.75rem", fontWeight: 400, textAlign: "left",
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "#C8CDD8"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#6B7A9B"; }}
+                >
+                  <BookmarkCheck size={10} style={{ flexShrink: 0, color: "#A78BFA" }} />
+                  <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{preset.name}</span>
+                </button>
+                <button
+                  onClick={() => deletePreset(preset.id)}
+                  style={{ flexShrink: 0, width: 18, height: 18, borderRadius: 4, background: "none", border: "none", cursor: "pointer", color: "#2D3650", display: "flex", alignItems: "center", justifyContent: "center", transition: "color 120ms" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = "#F87171")}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "#2D3650")}
+                >
+                  <X size={9} />
+                </button>
+              </div>
+            ))}
+          </FilterSection>
+        )}
+
+        <FilterSection label="Presets">
+          {showSaveInput ? (
+            <div style={{ marginTop: 2, display: "flex", gap: 4 }}>
+              <input
+                autoFocus
+                value={savePresetInput}
+                onChange={(e) => setSavePresetInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") handleSavePreset(); if (e.key === "Escape") setShowSaveInput(false); }}
+                placeholder="Preset name"
+                style={{
+                  flex: 1, height: 26, borderRadius: 6, fontSize: "0.6875rem",
+                  background: "rgba(255,255,255,0.07)", border: "1px solid rgba(139,92,246,0.35)",
+                  color: "#D4D8E8", padding: "0 7px", outline: "none",
+                }}
+              />
+              <button
+                onClick={handleSavePreset}
+                disabled={!savePresetInput.trim()}
+                style={{ height: 26, width: 26, borderRadius: 6, flexShrink: 0, background: "rgba(139,92,246,0.20)", border: "1px solid rgba(139,92,246,0.35)", color: "#A78BFA", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: savePresetInput.trim() ? 1 : 0.4 }}
+              >
+                <Plus size={11} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowSaveInput(true)}
+              style={{
+                marginTop: 2, display: "flex", alignItems: "center", gap: 5,
+                padding: "4px 8px", borderRadius: 6, cursor: "pointer",
+                background: "none", border: "1px dashed rgba(255,255,255,0.08)",
+                color: "#3A4560", fontSize: "0.6875rem", transition: "all 140ms", width: "100%",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(139,92,246,0.30)"; e.currentTarget.style.color = "#7C6DB5"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.color = "#3A4560"; }}
+            >
+              <Bookmark size={9} /> <Plus size={8} /> Save current filters
+            </button>
+          )}
+        </FilterSection>
 
         <FilterSection label="Type">
           {([

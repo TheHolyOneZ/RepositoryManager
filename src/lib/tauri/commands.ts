@@ -4,7 +4,7 @@ import type { Repo, RepoTag } from "../../types/repo";
 import type { QueueItem, QueueItemInput, QueueState, DryRunResult, ExecutionMode, OperationLog, RepoExportInput, ExportBatchResult, ReleaseResult } from "../../types/queue";
 import type { AnalyticsSummary, LanguageStat, GrowthPoint, DecayPoint } from "../../types/analytics";
 import type { Account, AuthToken, CleanupSuggestion, DeviceFlowStart, GitHubSession } from "./types";
-import type { Workflow, WorkflowRun, WorkflowArtifact, Webhook, WebhookDelivery, Collaborator, PendingInvite, Branch, BranchProtection, PullRequest, PrFile, PrReview, PrComment, Issue, IssueComment, IssueLabel, Milestone, Release, ReleaseAssetFull, OrgSummary, WorkflowJob } from "../../types/governance";
+import type { Workflow, WorkflowRun, WorkflowArtifact, Webhook, WebhookDelivery, Collaborator, PendingInvite, Branch, BranchProtection, PullRequest, PrFile, PrReview, PrComment, Issue, IssueComment, IssueLabel, Milestone, Release, ReleaseAssetFull, OrgSummary, WorkflowJob, Environment, RepoSecret, RepoPublicKey, BulkSecretResult, DependabotAlert, RepoAlertSummary, RepoDependencies } from "../../types/governance";
 
 function invoke<T>(cmd: string, args: Record<string, unknown> = {}): Promise<T> {
   assertTauriApp();
@@ -90,6 +90,9 @@ export const queueRetryFailed = (itemIds: string[]): Promise<void> =>
 
 export const queueDryRun = (items: QueueItemInput[]): Promise<DryRunResult[]> =>
   invoke("queue_dry_run", { items });
+
+export const queueClear = (keepPending = false): Promise<void> =>
+  invoke("queue_clear", { keepPending });
 
 
 export const actionDeleteRepo = (owner: string, repo: string): Promise<void> =>
@@ -509,3 +512,74 @@ export const actionStarRepo = (owner: string, repo: string): Promise<void> =>
 
 export const actionUnstarRepo = (owner: string, repo: string): Promise<void> =>
   invoke("action_unstar_repo", { owner, repo });
+
+
+export const ghListEnvironments = (owner: string, repo: string): Promise<Environment[]> =>
+  invoke("gh_list_environments", { owner, repo });
+
+export const ghCreateEnvironment = (owner: string, repo: string, envName: string): Promise<Environment> =>
+  invoke("gh_create_environment", { owner, repo, envName });
+
+export const ghDeleteEnvironment = (owner: string, repo: string, envName: string): Promise<void> =>
+  invoke("gh_delete_environment", { owner, repo, envName });
+
+export const ghListRepoSecrets = (owner: string, repo: string): Promise<RepoSecret[]> =>
+  invoke("gh_list_repo_secrets", { owner, repo });
+
+export const ghListEnvSecrets = (owner: string, repo: string, envName: string): Promise<RepoSecret[]> =>
+  invoke("gh_list_env_secrets", { owner, repo, envName });
+
+export const ghGetRepoPublicKey = (owner: string, repo: string): Promise<RepoPublicKey> =>
+  invoke("gh_get_repo_public_key", { owner, repo });
+
+export const ghCreateRepoSecret = (owner: string, repo: string, name: string, plaintext: string): Promise<void> =>
+  invoke("gh_create_repo_secret", { owner, repo, name, plaintext });
+
+export const ghDeleteRepoSecret = (owner: string, repo: string, name: string): Promise<void> =>
+  invoke("gh_delete_repo_secret", { owner, repo, name });
+
+export const ghCreateEnvSecret = (owner: string, repo: string, envName: string, name: string, plaintext: string): Promise<void> =>
+  invoke("gh_create_env_secret", { owner, repo, envName, name, plaintext });
+
+export const ghDeleteEnvSecret = (owner: string, repo: string, envName: string, name: string): Promise<void> =>
+  invoke("gh_delete_env_secret", { owner, repo, envName, name });
+
+export const ghBulkSetSecret = (
+  targets: Array<{ owner: string; repo: string }>,
+  name: string,
+  plaintext: string,
+): Promise<BulkSecretResult[]> =>
+  invoke("gh_bulk_set_secret", { targets, name, plaintext });
+
+
+export const ghListDependabotAlerts = (owner: string, repo: string, state: string, severity?: string): Promise<DependabotAlert[]> =>
+  invoke("gh_list_dependabot_alerts", { owner, repo, state, severity: severity ?? null });
+
+export const ghGetDependabotEnabled = (owner: string, repo: string): Promise<boolean> =>
+  invoke("gh_get_dependabot_enabled", { owner, repo });
+
+export const ghEnableDependabot = (owner: string, repo: string): Promise<void> =>
+  invoke("gh_enable_dependabot", { owner, repo });
+
+export const ghDisableDependabot = (owner: string, repo: string): Promise<void> =>
+  invoke("gh_disable_dependabot", { owner, repo });
+
+export const ghEnableSecurityFixes = (owner: string, repo: string): Promise<void> =>
+  invoke("gh_enable_security_fixes", { owner, repo });
+
+export const ghDisableSecurityFixes = (owner: string, repo: string): Promise<void> =>
+  invoke("gh_disable_security_fixes", { owner, repo });
+
+export const ghPortfolioSecuritySummary = (
+  targets: Array<{ owner: string; repo: string }>,
+): Promise<RepoAlertSummary[]> =>
+  invoke("gh_portfolio_security_summary", { targets });
+
+
+export const ghScanRepoDeps = (owner: string, repo: string): Promise<RepoDependencies> =>
+  invoke("gh_scan_repo_deps", { owner, repo });
+
+export const ghScanMultipleReposDeps = (
+  targets: Array<{ owner: string; repo: string }>,
+): Promise<RepoDependencies[]> =>
+  invoke("gh_scan_multiple_repos_deps", { targets });

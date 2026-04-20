@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
-import { Search, Eye, EyeOff, ChevronDown, Bell, GitFork, Zap, LayoutDashboard, Lightbulb, GitBranch, Webhook, Users, Network, Calendar, ArrowRightLeft, ScanSearch, Settings as SettingsIcon, Info, FolderUp, FilePen } from "lucide-react";
+import { Search, Eye, EyeOff, ChevronDown, Bell, GitFork, Zap, LayoutDashboard, Lightbulb, GitBranch, Webhook, Users, Network, Calendar, ArrowRightLeft, ScanSearch, Settings as SettingsIcon, Info, FolderUp, FilePen, ShieldCheck, ShieldAlert, PackageSearch } from "lucide-react";
 import { useUIStore } from "../../stores/uiStore";
 import { useAccountStore, selectActiveAccount } from "../../stores/accountStore";
 import { useNotificationStore, selectUnreadCount } from "../../stores/notificationStore";
@@ -21,6 +21,9 @@ const pageTitles: Record<string, string> = {
   "/upload": "Upload to Repository",
   "/files": "File Manager",
   "/about": "About",
+  "/environments": "Environments & Secrets",
+  "/security": "Dependabot Alerts",
+  "/deps": "Dependency Scanner",
 };
 
 
@@ -40,6 +43,9 @@ const pageAccents: Record<string, [string, string]> = {
   "/upload":       ["#F59E0B", "#D97706"],
   "/files":        ["#38BDF8", "#0284C7"],
   "/about":        ["#A78BFA", "#7C3AED"],
+  "/environments": ["#A78BFA", "#7C3AED"],
+  "/security":     ["#F87171", "#DC2626"],
+  "/deps":         ["#FBBF24", "#D97706"],
 };
 
 const pageIcons: Record<string, React.ElementType> = {
@@ -58,6 +64,9 @@ const pageIcons: Record<string, React.ElementType> = {
   "/upload": FolderUp,
   "/files": FilePen,
   "/about": Info,
+  "/environments": ShieldCheck,
+  "/security": ShieldAlert,
+  "/deps": PackageSearch,
 };
 
 export const TopBar: React.FC = () => {

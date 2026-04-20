@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="main__.png" alt="ZRepoManager" width="100%" />
+<img src="main.png" alt="ZRepoManager" width="100%" />
 
 <h1>ZRepoManager</h1>
 
@@ -18,7 +18,8 @@ Bulk operations, smart queues, analytics, PR/Issue/Release management — all fr
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue?style=flat-square" />
   <img src="https://img.shields.io/badge/built%20with-Tauri%202%20%2B%20Rust-orange?style=flat-square" />
   <img src="https://img.shields.io/badge/license-GPL--3.0-green?style=flat-square" />
-  <img src="https://img.shields.io/badge/version-0.4.0-purple?style=flat-square" />
+  <img src="https://img.shields.io/badge/version-0.5.0-purple?style=flat-square" />
+  <img src="https://img.shields.io/badge/new%20in%200.5.0-Secrets%20%7C%20Dependabot%20%7C%20Dep%20Scanner-blueviolet?style=flat-square" />
 </p>
 
 </div>
@@ -29,6 +30,12 @@ Bulk operations, smart queues, analytics, PR/Issue/Release management — all fr
 
 ZRepoManager replaces 50 browser tabs and endless GitHub UI clicking. Connect your GitHub account, load all your repos, and do in seconds what normally takes minutes:
 
+- **Manage secrets & environments** — create, list, and delete repo/env secrets; bulk-copy one secret to dozens of repos at once
+- **Dependabot & security alerts** — portfolio-wide CVE visibility, severity table, enable/disable Dependabot in bulk
+- **Dependency scanner** — parse npm/pnpm/yarn/cargo/pip/go/maven manifests across your portfolio without cloning, detect version conflicts
+- **Keyboard-first navigation** — J/K/Space/Enter/D/A/R/F shortcuts on the Repos page, `?` overlay for quick reference
+- **Cleanup presets** — Spring Clean, Portfolio Mode, Minimal Mode for one-click bulk cleanup with preview
+- **Saved filter presets** — bookmark any filter combination and restore it instantly
 - **Select hundreds of repos** and archive, delete, rename, transfer, or change visibility in one shot
 - **Queue complex batches** with dry-run preview, grace periods, pause/resume/skip/cancel mid-run
 - **Manage Pull Requests** — create, review, merge, toggle labels/assignees/milestone, convert drafts to ready
@@ -44,6 +51,77 @@ ZRepoManager replaces 50 browser tabs and endless GitHub UI clicking. Connect yo
 ---
 
 ## Features
+
+<details>
+<summary><strong>Environments &amp; Secrets ✨ new in v0.5.0</strong></summary>
+
+- **Repo Secrets tab**: list all secrets for the selected repo with name and last-updated date; create new secrets via a masked value input; delete with one click
+- **Environments tab**: list all deployment environments; create and delete environments; select an environment to manage its scoped secrets independently
+- **Bulk Copy tab**: enter a secret name + value once, select any number of target repos via a compact grid, and push to all of them in one operation — per-repo success/failure displayed inline
+- Secret values encrypted client-side with a correct libsodium `crypto_box_seal` implementation before reaching the GitHub API
+
+</details>
+
+<details>
+<summary><strong>Dependabot / Security Alerts ✨ new in v0.5.0</strong></summary>
+
+- **Repo Alerts tab**: list open, dismissed, or fixed Dependabot alerts; expand any alert for CVE ID, GHSA ID, affected package, ecosystem, and a direct link; filter by state and severity
+- Critical vulnerability banner appears when any critical alerts are open
+- Enable or disable Dependabot alerts for the selected repo via a toggle button
+- **Portfolio Overview tab**: select multiple repos, click Scan, and get a cross-repo severity table (Critical / High / Medium / Low per repo)
+- **Bulk Controls tab**: enable or disable Dependabot (and automated security fixes) across any number of repos in a single operation
+- Archived repositories degrade gracefully instead of crashing
+
+</details>
+
+<details>
+<summary><strong>Dependency Scanner ✨ new in v0.5.0</strong></summary>
+
+- Fetches and parses `package.json` (npm/pnpm/yarn), `Cargo.toml`, `requirements.txt`, `go.mod`, and `pom.xml` via the GitHub Contents API — no cloning required
+- Lock-file detection: `pnpm-lock.yaml` and `yarn.lock` are probed so deps are labelled with the correct package manager
+- **Packages tab**: unified list of every dependency across all scanned repos; search by name; filter by ecosystem; each entry shows all versions in use and how many repos use each version; conflicts highlighted in amber
+- **Conflicts tab**: packages where two or more repos use different versions — each conflict group shows version → repos mapping
+- **By Repo tab**: expandable card per repo showing manifest files found and a full dependency chip grid
+- Summary stats in the page header: total packages, conflict count, repos with manifests found
+
+</details>
+
+<details>
+<summary><strong>Keyboard Shortcuts ✨ new in v0.5.0</strong></summary>
+
+| Key | Action |
+|-----|--------|
+| `J` / `K` | Move cursor down / up in repo list |
+| `Space` | Toggle selection for the row under cursor |
+| `Enter` | Open detail slide-over for the row under cursor |
+| `D` | Queue delete for selected repos (or cursor row) |
+| `A` | Queue archive for selected repos (or cursor row) |
+| `R` | Force-refresh the repo list |
+| `F` | Focus the filter search input |
+| `?` | Open the keyboard shortcuts overlay |
+| `⌘K` | Open the Command Palette |
+
+</details>
+
+<details>
+<summary><strong>Cleanup Presets ✨ new in v0.5.0</strong></summary>
+
+- **Spring Clean**: targets all repos flagged as Dead or Empty — shows a preview list before queuing
+- **Portfolio Mode**: targets repos that are not Active and not starred — keeps your best repos safe
+- **Minimal Mode**: ranks all repos by health score and targets the bottom 20
+- Each preset opens a slide-over panel with a preview of affected repos; clicking "Queue N repos" sends them to the queue with the appropriate action
+
+</details>
+
+<details>
+<summary><strong>Saved Filter Presets ✨ new in v0.5.0</strong></summary>
+
+- Type a name and click the bookmark icon to save the current filter state (search text, visibility, language, health category, topic, size) as a named preset
+- Click any saved preset to instantly restore all its filters
+- Delete presets with the × button
+- Persisted to localStorage — presets survive restarts
+
+</details>
 
 <details>
 <summary><strong>Pull Requests</strong></summary>

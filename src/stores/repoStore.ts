@@ -16,6 +16,7 @@ interface RepoState {
   setLoading: (loading: boolean) => void;
   setFetchProgress: (progress: { fetched: number; total: number } | null) => void;
   setFilter: <K extends keyof RepoFilters>(key: K, value: RepoFilters[K]) => void;
+  setFilters: (filters: RepoFilters) => void;
   setSort: (sort: RepoSort) => void;
   resetFilters: () => void;
   updateRepoTag: (repoId: string, tag: string, add: boolean) => void;
@@ -59,6 +60,8 @@ export const useRepoStore = create<RepoState>((set) => ({
 
   setFilter: (key, value) =>
     set((state) => ({ filters: { ...state.filters, [key]: value } })),
+
+  setFilters: (filters) => set({ filters }),
 
   setSort: (sort) => set({ sort }),
 

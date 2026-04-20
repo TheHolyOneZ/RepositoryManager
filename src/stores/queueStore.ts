@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { QueueItem, QueueStatus, ExecutionMode } from "../types/queue";
+import { queueClear } from "../lib/tauri/commands";
 
 interface QueueState {
   items: QueueItem[];
@@ -42,18 +43,17 @@ export const useQueueStore = create<QueueState>((set) => ({
       ),
     })),
 
-  clearCompleted: () =>
+  clearCompleted: () => {
+    queueClear(true).catch(() => {});
     set((state) => ({
-      items: state.items.filter((i) => i.status !== "completed"),
-    })),
+      items: state.items.filter((i) => i.status === "pending" || i.status === "processing"),
+    }));
+  },
 
-  reset: () =>
-    set({
-      items: [],
-      status: "idle",
-      graceSecondsRemaining: null,
-      currentItemId: null,
-    }),
+  reset: () => {
+    queueClear(false).catch(() => {});
+    set({ items: [], status: "idle", graceSecondsRemaining: null, currentItemId: null });
+  },
 }));
 
 

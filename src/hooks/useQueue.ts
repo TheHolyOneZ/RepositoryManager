@@ -4,7 +4,19 @@ import { useNotificationStore } from "../stores/notificationStore";
 import { useUIStore } from "../stores/uiStore";
 import { useRepoStore } from "../stores/repoStore";
 import { useSelectionStore } from "../stores/selectionStore";
+import { useSettingsStore } from "../stores/settingsStore";
 import * as events from "../lib/tauri/events";
+
+function sendDesktopNotification(title: string, body: string) {
+  if (!("Notification" in window)) return;
+  if (Notification.permission === "granted") {
+    new Notification(title, { body, icon: "/icon.png" });
+  } else if (Notification.permission === "default") {
+    Notification.requestPermission().then((p) => {
+      if (p === "granted") new Notification(title, { body, icon: "/icon.png" });
+    });
+  }
+}
 
 export function useQueueEventListener() {
   const setCurrentItem = useQueueStore((s) => s.setCurrentItem);
@@ -66,14 +78,22 @@ export function useQueueEventListener() {
       setStatus("done");
       setGraceSeconds(null);
       setCurrentItem(null);
+      const hasFailed = e.failed > 0;
+      const notifTitle = hasFailed ? "Queue completed with errors" : "Queue completed";
+      const notifMsg = `${e.completed} succeeded, ${e.failed} failed, ${e.skipped} skipped`;
       addNotification({
-        type: e.failed > 0 ? "queue_failed" : "queue_done",
-        title: e.failed > 0 ? "Queue completed with errors" : "Queue completed",
-        message: `${e.completed} succeeded, ${e.failed} failed, ${e.skipped} skipped`,
+        type: hasFailed ? "queue_failed" : "queue_done",
+        title: notifTitle,
+        message: notifMsg,
       });
 
-      triggerRepoRefresh();
+      const { desktopNotificationsEnabled, notifyOnQueueComplete, notifyOnQueueFailure } = useSettingsStore.getState();
+      if (desktopNotificationsEnabled) {
+        if (!hasFailed && notifyOnQueueComplete) sendDesktopNotification(notifTitle, notifMsg);
+        if (hasFailed && notifyOnQueueFailure) sendDesktopNotification(notifTitle, notifMsg);
+      }
 
+      triggerRepoRefresh();
       deselectAll();
     }).then((fn) => cleanups.push(fn));
 

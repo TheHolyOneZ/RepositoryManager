@@ -22,6 +22,9 @@ import { EditorWindow } from "./routes/editor/EditorWindow";
 import { PullRequestsPage } from "./routes/prs/PullRequestsPage";
 import { IssuesPage } from "./routes/issues/IssuesPage";
 import { ReleasesPage } from "./routes/releases/ReleasesPage";
+import { EnvironmentsPage } from "./routes/environments/EnvironmentsPage";
+import { SecurityPage } from "./routes/security/SecurityPage";
+import { DepsPage } from "./routes/deps/DepsPage";
 import { ErrorBoundary } from "./components/shared/ErrorBoundary";
 import { useAccountStore } from "./stores/accountStore";
 
@@ -80,6 +83,9 @@ function App() {
               <Route path="/upload" element={<UploadPage />} />
               <Route path="/files" element={<FilesPage />} />
               <Route path="/about" element={<AboutPage />} />
+              <Route path="/environments" element={<EnvironmentsPage />} />
+              <Route path="/security" element={<SecurityPage />} />
+              <Route path="/deps" element={<DepsPage />} />
               <Route path="*" element={<Navigate to="/repos" replace />} />
             </Route>
           ) : (

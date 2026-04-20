@@ -1,13 +1,16 @@
-import React, { useEffect, useCallback, useRef } from "react";
-import { RefreshCw, Search, ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
+import React, { useEffect, useCallback, useRef, useState } from "react";
+import { RefreshCw, Search, ArrowDown, ArrowUp, ArrowUpDown, Wand2 } from "lucide-react";
 import { RepoTable } from "../../components/repos/RepoTable";
 import { RepoFilters } from "../../components/repos/RepoFilters";
 import { SelectionToolbar } from "../../components/repos/SelectionToolbar";
 import { RepoDetailSlideOver } from "./RepoDetailSlideOver";
+import { CleanupPresetsPanel } from "../../components/repos/CleanupPresetsPanel";
 import { useRepoStore, selectFilteredRepos } from "../../stores/repoStore";
+import { useSelectionStore } from "../../stores/selectionStore";
 import { useAccountStore, selectActiveAccount } from "../../stores/accountStore";
 import { useShallow } from "zustand/react/shallow";
 import { useUIStore } from "../../stores/uiStore";
+import { useGlobalKeyboard } from "../../hooks/useKeyboard";
 import { reposFetchAll, reposFetchOrg } from "../../lib/tauri/commands";
 import { formatInvokeError } from "../../lib/formatError";
 import { useTauriEvent } from "../../hooks/useTauriEvent";
@@ -40,6 +43,13 @@ export const ReposPage: React.FC = () => {
   const activeSlideOver = useUIStore((s) => s.activeSlideOver);
   const slideOverData = useUIStore((s) => s.slideOverData);
   const closeSlideOver = useUIStore((s) => s.closeSlideOver);
+  const openModal = useUIStore((s) => s.openModal);
+  const selection = useSelectionStore((s) => s.selectedIds);
+  const toggleSelection = useSelectionStore((s) => s.toggle);
+  const openSlideOver = useUIStore((s) => s.openSlideOver);
+  const [cursorIdx, setCursorIdx] = useState(0);
+  const [presetsOpen, setPresetsOpen] = useState(false);
+  const fetchReposRef = useRef<(force?: boolean) => void>(() => {});
 
   const fetchRepos = useCallback(async (force = false) => {
     if (!activeAccount) return;
@@ -59,6 +69,26 @@ export const ReposPage: React.FC = () => {
       setLoading(false);
     }
   }, [activeAccount, orgContext, setRepos, setLoading, enrichHealthScores, addToast]);
+
+  useGlobalKeyboard({
+    j: useCallback(() => setCursorIdx((i) => Math.min(i + 1, filteredRepos.length - 1)), [filteredRepos.length]),
+    k: useCallback(() => setCursorIdx((i) => Math.max(i - 1, 0)), []),
+    " ": useCallback(() => { const repo = filteredRepos[cursorIdx]; if (repo) toggleSelection(repo.id); }, [filteredRepos, cursorIdx, toggleSelection]),
+    enter: useCallback(() => { const repo = filteredRepos[cursorIdx]; if (repo) openSlideOver("repo-detail", repo); }, [filteredRepos, cursorIdx, openSlideOver]),
+    d: useCallback(() => {
+      const targets = selection.size > 0 ? filteredRepos.filter((r) => selection.has(r.id)) : filteredRepos.slice(cursorIdx, cursorIdx + 1);
+      if (targets.length) openModal("confirm-queue", { action: "delete", repos: targets });
+    }, [selection, filteredRepos, cursorIdx, openModal]),
+    a: useCallback(() => {
+      const targets = selection.size > 0 ? filteredRepos.filter((r) => selection.has(r.id)) : filteredRepos.slice(cursorIdx, cursorIdx + 1);
+      if (targets.length) openModal("confirm-queue", { action: "archive", repos: targets });
+    }, [selection, filteredRepos, cursorIdx, openModal]),
+    r: useCallback(() => fetchRepos(true), [fetchRepos]),
+    f: useCallback(() => {
+      const el = document.querySelector<HTMLInputElement>("[data-filter-search]");
+      if (el) { el.focus(); el.select(); }
+    }, []),
+  });
 
   const repoRefreshToken = useUIStore((s) => s.repoRefreshToken);
   const prevTokenRef = useRef(repoRefreshToken);
@@ -116,6 +146,7 @@ export const ReposPage: React.FC = () => {
           <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
             <Search size={12} style={{ position: "absolute", left: 10, color: "#4A5580", pointerEvents: "none" }} />
             <input
+              data-filter-search
               placeholder="Search repos…"
               value={filters.search}
               onChange={(e) => setFilter("search", e.target.value)}
@@ -175,6 +206,20 @@ export const ReposPage: React.FC = () => {
           </span>
 
           <button
+            onClick={() => setPresetsOpen(true)}
+            style={{
+              display: "flex", alignItems: "center", gap: 5,
+              height: 30, padding: "0 10px", borderRadius: 7,
+              background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.20)",
+              color: "#A78BFA", fontSize: "0.75rem", fontWeight: 500, cursor: "pointer",
+              transition: "all 140ms",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(139,92,246,0.14)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(139,92,246,0.08)"; }}
+          >
+            <Wand2 size={12} /> Presets
+          </button>
+          <button
             onClick={() => fetchRepos(true)}
             disabled={isLoading}
             style={{
@@ -203,6 +248,7 @@ export const ReposPage: React.FC = () => {
         repo={activeSlideOver === "repo-detail" ? slideOverData as any : null}
         onClose={closeSlideOver}
       />
+      <CleanupPresetsPanel open={presetsOpen} onClose={() => setPresetsOpen(false)} />
     </div>
   );
 };

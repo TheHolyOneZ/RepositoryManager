@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useCallback } from "react";
 import { Outlet } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
@@ -6,6 +6,7 @@ import { ToastContainer } from "../glass/GlassToast";
 import { CommandPalette } from "../command-palette/CommandPalette";
 import { NotificationCenter } from "../notifications/NotificationCenter";
 import { ConfirmationModal } from "../confirmation/ConfirmationModal";
+import { ShortcutsOverlay } from "../shortcuts/ShortcutsOverlay";
 import { useQueueEventListener } from "../../hooks/useQueue";
 import { useUIStore } from "../../stores/uiStore";
 import { useGlobalKeyboard } from "../../hooks/useKeyboard";
@@ -15,8 +16,12 @@ export const AppShell: React.FC = () => {
   const openPalette = useUIStore((s) => s.openCommandPalette);
   const activeSlideOver = useUIStore((s) => s.activeSlideOver);
   const closeSlideOver = useUIStore((s) => s.closeSlideOver);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
-  useGlobalKeyboard({ "cmd+k": openPalette });
+  useGlobalKeyboard({
+    "cmd+k": openPalette,
+    "?": useCallback(() => setShortcutsOpen(true), []),
+  });
 
   return (
     <div style={{ display: "flex", height: "100%", overflow: "hidden", background: "#06080F" }}>
@@ -29,6 +34,7 @@ export const AppShell: React.FC = () => {
       </div>
       <CommandPalette />
       <NotificationCenter open={activeSlideOver === "notifications"} onClose={closeSlideOver} />
+      <ShortcutsOverlay open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
       <ConfirmationModal />
       <ToastContainer />
     </div>

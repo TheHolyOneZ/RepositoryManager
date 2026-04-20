@@ -6,6 +6,9 @@ pub mod prs;
 pub mod issues;
 pub mod releases;
 pub mod orgs;
+pub mod environments;
+pub mod dependabot;
+pub mod deps_scanner;
 
 use reqwest::{Client, header};
 use serde::Deserialize;
@@ -206,68 +209,58 @@ pub async fn fetch_all_repos(token: &str) -> Result<Vec<Repo>, AppError> {
 
 pub async fn delete_repo(token: &str, owner: &str, repo: &str) -> Result<(), AppError> {
     let client = build_client(token)?;
-    client
+    let resp = client
         .delete(&format!("https://api.github.com/repos/{}/{}", owner, repo))
         .send()
-        .await?
-        .error_for_status()
-        .map(|_| ())
-        .map_err(|e| AppError { code: "API_ERROR".into(), message: e.to_string() })
+        .await?;
+    check_ok(resp).await
 }
 
 pub async fn archive_repo(token: &str, owner: &str, repo: &str, archive: bool) -> Result<Repo, AppError> {
     let client = build_client(token)?;
     let body = serde_json::json!({ "archived": archive });
-    let raw: GitHubRepo = client
+    let resp = client
         .patch(&format!("https://api.github.com/repos/{}/{}", owner, repo))
         .json(&body)
         .send()
-        .await?
-        .error_for_status()?
-        .json()
         .await?;
+    let raw: GitHubRepo = check_json(resp).await?;
     Ok(Repo::from(raw))
 }
 
 pub async fn set_visibility(token: &str, owner: &str, repo: &str, private: bool) -> Result<Repo, AppError> {
     let client = build_client(token)?;
     let body = serde_json::json!({ "private": private });
-    let raw: GitHubRepo = client
+    let resp = client
         .patch(&format!("https://api.github.com/repos/{}/{}", owner, repo))
         .json(&body)
         .send()
-        .await?
-        .error_for_status()?
-        .json()
         .await?;
+    let raw: GitHubRepo = check_json(resp).await?;
     Ok(Repo::from(raw))
 }
 
 pub async fn rename_repo(token: &str, owner: &str, repo: &str, new_name: &str) -> Result<Repo, AppError> {
     let client = build_client(token)?;
     let body = serde_json::json!({ "name": new_name });
-    let raw: GitHubRepo = client
+    let resp = client
         .patch(&format!("https://api.github.com/repos/{}/{}", owner, repo))
         .json(&body)
         .send()
-        .await?
-        .error_for_status()?
-        .json()
         .await?;
+    let raw: GitHubRepo = check_json(resp).await?;
     Ok(Repo::from(raw))
 }
 
 pub async fn update_topics(token: &str, owner: &str, repo: &str, topics: Vec<String>) -> Result<(), AppError> {
     let client = build_client(token)?;
     let body = serde_json::json!({ "names": topics });
-    client
+    let resp = client
         .put(&format!("https://api.github.com/repos/{}/{}/topics", owner, repo))
         .json(&body)
         .send()
-        .await?
-        .error_for_status()
-        .map(|_| ())
-        .map_err(|e| AppError::from(e.to_string()))
+        .await?;
+    check_ok(resp).await
 }
 
 

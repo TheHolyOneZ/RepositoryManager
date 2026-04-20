@@ -221,6 +221,66 @@ export interface OrgSummary {
   description: string | null;
 }
 
+export interface Environment {
+  name: string;
+  protection_rules: Array<{ id: number; rule_type: string; wait_timer?: number }>;
+}
+
+export interface RepoSecret {
+  name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RepoPublicKey {
+  key_id: string;
+  key: string;
+}
+
+export interface BulkSecretResult {
+  repo: string;
+  success: boolean;
+  error?: string;
+}
+
+export interface DependabotAlert {
+  number: number;
+  state: string;
+  severity: string;
+  package_name: string;
+  package_ecosystem: string;
+  ghsa_id: string;
+  cve_id?: string;
+  summary: string;
+  html_url: string;
+  created_at: string;
+  updated_at: string;
+  auto_dismissed_at?: string;
+}
+
+export interface RepoAlertSummary {
+  repo_full_name: string;
+  critical: number;
+  high: number;
+  medium: number;
+  low: number;
+  total: number;
+  error?: string;
+}
+
+export interface Dependency {
+  name: string;
+  version: string;
+  ecosystem: string;
+  dev: boolean;
+}
+
+export interface RepoDependencies {
+  repo_full_name: string;
+  dependencies: Dependency[];
+  files_found: string[];
+}
+
 export interface WorkflowStep {
   name: string;
   status: string;

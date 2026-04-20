@@ -1,5 +1,149 @@
 # Changelog
 
+## v0.5.0 — 2026-04-20
+
+### New Features
+
+---
+
+#### Environments & Secrets
+
+Full lifecycle management for GitHub repository secrets and environments — including a bulk-copy operation that GitHub's own UI cannot do.
+
+- **Repo Secrets tab**: list all secrets for the selected repository with name and last-updated date; create new secrets via name + masked value input; delete secrets with one click
+- **Environments tab**: list all deployment environments (production, staging, etc.) per repo; create and delete environments; select an environment to manage its environment-scoped secrets separately
+- **Bulk Copy tab**: enter a secret name and value once, select any number of target repos via a compact multi-column grid, and push the secret to all of them in a single operation — per-repo success/failure results displayed inline
+- Secret values are encrypted client-side using a correct libsodium `crypto_box_seal` implementation (ephemeral X25519 keypair, Blake2b-24 nonce, XSalsa20Poly1305) before being sent to the GitHub API
+
+---
+
+#### Dependabot / Security Alerts
+
+Portfolio-wide vulnerability visibility without opening the browser.
+
+- **Repo Alerts tab**: list open, dismissed, or fixed Dependabot alerts for the selected repo; expand any alert to see CVE ID, GHSA ID, affected package, ecosystem, and a direct link to GitHub; filter by state (open / dismissed / fixed) and severity (critical / high / medium / low)
+- Critical vulnerability banner appears at the top of the list when any critical alerts are open
+- Enable or disable Dependabot alerts for the selected repo via a toggle button
+- **Portfolio Overview tab**: select multiple repos via a compact grid, click Scan at the top (always visible), and get a cross-repo severity table — each row shows counts of critical (C), high (H), medium (M), and low (L) alerts; archived repos are surfaced as "Archived" instead of crashing
+- Archived repositories no longer cause an error toast — they degrade gracefully to an empty state
+
+---
+
+#### Dependency Scanner
+
+Parse package manifests across your entire portfolio without cloning anything locally.
+
+- Fetches and parses `package.json` (npm), `Cargo.toml` (cargo), `requirements.txt` (pip), `go.mod` (go modules), and `pom.xml` (maven) via the GitHub Contents API for each selected repo
+- **Packages tab**: unified list of every dependency found across all scanned repos; search by name; filter by ecosystem (npm / cargo / pip / go / maven); each entry shows all versions in use and how many repos use each version; conflict rows highlighted in amber
+- **Conflicts tab**: packages where two or more repos use different versions — each conflict group shows version → list of repos using it; "no conflicts" success state when the portfolio is clean
+- **By Repo tab**: expandable card per repo showing which manifest files were found and the full dependency list in a compact chip grid
+- Summary stats in the page header: total packages, conflict count, repos with manifests found
+
+---
+
+#### Full Keyboard Shortcut System
+
+Keyboard-first navigation for the Repositories page.
+
+- `J` / `K` — move cursor up and down the repo list
+- `Space` — toggle selection for the row under the cursor
+- `Enter` — open the detail slide-over for the row under the cursor
+- `D` — queue delete for selected repos (or cursor row if nothing selected)
+- `A` — queue archive for selected repos (or cursor row if nothing selected)
+- `R` — force-refresh the repo list
+- `?` — open the keyboard shortcuts overlay listing all available shortcuts
+- `⌘K` — open the Command Palette (existing, now documented in the overlay)
+
+---
+
+#### Cleanup Mode Presets
+
+One-click bulk cleanup without manually picking repos.
+
+- **Spring Clean**: targets all repos flagged as Dead or Empty — shows a preview list before queuing
+- **Portfolio Mode**: targets repos that are not Active and not starred — keeps your best repos safe
+- **Minimal Mode**: ranks all repos by health score and targets the bottom 20
+- Each preset opens a slide-over panel with a preview of affected repos; clicking "Queue N repos" sends them to the queue with the appropriate action (archive or delete) and requires the standard confirmation modal
+
+---
+
+#### Saved Filter Presets
+
+Save and recall filter combinations from the sidebar.
+
+- Type a name and click the bookmark icon to save the current filter state (search text, visibility, language, health category, topic, size) as a named preset
+- Click any saved preset to instantly restore all its filters
+- Delete presets with the × button
+- Persisted to localStorage — presets survive restarts
+
+---
+
+#### Notification Center — Persistence
+
+- Notifications now survive app restarts — persisted to localStorage via Zustand `persist` middleware
+- Capped at 200 in memory and 100 persisted to keep storage lean
+
+---
+
+#### Notification Center — Persistence & Desktop Notifications
+
+- Notifications now survive app restarts — persisted to localStorage via Zustand `persist` middleware
+- Capped at 200 in memory and 100 persisted to keep storage lean
+- **Desktop OS notifications** wired to the queue `finished` event; dispatches `new Notification(...)` when `desktopNotificationsEnabled` is on, respecting the per-event `notifyOnQueueComplete` / `notifyOnQueueFailure` toggles from Settings
+
+---
+
+#### Keyboard Shortcuts
+
+- `J` / `K` — move cursor up and down the repo list
+- `Space` — toggle selection for the row under the cursor
+- `Enter` — open the detail slide-over for the row under the cursor
+- `D` — queue delete for selected repos (or cursor row if nothing selected)
+- `A` — queue archive for selected repos (or cursor row if nothing selected)
+- `R` — force-refresh the repo list
+- `F` — focus the filter search input
+- `?` — open the keyboard shortcuts overlay
+- `⌘K` — open the Command Palette (existing, now documented in the overlay)
+
+---
+
+#### Cleanup Mode Presets
+
+- **Spring Clean**: targets all repos flagged as Dead or Empty — shows a preview list before queuing
+- **Portfolio Mode**: targets repos that are not Active and not starred
+- **Minimal Mode**: ranks all repos by health score and targets the bottom 20
+- Each preset opens a slide-over panel with a preview; clicking "Queue N repos" sends them to the queue and requires the standard confirmation modal
+
+---
+
+#### Saved Filter Presets
+
+- Type a name and click the bookmark icon to save the current filter state (search text, visibility, language, health category, topic, size) as a named preset
+- Click any saved preset to instantly restore all its filters; delete presets with the × button
+- Persisted to localStorage — presets survive restarts
+
+---
+
+### Bug Fixes
+
+- **Secret name sanitization**: `AddSecretForm` and bulk copy now strip all non-alphanumeric/underscore characters with `replace(/[^A-Z0-9_]/g, '_')` — fixes GitHub's "Secret names can only contain alphanumeric characters" rejection
+- **Repo selector dropdown z-index**: All three pages (Environments, Security, Deps) now use a portal-based `RepoSelectorDropdown` that renders into `document.body` with `position: fixed` — fixes dropdown being clipped under page content with `overflow: hidden` parents
+- **Portfolio multi-repo picker z-index**: Same portal fix applied to the SecurityPage portfolio picker and the new `MultiRepoPicker` component
+- **pnpm / yarn ecosystem detection**: `deps_scanner.rs` now probes for `pnpm-lock.yaml` and `yarn.lock` alongside `package.json` and labels deps with the correct package manager instead of always showing "npm"
+- **Dropdown not opening (AnimatePresence + createPortal)**: Removed `AnimatePresence` wrapping `createPortal(...)` — framer-motion cannot track a React portal as a direct child, causing silent render suppression. Enter animation preserved via `motion.div` `initial`/`animate` props
+- **403 error message leaks full URL**: `delete_repo`, `archive_repo`, `set_visibility`, `rename_repo`, and `update_topics` now use `check_ok`/`check_json` instead of reqwest's `error_for_status()`, which was producing `"HTTP 403 for url (https://api.github.com/repos/...)"`. They now surface GitHub's actual error body (e.g. "Must have admin rights to Repository")
+- **Queue double-start**: `queue_start` now checks the current status and returns `QUEUE_BUSY` if a run is already active — prevents spawning a second concurrent worker
+- **Queue backend accumulation**: `queue_start` now purges non-pending items before starting a new run; `queue_clear` Tauri command added (with `keepPending` flag); `queueStore.reset()` and `clearCompleted()` now call it so frontend and backend stay in sync
+- **Dependabot toggle error message**: The opaque GitHub error "Failed to change dependabot alerts status." is now intercepted and replaced with a clear explanation pointing to the `security_events` write scope requirement or org-level control
+
+---
+
+### Other Changes
+
+- Version bumped to 0.5.0 across all config files (`package.json`, `Cargo.toml`, `tauri.conf.json`)
+
+---
+
 ## v0.4.0 — 2026-04-19
 
 ### New Features

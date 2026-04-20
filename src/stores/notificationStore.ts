@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 export interface AppNotification {
   id: string;
@@ -19,36 +20,41 @@ interface NotificationState {
 
 let notifIdCounter = 0;
 
-export const useNotificationStore = create<NotificationState>((set) => ({
-  notifications: [],
+export const useNotificationStore = create<NotificationState>()(
+  persist(
+    (set) => ({
+      notifications: [],
 
-  addNotification: (n) =>
-    set((state) => ({
-      notifications: [
-        {
-          ...n,
-          id: String(++notifIdCounter),
-          read: false,
-          created_at: new Date().toISOString(),
-        },
-        ...state.notifications,
-      ],
-    })),
+      addNotification: (n) =>
+        set((state) => ({
+          notifications: [
+            {
+              ...n,
+              id: String(++notifIdCounter),
+              read: false,
+              created_at: new Date().toISOString(),
+            },
+            ...state.notifications.slice(0, 199),
+          ],
+        })),
 
-  markRead: (id) =>
-    set((state) => ({
-      notifications: state.notifications.map((n) =>
-        n.id === id ? { ...n, read: true } : n
-      ),
-    })),
+      markRead: (id) =>
+        set((state) => ({
+          notifications: state.notifications.map((n) =>
+            n.id === id ? { ...n, read: true } : n
+          ),
+        })),
 
-  markAllRead: () =>
-    set((state) => ({
-      notifications: state.notifications.map((n) => ({ ...n, read: true })),
-    })),
+      markAllRead: () =>
+        set((state) => ({
+          notifications: state.notifications.map((n) => ({ ...n, read: true })),
+        })),
 
-  clearAll: () => set({ notifications: [] }),
-}));
+      clearAll: () => set({ notifications: [] }),
+    }),
+    { name: "zrm_notifications", partialize: (s) => ({ notifications: s.notifications.slice(0, 100) }) }
+  )
+);
 
 
 export function selectUnreadCount(state: NotificationState): number {

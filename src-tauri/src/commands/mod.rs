@@ -15,3 +15,6 @@ pub mod prs;
 pub mod issues;
 pub mod releases;
 pub mod orgs;
+pub mod environments;
+pub mod dependabot;
+pub mod deps_scanner;

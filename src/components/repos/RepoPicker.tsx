@@ -9,10 +9,11 @@ interface RepoPickerProps {
   onSelectAll?: () => void;
   onClearAll?: () => void;
   singleSelect?: boolean;
+  footer?: React.ReactNode;
 }
 
 export const RepoPicker: React.FC<RepoPickerProps> = ({
-  selectedIds, onToggle, onSelectAll, onClearAll, singleSelect = false,
+  selectedIds, onToggle, onSelectAll, onClearAll, singleSelect = false, footer,
 }) => {
   const repos = useRepoStore((s) => s.repos);
   const [search, setSearch] = useState("");
@@ -113,6 +114,7 @@ export const RepoPicker: React.FC<RepoPickerProps> = ({
       </div>
 
       <div style={{ padding: "6px 10px 8px", borderTop: "1px solid rgba(255,255,255,0.05)", flexShrink: 0 }}>
+        {footer && <div style={{ marginBottom: 7 }}>{footer}</div>}
         <p style={{ fontSize: "0.625rem", color: "#2D3650", fontVariantNumeric: "tabular-nums" }}>
           {singleSelect
             ? `${filtered.length} repos`

@@ -5,7 +5,7 @@ mod queue_engine;
 mod suggestions;
 mod commands;
 
-use commands::{auth::*, repos::*, queue::*, actions::*, analytics::*, logs::*, shell::*, upload::*, files::*, actions_gh::*, webhooks::*, collaborators::*, branches::*, prs::*, issues::*, releases::*, orgs::*};
+use commands::{auth::*, repos::*, queue::*, actions::*, analytics::*, logs::*, shell::*, upload::*, files::*, actions_gh::*, webhooks::*, collaborators::*, branches::*, prs::*, issues::*, releases::*, orgs::*, environments::*, dependabot::*, deps_scanner::*};
 use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -55,6 +55,7 @@ pub fn run() {
             queue_skip_current,
             queue_retry_failed,
             queue_dry_run,
+            queue_clear,
 
             action_delete_repo,
             action_archive_repo,
@@ -161,6 +162,29 @@ pub fn run() {
 
             action_star_repo,
             action_unstar_repo,
+
+            gh_list_environments,
+            gh_create_environment,
+            gh_delete_environment,
+            gh_list_repo_secrets,
+            gh_list_env_secrets,
+            gh_get_repo_public_key,
+            gh_create_repo_secret,
+            gh_delete_repo_secret,
+            gh_create_env_secret,
+            gh_delete_env_secret,
+            gh_bulk_set_secret,
+
+            gh_list_dependabot_alerts,
+            gh_get_dependabot_enabled,
+            gh_enable_dependabot,
+            gh_disable_dependabot,
+            gh_enable_security_fixes,
+            gh_disable_security_fixes,
+            gh_portfolio_security_summary,
+
+            gh_scan_repo_deps,
+            gh_scan_multiple_repos_deps,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
