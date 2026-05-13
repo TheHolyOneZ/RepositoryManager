@@ -2,8 +2,11 @@ import React, { useState } from "react";
 import { Play, Pause, X, SkipForward, Zap, Clock, Info } from "lucide-react";
 import { useQueueStore, selectPending } from "../../stores/queueStore";
 import { queueStart, queuePause, queueResume, queueCancel, queueSkipCurrent } from "../../lib/tauri/commands";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 
 export const QueueControls: React.FC = () => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const status = useQueueStore((s) => s.status);
   const mode = useQueueStore((s) => s.mode);
   const graceSeconds = useQueueStore((s) => s.graceSecondsRemaining);
@@ -47,10 +50,10 @@ export const QueueControls: React.FC = () => {
       {showInfo && (
         <div style={{
           padding: "10px 12px", borderRadius: 8,
-          background: "rgba(139,92,246,0.07)", border: "1px solid rgba(139,92,246,0.18)",
+          background: hexToRgba(accent, 0.07), border: `1px solid ${hexToRgba(accent, 0.18)}`,
           fontSize: "0.6875rem", color: "#8991A4", lineHeight: 1.6,
         }}>
-          <strong style={{ color: "#A78BFA", display: "block", marginBottom: 4 }}>Fast mode</strong>
+          <strong style={{ color: accent, display: "block", marginBottom: 4 }}>Fast mode</strong>
           Processes operations at the maximum rate allowed by GitHub's API rate limits.
           Custom scheduling modes (Scheduled, Controlled) are coming in a future release.
         </div>
@@ -69,11 +72,11 @@ export const QueueControls: React.FC = () => {
               flex: 1, height: 38, borderRadius: 9, cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
               background: btnHover === "start"
-                ? "linear-gradient(135deg, #9D71FF 0%, #8B5CF6 100%)"
-                : "linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)",
+                ? `linear-gradient(135deg, ${accent} 0%, ${accent} 100%)`
+                : `linear-gradient(135deg, ${accent} 0%, ${accent} 100%)`,
               border: "none", color: "#fff",
               fontSize: "0.875rem", fontWeight: 700,
-              boxShadow: "0 4px 14px rgba(139,92,246,0.35)",
+              boxShadow: `0 4px 14px ${hexToRgba(accent, 0.35)}`,
               transition: "all 130ms",
             }}
           >
@@ -133,11 +136,11 @@ export const QueueControls: React.FC = () => {
               flex: 1, height: 38, borderRadius: 9, cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
               background: btnHover === "resume"
-                ? "linear-gradient(135deg, #9D71FF 0%, #8B5CF6 100%)"
-                : "linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)",
+                ? `linear-gradient(135deg, ${accent} 0%, ${accent} 100%)`
+                : `linear-gradient(135deg, ${accent} 0%, ${accent} 100%)`,
               border: "none", color: "#fff",
               fontSize: "0.875rem", fontWeight: 700,
-              boxShadow: "0 4px 14px rgba(139,92,246,0.35)",
+              boxShadow: `0 4px 14px ${hexToRgba(accent, 0.35)}`,
               transition: "all 130ms",
             }}
           >

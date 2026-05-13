@@ -8,6 +8,8 @@ import {
   repoGetTree, repoGetFileContent, repoUpdateFileContent, openUrlExternal,
 } from "../../lib/tauri/commands";
 import type { RepoFile } from "../../lib/tauri/commands";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 import {
   File, FileText, Folder, FolderOpen, ChevronRight, ChevronDown,
   Save, RefreshCw, GitBranch, ExternalLink, CheckCircle, XCircle,
@@ -37,11 +39,11 @@ function getLanguage(filename: string): string {
   return map[ext] ?? "plaintext";
 }
 
-function fileIcon(name: string) {
+function fileIcon(name: string, accent: string) {
   const ext = name.split(".").pop()?.toLowerCase() ?? "";
   const code = ["ts","tsx","js","jsx","rs","py","go","java","cpp","c","cs","rb","swift","kt","json","toml","yaml","yml","md","html","css","scss","sh","sql","xml","vue","svelte"];
   return code.includes(ext)
-    ? <FileText size={13} style={{ color: "#8B5CF6", flexShrink: 0 }} />
+    ? <FileText size={13} style={{ color: accent, flexShrink: 0 }} />
     : <File size={13} style={{ color: "#4A5580", flexShrink: 0 }} />;
 }
 
@@ -87,9 +89,10 @@ interface TreeNodeProps {
   depth: number;
   selectedPath: string | null;
   onFileClick: (file: RepoFile) => void;
+  accent: string;
 }
 
-const TreeNodeComp: React.FC<TreeNodeProps> = ({ node, depth, selectedPath, onFileClick }) => {
+const TreeNodeComp: React.FC<TreeNodeProps> = ({ node, depth, selectedPath, onFileClick, accent }) => {
   const [expanded, setExpanded] = useState(depth < 1);
 
   if (node.isDir) {
@@ -113,7 +116,7 @@ const TreeNodeComp: React.FC<TreeNodeProps> = ({ node, depth, selectedPath, onFi
           </span>
         </div>
         {expanded && node.children.map(child => (
-          <TreeNodeComp key={child.path} node={child} depth={depth + 1} selectedPath={selectedPath} onFileClick={onFileClick} />
+          <TreeNodeComp key={child.path} node={child} depth={depth + 1} selectedPath={selectedPath} onFileClick={onFileClick} accent={accent} />
         ))}
       </div>
     );
@@ -128,13 +131,13 @@ const TreeNodeComp: React.FC<TreeNodeProps> = ({ node, depth, selectedPath, onFi
         display: "flex", alignItems: "center", gap: 5,
         paddingLeft: 10 + depth * 14, paddingRight: 8,
         height: 26, cursor: "pointer", borderRadius: 4, transition: "background 80ms",
-        background: isSelected ? "rgba(139,92,246,0.18)" : "transparent",
+        background: isSelected ? hexToRgba(accent, 0.18) : "transparent",
       }}
       onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.04)"; }}
       onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLDivElement).style.background = "transparent"; }}
     >
-      {fileIcon(node.name)}
-      <span style={{ fontSize: "0.78125rem", color: isSelected ? "#C4B5FD" : "#8A91A8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+      {fileIcon(node.name, accent)}
+      <span style={{ fontSize: "0.78125rem", color: isSelected ? accent : "#8A91A8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
         {node.name}
       </span>
     </div>
@@ -142,6 +145,7 @@ const TreeNodeComp: React.FC<TreeNodeProps> = ({ node, depth, selectedPath, onFi
 };
 
 export const EditorWindow: React.FC = () => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const sessionReady = useSessionSync();
   const hasAccount = useAccountStore(s => s.accounts.length > 0);
 
@@ -275,7 +279,7 @@ export const EditorWindow: React.FC = () => {
   if (!sessionReady) {
     return (
       <div style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#06080F" }}>
-        <div style={{ width: 28, height: 28, borderRadius: "50%", border: "2px solid rgba(139,92,246,0.20)", borderTopColor: "#8B5CF6", animation: "spin 0.8s linear infinite" }} />
+        <div style={{ width: 28, height: 28, borderRadius: "50%", border: `2px solid ${hexToRgba(accent, 0.20)}`, borderTopColor: accent, animation: "spin 0.8s linear infinite" }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
@@ -295,7 +299,7 @@ export const EditorWindow: React.FC = () => {
 
 
       <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "0 16px", height: 42, borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0, background: "rgba(255,255,255,0.015)" }}>
-        <Code2 size={16} style={{ color: "#8B5CF6", flexShrink: 0 }} />
+        <Code2 size={16} style={{ color: accent, flexShrink: 0 }} />
         <span style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#C8CDD8" }}>{owner}/{repo}</span>
         <div style={{ display: "flex", alignItems: "center", gap: 4, marginLeft: 4, padding: "2px 8px", borderRadius: 5, background: "rgba(56,189,248,0.08)", border: "1px solid rgba(56,189,248,0.15)" }}>
           <GitBranch size={11} style={{ color: "#38BDF8" }} />
@@ -311,15 +315,15 @@ export const EditorWindow: React.FC = () => {
               onChange={e => setCommitMsg(e.target.value)}
               placeholder="Commit message…"
               style={{ width: 240, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 6, padding: "5px 10px", color: "#C8CDD8", fontSize: "0.75rem", outline: "none", fontFamily: "inherit" }}
-              onFocus={e => { (e.target as HTMLInputElement).style.borderColor = "rgba(139,92,246,0.40)"; }}
+              onFocus={e => { (e.target as HTMLInputElement).style.borderColor = hexToRgba(accent, 0.40); }}
               onBlur={e => { (e.target as HTMLInputElement).style.borderColor = "rgba(255,255,255,0.08)"; }}
             />
             <button
               onClick={saveFile}
               disabled={!isDirty || saving}
-              style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 6, cursor: isDirty && !saving ? "pointer" : "not-allowed", background: isDirty ? "rgba(139,92,246,0.15)" : "rgba(255,255,255,0.03)", border: `1px solid ${isDirty ? "rgba(139,92,246,0.35)" : "rgba(255,255,255,0.06)"}`, color: isDirty ? "#C4B5FD" : "#3A4060", fontSize: "0.75rem", fontWeight: 600, transition: "all 130ms" }}
-              onMouseEnter={e => { if (isDirty) { const b = e.currentTarget as HTMLButtonElement; b.style.background = "rgba(139,92,246,0.25)"; } }}
-              onMouseLeave={e => { if (isDirty) { const b = e.currentTarget as HTMLButtonElement; b.style.background = "rgba(139,92,246,0.15)"; } }}
+              style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 6, cursor: isDirty && !saving ? "pointer" : "not-allowed", background: isDirty ? hexToRgba(accent, 0.15) : "rgba(255,255,255,0.03)", border: `1px solid ${isDirty ? hexToRgba(accent, 0.35) : "rgba(255,255,255,0.06)"}`, color: isDirty ? accent : "#3A4060", fontSize: "0.75rem", fontWeight: 600, transition: "all 130ms" }}
+              onMouseEnter={e => { if (isDirty) { const b = e.currentTarget as HTMLButtonElement; b.style.background = hexToRgba(accent, 0.25); } }}
+              onMouseLeave={e => { if (isDirty) { const b = e.currentTarget as HTMLButtonElement; b.style.background = hexToRgba(accent, 0.15); } }}
             >
               {saving
                 ? <><RefreshCw size={12} style={{ animation: "spin 0.8s linear infinite" }} /> Saving…</>
@@ -400,10 +404,10 @@ export const EditorWindow: React.FC = () => {
             />
           </div>
 
-          <div style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden", padding: "4px 2px", scrollbarWidth: "thin" as const, scrollbarColor: "rgba(139,92,246,0.20) transparent" }}>
+          <div style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden", padding: "4px 2px", scrollbarWidth: "thin" as const, scrollbarColor: `${hexToRgba(accent, 0.20)} transparent` }}>
             {treeLoading && (
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: 24 }}>
-                <div style={{ width: 16, height: 16, borderRadius: "50%", border: "2px solid rgba(139,92,246,0.15)", borderTopColor: "#8B5CF6", animation: "spin 0.8s linear infinite" }} />
+                <div style={{ width: 16, height: 16, borderRadius: "50%", border: `2px solid ${hexToRgba(accent, 0.15)}`, borderTopColor: accent, animation: "spin 0.8s linear infinite" }} />
                 <span style={{ fontSize: "0.75rem", color: "#4A5580" }}>Loading…</span>
               </div>
             )}
@@ -419,17 +423,17 @@ export const EditorWindow: React.FC = () => {
                   <div
                     key={f.path}
                     onClick={() => openFile(f)}
-                    style={{ display: "flex", alignItems: "center", gap: 5, paddingLeft: 10, paddingRight: 8, height: 26, cursor: "pointer", borderRadius: 4, transition: "background 80ms", background: selectedPath === f.path ? "rgba(139,92,246,0.18)" : "transparent" }}
+                    style={{ display: "flex", alignItems: "center", gap: 5, paddingLeft: 10, paddingRight: 8, height: 26, cursor: "pointer", borderRadius: 4, transition: "background 80ms", background: selectedPath === f.path ? hexToRgba(accent, 0.18) : "transparent" }}
                     onMouseEnter={e => { if (selectedPath !== f.path) (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.04)"; }}
                     onMouseLeave={e => { if (selectedPath !== f.path) (e.currentTarget as HTMLDivElement).style.background = "transparent"; }}
                   >
-                    {fileIcon(f.path.split("/").pop() ?? f.path)}
-                    <span style={{ fontSize: "0.75rem", color: selectedPath === f.path ? "#C4B5FD" : "#8A91A8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.path}</span>
+                    {fileIcon(f.path.split("/").pop() ?? f.path, accent)}
+                    <span style={{ fontSize: "0.75rem", color: selectedPath === f.path ? accent : "#8A91A8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.path}</span>
                   </div>
                 ))
             ) : (
               treeData.map(node => (
-                <TreeNodeComp key={node.path} node={node} depth={0} selectedPath={selectedPath} onFileClick={openFile} />
+                <TreeNodeComp key={node.path} node={node} depth={0} selectedPath={selectedPath} onFileClick={openFile} accent={accent} />
               ))
             )}
           </div>
@@ -439,8 +443,8 @@ export const EditorWindow: React.FC = () => {
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
           {!selectedPath && (
             <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14 }}>
-              <div style={{ width: 52, height: 52, borderRadius: 14, background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Code2 size={24} style={{ color: "#8B5CF6" }} />
+              <div style={{ width: 52, height: 52, borderRadius: 14, background: hexToRgba(accent, 0.08), border: `1px solid ${hexToRgba(accent, 0.15)}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Code2 size={24} style={{ color: accent }} />
               </div>
               <p style={{ margin: 0, fontSize: "0.8125rem", color: "#4A5580", textAlign: "center" }}>
                 {files.length > 0 ? "Click a file to open it" : "Load a repo to get started"}
@@ -450,7 +454,7 @@ export const EditorWindow: React.FC = () => {
 
           {selectedPath && contentLoading && (
             <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
-              <div style={{ width: 20, height: 20, borderRadius: "50%", border: "2px solid rgba(139,92,246,0.15)", borderTopColor: "#8B5CF6", animation: "spin 0.8s linear infinite" }} />
+              <div style={{ width: 20, height: 20, borderRadius: "50%", border: `2px solid ${hexToRgba(accent, 0.15)}`, borderTopColor: accent, animation: "spin 0.8s linear infinite" }} />
               <span style={{ fontSize: "0.8125rem", color: "#4A5580" }}>Loading {filename}…</span>
             </div>
           )}
@@ -517,8 +521,8 @@ export const EditorWindow: React.FC = () => {
                       code: ({ children, className }) => {
                         const isBlock = className?.includes("language-");
                         return isBlock
-                          ? <code style={{ display: "block", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 6, padding: "12px 14px", fontSize: "0.8125rem", color: "#C4B5FD", fontFamily: "monospace", overflowX: "auto", marginBottom: 14 }}>{children}</code>
-                          : <code style={{ background: "rgba(139,92,246,0.15)", borderRadius: 4, padding: "1px 5px", fontSize: "0.8125rem", color: "#C4B5FD", fontFamily: "monospace" }}>{children}</code>;
+                          ? <code style={{ display: "block", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 6, padding: "12px 14px", fontSize: "0.8125rem", color: accent, fontFamily: "monospace", overflowX: "auto", marginBottom: 14 }}>{children}</code>
+                          : <code style={{ background: hexToRgba(accent, 0.15), borderRadius: 4, padding: "1px 5px", fontSize: "0.8125rem", color: accent, fontFamily: "monospace" }}>{children}</code>;
                       },
                       pre: ({ children }) => <pre style={{ margin: "0 0 14px", overflowX: "auto" }}>{children}</pre>,
                       blockquote: ({ children }) => <blockquote style={{ borderLeft: "3px solid rgba(56,189,248,0.40)", margin: "0 0 14px", paddingLeft: 14, color: "#64748B" }}>{children}</blockquote>,
@@ -542,13 +546,13 @@ export const EditorWindow: React.FC = () => {
       </div>
 
 
-      <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "0 14px", height: 24, borderTop: "1px solid rgba(255,255,255,0.05)", flexShrink: 0, background: "rgba(139,92,246,0.06)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "0 14px", height: 24, borderTop: "1px solid rgba(255,255,255,0.05)", flexShrink: 0, background: hexToRgba(accent, 0.06) }}>
         {selectedPath && (
           <>
             <span style={{ fontSize: "0.6875rem", color: "#4A5580" }}>{selectedPath}</span>
             <span style={{ fontSize: "0.6875rem", color: "#3A4060" }}>|</span>
             <span style={{ fontSize: "0.6875rem", color: "#4A5580" }}>{language}</span>
-            {isDirty && <span style={{ fontSize: "0.6875rem", color: "#C4B5FD", fontWeight: 600 }}>● unsaved</span>}
+            {isDirty && <span style={{ fontSize: "0.6875rem", color: accent, fontWeight: 600 }}>● unsaved</span>}
           </>
         )}
         <div style={{ flex: 1 }} />

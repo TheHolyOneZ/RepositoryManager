@@ -3,6 +3,8 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, XCircle, AlertTriangle, Info, X } from "lucide-react";
 import { useUIStore, type Toast } from "../../stores/uiStore";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 
 const VARIANTS: Record<Toast["type"], {
   icon: React.ReactNode;
@@ -42,7 +44,9 @@ const VARIANTS: Record<Toast["type"], {
 };
 
 const ToastItem: React.FC<{ toast: Toast; onRemove: () => void }> = ({ toast, onRemove }) => {
-  const v = VARIANTS[toast.type];
+  const storeAccent = useSettingsStore((s) => s.accentColor);
+  const rawV = VARIANTS[toast.type];
+  const v = toast.type === "info" ? { ...rawV, accent: storeAccent, glow: hexToRgba(storeAccent, 0.18), iconBg: hexToRgba(storeAccent, 0.12), iconColor: storeAccent } : rawV;
   const duration = toast.duration ?? 4000;
   const progressRef = useRef<HTMLDivElement>(null);
 

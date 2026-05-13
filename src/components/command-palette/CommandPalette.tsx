@@ -12,6 +12,8 @@ import { useRepoStore } from "../../stores/repoStore";
 import { useSelectionStore } from "../../stores/selectionStore";
 import { useNavigate } from "react-router-dom";
 import Fuse from "fuse.js";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 
 
 type CommandCategory = "navigation" | "repos" | "actions" | "selection";
@@ -38,6 +40,7 @@ const CATEGORY_META: Record<CommandCategory, { label: string; order: number }> =
 
 
 export const CommandPalette: React.FC = () => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const isOpen           = useUIStore((s) => s.isCommandPaletteOpen);
   const close            = useUIStore((s) => s.closeCommandPalette);
   const openSlideOver    = useUIStore((s) => s.openSlideOver);
@@ -260,10 +263,10 @@ export const CommandPalette: React.FC = () => {
               width: "100%",
               maxWidth: 580,
               background: "linear-gradient(145deg, rgba(14,17,32,0.98) 0%, rgba(10,13,26,0.98) 100%)",
-              border: "1px solid rgba(139,92,246,0.18)",
+              border: `1px solid ${hexToRgba(accent, 0.18)}`,
               borderRadius: 14,
               overflow: "hidden",
-              boxShadow: "0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04), 0 0 60px rgba(139,92,246,0.08)",
+              boxShadow: `0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04), 0 0 60px ${hexToRgba(accent, 0.08)}`,
             }}
             initial={{ scale: 0.96, opacity: 0, y: -16 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -285,13 +288,13 @@ export const CommandPalette: React.FC = () => {
                   width: 32,
                   height: 32,
                   borderRadius: 8,
-                  background: "rgba(139,92,246,0.12)",
-                  border: "1px solid rgba(139,92,246,0.2)",
+                  background: hexToRgba(accent, 0.12),
+                  border: `1px solid ${hexToRgba(accent, 0.2)}`,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   flexShrink: 0,
-                  color: "#A78BFA",
+                  color: accent,
                 }}
               >
                 <Search size={15} />
@@ -461,6 +464,7 @@ interface CommandItemProps {
 
 const CommandItem = React.forwardRef<HTMLButtonElement, CommandItemProps>(
   ({ cmd, isSelected, onMouseEnter, onClick }, ref) => {
+    const accent = useSettingsStore((s) => s.accentColor);
     return (
       <button
         ref={ref}
@@ -474,7 +478,7 @@ const CommandItem = React.forwardRef<HTMLButtonElement, CommandItemProps>(
           width: "100%",
           padding: "7px 14px 7px 10px",
           border: "none",
-          background: isSelected ? "rgba(139,92,246,0.10)" : "transparent",
+          background: isSelected ? hexToRgba(accent, 0.10) : "transparent",
           cursor: "pointer",
           position: "relative",
           transition: "background 0.1s",
@@ -490,9 +494,9 @@ const CommandItem = React.forwardRef<HTMLButtonElement, CommandItemProps>(
             width: 3,
             height: isSelected ? 24 : 0,
             borderRadius: "0 3px 3px 0",
-            background: "linear-gradient(180deg, #8B5CF6, #A78BFA)",
+            background: `linear-gradient(180deg, ${accent}, ${accent})`,
             transition: "height 0.15s cubic-bezier(0.34,1.56,0.64,1)",
-            boxShadow: "2px 0 8px rgba(139,92,246,0.4)",
+            boxShadow: `2px 0 8px ${hexToRgba(accent, 0.4)}`,
           }}
         />
 
@@ -501,13 +505,13 @@ const CommandItem = React.forwardRef<HTMLButtonElement, CommandItemProps>(
             width: 32,
             height: 32,
             borderRadius: 8,
-            background: isSelected ? "rgba(139,92,246,0.16)" : (cmd.iconBg ?? "rgba(255,255,255,0.04)"),
-            border: `1px solid ${isSelected ? "rgba(139,92,246,0.3)" : "rgba(255,255,255,0.06)"}`,
+            background: isSelected ? hexToRgba(accent, 0.16) : (cmd.iconBg ?? "rgba(255,255,255,0.04)"),
+            border: `1px solid ${isSelected ? hexToRgba(accent, 0.3) : "rgba(255,255,255,0.06)"}`,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             flexShrink: 0,
-            color: isSelected ? "#A78BFA" : "#4A5166",
+            color: isSelected ? accent : "#4A5166",
             transition: "all 0.15s",
           }}
         >
@@ -568,7 +572,7 @@ const CommandItem = React.forwardRef<HTMLButtonElement, CommandItemProps>(
           style={{
             opacity: isSelected ? 1 : 0,
             transition: "opacity 0.1s",
-            color: "#8B5CF6",
+            color: accent,
             flexShrink: 0,
           }}
         >

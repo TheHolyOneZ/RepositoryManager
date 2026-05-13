@@ -6,6 +6,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRepoStore } from "../../stores/repoStore";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 import { useUIStore } from "../../stores/uiStore";
 import type { Repo } from "../../types/repo";
 import type { QueueItemInput } from "../../types/queue";
@@ -191,9 +193,10 @@ interface FindingCardProps {
   rule: ScanRule;
   repos: Repo[];
   onQueue: (items: QueueItemInput[]) => void;
+  accent: string;
 }
 
-const FindingCard: React.FC<FindingCardProps> = ({ rule, repos, onQueue }) => {
+const FindingCard: React.FC<FindingCardProps> = ({ rule, repos, onQueue, accent }) => {
   const [expanded, setExpanded] = useState(false);
   const sev = SEV[rule.severity];
 
@@ -275,9 +278,9 @@ const FindingCard: React.FC<FindingCardProps> = ({ rule, repos, onQueue }) => {
                   style={{
                     height: 30, padding: "0 14px", borderRadius: 7, cursor: "pointer",
                     display: "flex", alignItems: "center", gap: 6,
-                    background: rule.severity === "critical" ? "rgba(239,68,68,0.14)" : "rgba(139,92,246,0.14)",
-                    border: rule.severity === "critical" ? "1px solid rgba(239,68,68,0.30)" : "1px solid rgba(139,92,246,0.30)",
-                    color: rule.severity === "critical" ? "#F87171" : "#C4B5FD",
+                    background: rule.severity === "critical" ? "rgba(239,68,68,0.14)" : hexToRgba(accent, 0.14),
+                    border: rule.severity === "critical" ? "1px solid rgba(239,68,68,0.30)" : `1px solid ${hexToRgba(accent, 0.30)}`,
+                    color: rule.severity === "critical" ? "#F87171" : accent,
                     fontSize: "0.75rem", fontWeight: 600, transition: "all 130ms",
                   }}
                 >
@@ -304,6 +307,7 @@ const StatBox: React.FC<{ value: number; label: string; color: string }> = ({ va
 type ScanState = "idle" | "scanning" | "done";
 
 export const ScannerPage: React.FC = () => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const repos    = useRepoStore((s) => s.repos);
   const openModal = useUIStore((s) => s.openModal);
 
@@ -360,8 +364,8 @@ export const ScannerPage: React.FC = () => {
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
             <div style={{
               width: 32, height: 32, borderRadius: 9,
-              background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.25)",
-              display: "flex", alignItems: "center", justifyContent: "center", color: "#A78BFA",
+              background: hexToRgba(accent, 0.15), border: `1px solid ${hexToRgba(accent, 0.25)}`,
+              display: "flex", alignItems: "center", justifyContent: "center", color: accent,
             }}>
               <ScanSearch size={15} />
             </div>
@@ -402,13 +406,13 @@ export const ScannerPage: React.FC = () => {
         {scanState === "idle" && (
           <div style={{
             borderRadius: 16, padding: "48px 40px",
-            background: "rgba(139,92,246,0.04)", border: "1px solid rgba(139,92,246,0.14)",
+            background: hexToRgba(accent, 0.04), border: `1px solid ${hexToRgba(accent, 0.14)}`,
             display: "flex", flexDirection: "column", alignItems: "center", gap: 22, textAlign: "center",
           }}>
             <div style={{
               width: 64, height: 64, borderRadius: 18,
-              background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.25)",
-              display: "flex", alignItems: "center", justifyContent: "center", color: "#A78BFA",
+              background: hexToRgba(accent, 0.12), border: `1px solid ${hexToRgba(accent, 0.25)}`,
+              display: "flex", alignItems: "center", justifyContent: "center", color: accent,
             }}>
               <Shield size={28} strokeWidth={1.5} />
             </div>
@@ -428,13 +432,13 @@ export const ScannerPage: React.FC = () => {
                 height: 42, padding: "0 28px", borderRadius: 10,
                 cursor: repos.length === 0 ? "not-allowed" : "pointer",
                 background: repos.length === 0
-                  ? "rgba(139,92,246,0.08)"
-                  : "linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)",
+                  ? hexToRgba(accent, 0.08)
+                  : `linear-gradient(135deg, ${accent} 0%, ${accent} 100%)`,
                 border: "none",
                 color: repos.length === 0 ? "#4A5580" : "#fff",
                 fontSize: "0.875rem", fontWeight: 700, letterSpacing: "-0.01em",
                 display: "flex", alignItems: "center", gap: 8,
-                boxShadow: repos.length > 0 ? "0 4px 20px rgba(139,92,246,0.35)" : "none",
+                boxShadow: repos.length > 0 ? `0 4px 20px ${hexToRgba(accent, 0.35)}` : "none",
                 transition: "all 150ms",
               }}
             >
@@ -447,7 +451,7 @@ export const ScannerPage: React.FC = () => {
         {scanState === "scanning" && (
           <div style={{
             borderRadius: 16, padding: 48,
-            background: "rgba(139,92,246,0.04)", border: "1px solid rgba(139,92,246,0.14)",
+            background: hexToRgba(accent, 0.04), border: `1px solid ${hexToRgba(accent, 0.14)}`,
             display: "flex", flexDirection: "column", alignItems: "center", gap: 20, textAlign: "center",
           }}>
             <div style={{ position: "relative", width: 60, height: 60 }}>
@@ -456,15 +460,15 @@ export const ScannerPage: React.FC = () => {
                 transition={{ repeat: Infinity, duration: 1.1, ease: "linear" }}
                 style={{
                   width: 60, height: 60, borderRadius: "50%",
-                  border: "3px solid rgba(139,92,246,0.15)",
-                  borderTop: "3px solid #8B5CF6",
+                  border: `3px solid ${hexToRgba(accent, 0.15)}`,
+                  borderTop: `3px solid ${accent}`,
                   position: "absolute", inset: 0,
                 }}
               />
               <div style={{
                 position: "absolute", inset: 0,
                 display: "flex", alignItems: "center", justifyContent: "center",
-                color: "#A78BFA",
+                color: accent,
               }}>
                 <ScanSearch size={18} />
               </div>
@@ -479,8 +483,8 @@ export const ScannerPage: React.FC = () => {
                 transition={{ duration: 0.08 }}
                 style={{
                   height: "100%", borderRadius: 3,
-                  background: "linear-gradient(90deg, #8B5CF6, #A78BFA)",
-                  boxShadow: "0 0 10px rgba(139,92,246,0.5)",
+                  background: `linear-gradient(90deg, ${accent}, ${accent})`,
+                  boxShadow: `0 0 10px ${hexToRgba(accent, 0.5)}`,
                 }}
               />
             </div>
@@ -543,7 +547,7 @@ export const ScannerPage: React.FC = () => {
                       return o[a.rule.severity] - o[b.rule.severity];
                     })
                     .map(({ rule, affected }) => (
-                      <FindingCard key={rule.id} rule={rule} repos={affected} onQueue={queueFinding} />
+                      <FindingCard key={rule.id} rule={rule} repos={affected} onQueue={queueFinding} accent={accent} />
                     ))}
                 </div>
               </section>

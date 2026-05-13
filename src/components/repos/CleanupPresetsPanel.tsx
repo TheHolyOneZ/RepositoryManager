@@ -3,6 +3,8 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Wand2, Leaf, LayoutGrid, Minimize2, ArrowRight } from "lucide-react";
 import { useRepoStore } from "../../stores/repoStore";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 import { useUIStore } from "../../stores/uiStore";
 import { useSelectionStore } from "../../stores/selectionStore";
 import type { Repo } from "../../types/repo";
@@ -21,57 +23,62 @@ interface CleanupPreset {
 const now = Date.now();
 const MONTHS_12 = 12 * 30 * 24 * 60 * 60 * 1000;
 
-const PRESETS: CleanupPreset[] = [
-  {
-    id: "spring-clean",
-    name: "Spring Clean",
-    description: "Auto-selects all Dead + Empty repos for archival or deletion. Best first cleanup run.",
-    icon: <Leaf size={16} />,
-    color: "#10B981",
-    selectRepos: (repos) => repos.filter((r) => !r.archived && (r.health?.status === "dead" || r.health?.status === "empty")),
-    buildItems: (repos) => repos.map((r) => ({
-      repo_id: r.id, repo_name: r.name, repo_full_name: r.full_name,
-      action: r.health?.status === "empty" ? "delete" as const : "archive" as const,
-      payload: r.health?.status === "empty" ? {} : { archive: true },
-    })),
-  },
-  {
-    id: "portfolio-mode",
-    name: "Portfolio Mode",
-    description: "Deselects Active + starred repos. Keeps low-value ones for review and cleanup.",
-    icon: <LayoutGrid size={16} />,
-    color: "#8B5CF6",
-    selectRepos: (repos) => repos.filter((r) => !r.archived && !r.health?.score && r.stars === 0 && r.health?.status !== "active"),
-    buildItems: (repos) => repos.map((r) => ({
-      repo_id: r.id, repo_name: r.name, repo_full_name: r.full_name,
-      action: "archive" as const, payload: { archive: true },
-    })),
-  },
-  {
-    id: "minimal-mode",
-    name: "Minimal Mode",
-    description: "Targets the 20 lowest-value repos by health score and queues them for archival.",
-    icon: <Minimize2 size={16} />,
-    color: "#F59E0B",
-    selectRepos: (repos) => {
-      const candidates = repos.filter((r) => !r.archived && !r.private && r.stars === 0);
-      return [...candidates]
-        .sort((a, b) => (a.health?.score ?? 0) - (b.health?.score ?? 0))
-        .slice(0, 20);
+function getPresets(accent: string): CleanupPreset[] {
+  return [
+    {
+      id: "spring-clean",
+      name: "Spring Clean",
+      description: "Auto-selects all Dead + Empty repos for archival or deletion. Best first cleanup run.",
+      icon: <Leaf size={16} />,
+      color: "#10B981",
+      selectRepos: (repos) => repos.filter((r) => !r.archived && (r.health?.status === "dead" || r.health?.status === "empty")),
+      buildItems: (repos) => repos.map((r) => ({
+        repo_id: r.id, repo_name: r.name, repo_full_name: r.full_name,
+        action: r.health?.status === "empty" ? "delete" as const : "archive" as const,
+        payload: r.health?.status === "empty" ? {} : { archive: true },
+      })),
     },
-    buildItems: (repos) => repos.map((r) => ({
-      repo_id: r.id, repo_name: r.name, repo_full_name: r.full_name,
-      action: "archive" as const, payload: { archive: true },
-    })),
-  },
-];
+    {
+      id: "portfolio-mode",
+      name: "Portfolio Mode",
+      description: "Deselects Active + starred repos. Keeps low-value ones for review and cleanup.",
+      icon: <LayoutGrid size={16} />,
+      color: accent,
+      selectRepos: (repos) => repos.filter((r) => !r.archived && !r.health?.score && r.stars === 0 && r.health?.status !== "active"),
+      buildItems: (repos) => repos.map((r) => ({
+        repo_id: r.id, repo_name: r.name, repo_full_name: r.full_name,
+        action: "archive" as const, payload: { archive: true },
+      })),
+    },
+    {
+      id: "minimal-mode",
+      name: "Minimal Mode",
+      description: "Targets the 20 lowest-value repos by health score and queues them for archival.",
+      icon: <Minimize2 size={16} />,
+      color: "#F59E0B",
+      selectRepos: (repos) => {
+        const candidates = repos.filter((r) => !r.archived && !r.private && r.stars === 0);
+        return [...candidates]
+          .sort((a, b) => (a.health?.score ?? 0) - (b.health?.score ?? 0))
+          .slice(0, 20);
+      },
+      buildItems: (repos) => repos.map((r) => ({
+        repo_id: r.id, repo_name: r.name, repo_full_name: r.full_name,
+        action: "archive" as const, payload: { archive: true },
+      })),
+    },
+  ];
+}
 
 interface CleanupPresetsPanelProps {
   open: boolean;
   onClose: () => void;
 }
 
-export const CleanupPresetsPanel: React.FC<CleanupPresetsPanelProps> = ({ open, onClose }) => {
+export const CleanupPresetsPanel: React.FC<CleanupPresetsPanelProps> = ({
+  open, onClose }) => {
+  const accent = useSettingsStore((s) => s.accentColor);
+  const PRESETS = getPresets(accent);
   const repos = useRepoStore((s) => s.repos);
   const openModal = useUIStore((s) => s.openModal);
   const [preview, setPreview] = useState<{ preset: CleanupPreset; repos: Repo[] } | null>(null);
@@ -112,7 +119,7 @@ export const CleanupPresetsPanel: React.FC<CleanupPresetsPanelProps> = ({ open, 
           >
             <div style={{ width: 440, flexShrink: 0, display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-                <div style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.25)", display: "flex", alignItems: "center", justifyContent: "center", color: "#A78BFA" }}>
+                <div style={{ width: 30, height: 30, borderRadius: 8, background: hexToRgba(accent, 0.15), border: `1px solid ${hexToRgba(accent, 0.25)}`, display: "flex", alignItems: "center", justifyContent: "center", color: accent }}>
                   <Wand2 size={13} />
                 </div>
                 <p style={{ fontSize: "0.9375rem", fontWeight: 700, color: "#D4D8E8", letterSpacing: "-0.02em", flex: 1 }}>Cleanup Presets</p>

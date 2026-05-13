@@ -18,8 +18,8 @@ Bulk operations, smart queues, analytics, PR/Issue/Release management — all fr
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue?style=flat-square" />
   <img src="https://img.shields.io/badge/built%20with-Tauri%202%20%2B%20Rust-orange?style=flat-square" />
   <img src="https://img.shields.io/badge/license-GPL--3.0-green?style=flat-square" />
-  <img src="https://img.shields.io/badge/version-0.5.0-purple?style=flat-square" />
-  <img src="https://img.shields.io/badge/new%20in%200.5.0-Secrets%20%7C%20Dependabot%20%7C%20Dep%20Scanner-blueviolet?style=flat-square" />
+  <img src="https://img.shields.io/badge/version-0.6.0-purple?style=flat-square" />
+  <img src="https://img.shields.io/badge/new%20in%200.6.0-Multi--account%20sync%20%7C%20Context%20switching-blueviolet?style=flat-square" />
 </p>
 
 </div>
@@ -51,6 +51,16 @@ ZRepoManager replaces 50 browser tabs and endless GitHub UI clicking. Connect yo
 ---
 
 ## Features
+
+<details>
+<summary><strong>Multi-Account &amp; Context Switching ✨ new in v0.6.0</strong></summary>
+
+- Switch between multiple GitHub accounts from the sidebar or top-right account menu — full backend token swap on every switch
+- Org/user context switcher in the sidebar now lists all connected accounts alongside organizations
+- Every tab (Repos, PRs, Issues, Actions, Releases, …) reloads its data when you switch — no stale content from the previous account
+- Filters, selections, and open panels clear automatically on context change
+
+</details>
 
 <details>
 <summary><strong>Environments &amp; Secrets ✨ new in v0.5.0</strong></summary>
@@ -247,7 +257,7 @@ ZRepoManager replaces 50 browser tabs and endless GitHub UI clicking. Connect yo
 <summary><strong>Settings</strong></summary>
 
 - **General Behavior**: default grace window (slider), default execution mode, stale branch threshold, repo cache TTL
-- **Appearance**: accent color picker with 6 presets + custom hex, applied globally to `--accent` CSS variable
+- **Appearance**: accent color picker with 6 presets + custom hex — applied globally via `--accent` CSS variable, affects buttons, active nav items, selections, input focus rings, checkboxes, and more; persists across restarts
 - **Notifications**: desktop notification toggle (graceful fallback on Linux Tauri WebView), notify-on-queue-complete/failure
 - **Saved Filter Presets**: save current repo filter state as a named preset; recall or delete via dropdown
 

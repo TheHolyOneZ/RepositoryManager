@@ -1,6 +1,8 @@
 import React, { useState, useRef } from "react";
 import { X, SlidersHorizontal, RotateCcw, Plus, Tag, Bookmark, BookmarkCheck } from "lucide-react";
 import { useRepoStore, selectAvailableLanguages } from "../../stores/repoStore";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 import { useFilterPresetsStore } from "../../stores/filterPresetsStore";
 import { useShallow } from "zustand/react/shallow";
 import type { HealthStatus, RepoVisibility } from "../../types/repo";
@@ -9,9 +11,10 @@ const HEALTH_OPTIONS: HealthStatus[] = ["active", "dormant", "dead", "empty", "a
 const HEALTH_LABELS: Record<HealthStatus, string> = {
   active: "Active", dormant: "Dormant", dead: "Dead", empty: "Empty", archived: "Archived",
 };
-const HEALTH_COLORS: Record<HealthStatus, string> = {
-  active: "#10B981", dormant: "#F59E0B", dead: "#EF4444", empty: "#6B7280", archived: "#8B5CF6",
-};
+function getHealthColor(status: HealthStatus, accent: string): string {
+  const map: Record<HealthStatus, string> = { active: "#10B981", dormant: "#F59E0B", dead: "#EF4444", empty: "#6B7280", archived: accent };
+  return map[status];
+}
 
 
 const BUILTIN_TAGS = ["keep", "delete", "review"];
@@ -20,6 +23,7 @@ const BUILTIN_TAG_COLORS: Record<string, string> = {
 };
 
 export const RepoFilters: React.FC = () => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const filters = useRepoStore((s) => s.filters);
   const setFilter = useRepoStore((s) => s.setFilter);
   const setFilters = useRepoStore((s) => s.setFilters);
@@ -94,7 +98,7 @@ export const RepoFilters: React.FC = () => {
             fontSize: "0.6875rem", color: "#4A5580", background: "none", border: "none",
             cursor: "pointer", transition: "color 140ms", fontWeight: 500,
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = "#A78BFA")}
+          onMouseEnter={(e) => (e.currentTarget.style.color = accent)}
           onMouseLeave={(e) => (e.currentTarget.style.color = "#4A5580")}>
             <RotateCcw size={9} /> Reset
           </button>
@@ -108,7 +112,7 @@ export const RepoFilters: React.FC = () => {
             <FilterBtn
               key={h}
               active={filters.health === h}
-              dot={HEALTH_COLORS[h]}
+              dot={getHealthColor(h, accent)}
               onClick={() => setFilter("health", filters.health === h ? null : h)}
             >
               {HEALTH_LABELS[h]}
@@ -124,9 +128,9 @@ export const RepoFilters: React.FC = () => {
                 <button key={v} onClick={() => setFilter("visibility", filters.visibility === v ? null : v)}
                   style={{
                     flex: 1, height: 28, borderRadius: 7, cursor: "pointer", transition: "all 130ms",
-                    background: active ? "rgba(139,92,246,0.14)" : "rgba(255,255,255,0.04)",
-                    border: active ? "1px solid rgba(139,92,246,0.30)" : "1px solid rgba(255,255,255,0.07)",
-                    color: active ? "#A78BFA" : "#6B7A9B", fontSize: "0.75rem", fontWeight: 500, textTransform: "capitalize",
+                    background: active ? hexToRgba(accent, 0.14) : "rgba(255,255,255,0.04)",
+                    border: active ? `1px solid ${hexToRgba(accent, 0.30)}` : "1px solid rgba(255,255,255,0.07)",
+                    color: active ? accent : "#6B7A9B", fontSize: "0.75rem", fontWeight: 500, textTransform: "capitalize",
                   }}>
                   {v}
                 </button>
@@ -159,7 +163,7 @@ export const RepoFilters: React.FC = () => {
               <div key={tag} style={{ display: "flex", alignItems: "center", gap: 2 }}>
                 <FilterBtn
                   active={active}
-                  dot="#A78BFA"
+                  dot={accent}
                   onClick={() => toggleTagFilter(tag)}
                   style={{ flex: 1 }}
                 >
@@ -197,7 +201,7 @@ export const RepoFilters: React.FC = () => {
                 placeholder="tag-name"
                 style={{
                   flex: 1, height: 26, borderRadius: 6, fontSize: "0.6875rem",
-                  background: "rgba(255,255,255,0.07)", border: "1px solid rgba(139,92,246,0.35)",
+                  background: "rgba(255,255,255,0.07)", border: `1px solid ${hexToRgba(accent, 0.35)}`,
                   color: "#D4D8E8", padding: "0 7px", outline: "none",
                 }}
               />
@@ -206,8 +210,8 @@ export const RepoFilters: React.FC = () => {
                 disabled={!newTagInput.trim()}
                 style={{
                   height: 26, width: 26, borderRadius: 6, flexShrink: 0,
-                  background: "rgba(139,92,246,0.20)", border: "1px solid rgba(139,92,246,0.35)",
-                  color: "#A78BFA", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                  background: hexToRgba(accent, 0.20), border: `1px solid ${hexToRgba(accent, 0.35)}`,
+                  color: accent, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
                   opacity: newTagInput.trim() ? 1 : 0.4,
                 }}
               >
@@ -225,7 +229,7 @@ export const RepoFilters: React.FC = () => {
                 transition: "all 140ms", width: "100%",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "rgba(139,92,246,0.30)";
+                e.currentTarget.style.borderColor = hexToRgba(accent, 0.30);
                 e.currentTarget.style.color = "#7C6DB5";
               }}
               onMouseLeave={(e) => {
@@ -271,7 +275,7 @@ export const RepoFilters: React.FC = () => {
                   onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "#C8CDD8"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#6B7A9B"; }}
                 >
-                  <BookmarkCheck size={10} style={{ flexShrink: 0, color: "#A78BFA" }} />
+                  <BookmarkCheck size={10} style={{ flexShrink: 0, color: accent }} />
                   <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{preset.name}</span>
                 </button>
                 <button
@@ -298,14 +302,14 @@ export const RepoFilters: React.FC = () => {
                 placeholder="Preset name"
                 style={{
                   flex: 1, height: 26, borderRadius: 6, fontSize: "0.6875rem",
-                  background: "rgba(255,255,255,0.07)", border: "1px solid rgba(139,92,246,0.35)",
+                  background: "rgba(255,255,255,0.07)", border: `1px solid ${hexToRgba(accent, 0.35)}`,
                   color: "#D4D8E8", padding: "0 7px", outline: "none",
                 }}
               />
               <button
                 onClick={handleSavePreset}
                 disabled={!savePresetInput.trim()}
-                style={{ height: 26, width: 26, borderRadius: 6, flexShrink: 0, background: "rgba(139,92,246,0.20)", border: "1px solid rgba(139,92,246,0.35)", color: "#A78BFA", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: savePresetInput.trim() ? 1 : 0.4 }}
+                style={{ height: 26, width: 26, borderRadius: 6, flexShrink: 0, background: hexToRgba(accent, 0.20), border: `1px solid ${hexToRgba(accent, 0.35)}`, color: accent, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: savePresetInput.trim() ? 1 : 0.4 }}
               >
                 <Plus size={11} />
               </button>
@@ -319,7 +323,7 @@ export const RepoFilters: React.FC = () => {
                 background: "none", border: "1px dashed rgba(255,255,255,0.08)",
                 color: "#3A4560", fontSize: "0.6875rem", transition: "all 140ms", width: "100%",
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(139,92,246,0.30)"; e.currentTarget.style.color = "#7C6DB5"; }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = hexToRgba(accent, 0.30); e.currentTarget.style.color = "#7C6DB5"; }}
               onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.color = "#3A4560"; }}
             >
               <Bookmark size={9} /> <Plus size={8} /> Save current filters
@@ -349,8 +353,8 @@ export const RepoFilters: React.FC = () => {
               >
                 <span style={{
                   width: 14, height: 14, borderRadius: 4, flexShrink: 0,
-                  background: active ? "#8B5CF6" : "transparent",
-                  border: active ? "1px solid #8B5CF6" : "1px solid rgba(255,255,255,0.18)",
+                  background: active ? accent : "transparent",
+                  border: active ? `1px solid ${accent}` : "1px solid rgba(255,255,255,0.18)",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   transition: "all 130ms",
                 }}>

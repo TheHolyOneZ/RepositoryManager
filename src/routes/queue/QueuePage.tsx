@@ -16,6 +16,8 @@ import {
 import { useShallow } from "zustand/react/shallow";
 import { queueCancel, queueSkipCurrent, queueRetryFailed, queueGetState, queuePause, queueResume } from "../../lib/tauri/commands";
 import type { QueueItem as QueueItemType } from "../../types/queue";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 
 interface LaneProps {
   title: string;
@@ -86,6 +88,7 @@ const Lane: React.FC<LaneProps> = ({ title, icon, items, color, onRetry, onSkip 
 );
 
 export const QueuePage: React.FC = () => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const status = useQueueStore((s) => s.status);
   const graceSeconds = useQueueStore((s) => s.graceSecondsRemaining);
   const pending = useQueueStore(useShallow(selectPending));
@@ -128,10 +131,10 @@ export const QueuePage: React.FC = () => {
           <div style={{
             width: 32, height: 32, borderRadius: 9,
             background: status === "running"
-              ? "rgba(139,92,246,0.20)"
-              : "rgba(139,92,246,0.15)",
-            border: `1px solid ${status === "running" ? "rgba(139,92,246,0.40)" : "rgba(139,92,246,0.25)"}`,
-            display: "flex", alignItems: "center", justifyContent: "center", color: "#A78BFA",
+              ? hexToRgba(accent, 0.20)
+              : hexToRgba(accent, 0.15),
+            border: `1px solid ${status === "running" ? hexToRgba(accent, 0.40) : hexToRgba(accent, 0.25)}`,
+            display: "flex", alignItems: "center", justifyContent: "center", color: accent,
           }}>
             <Zap size={15} strokeWidth={2} style={status === "running" ? { animation: "pulse 1.5s ease-in-out infinite" } : {}} />
           </div>
@@ -151,20 +154,20 @@ export const QueuePage: React.FC = () => {
               display: "flex", alignItems: "center", gap: 6,
               padding: "4px 10px", borderRadius: 8,
               background: status === "running"
-                ? "rgba(139,92,246,0.12)"
+                ? hexToRgba(accent, 0.12)
                 : status === "paused"
                 ? "rgba(245,158,11,0.12)"
                 : "rgba(239,68,68,0.10)",
-              border: `1px solid ${status === "running" ? "rgba(139,92,246,0.25)" : status === "paused" ? "rgba(245,158,11,0.25)" : "rgba(239,68,68,0.20)"}`,
+              border: `1px solid ${status === "running" ? hexToRgba(accent, 0.25) : status === "paused" ? "rgba(245,158,11,0.25)" : "rgba(239,68,68,0.20)"}`,
             }}>
               <span style={{
                 width: 6, height: 6, borderRadius: "50%",
-                background: status === "running" ? "#8B5CF6" : status === "paused" ? "#F59E0B" : "#EF4444",
+                background: status === "running" ? accent : status === "paused" ? "#F59E0B" : "#EF4444",
                 animation: status === "running" ? "pulse 1.5s ease-in-out infinite" : "none",
               }} />
               <span style={{
                 fontSize: "0.6875rem", fontWeight: 700,
-                color: status === "running" ? "#A78BFA" : status === "paused" ? "#F59E0B" : "#F87171",
+                color: status === "running" ? accent : status === "paused" ? "#F59E0B" : "#F87171",
               }}>
                 {status === "running" ? `Running · ${pending.length} left` : status === "paused" ? "Paused" : `Grace period · ${graceSeconds ?? 0}s`}
               </span>
@@ -188,8 +191,8 @@ export const QueuePage: React.FC = () => {
               <button onClick={queueResume} title="Resume" style={{
                 width: 30, height: 30, borderRadius: 7, cursor: "pointer", display: "flex",
                 alignItems: "center", justifyContent: "center",
-                background: "rgba(139,92,246,0.14)", border: "1px solid rgba(139,92,246,0.28)",
-                color: "#A78BFA", transition: "all 120ms",
+                background: hexToRgba(accent, 0.14), border: `1px solid ${hexToRgba(accent, 0.28)}`,
+                color: accent, transition: "all 120ms",
               }}>
                 <Play size={12} />
               </button>
@@ -240,8 +243,8 @@ export const QueuePage: React.FC = () => {
             <div style={{ textAlign: "center", maxWidth: 320 }}>
               <div style={{
                 width: 52, height: 52, borderRadius: 14, margin: "0 auto 14px",
-                background: "rgba(139,92,246,0.10)", border: "1px solid rgba(139,92,246,0.18)",
-                display: "flex", alignItems: "center", justifyContent: "center", color: "#A78BFA",
+                background: hexToRgba(accent, 0.10), border: `1px solid ${hexToRgba(accent, 0.18)}`,
+                display: "flex", alignItems: "center", justifyContent: "center", color: accent,
               }}>
                 <Zap size={22} strokeWidth={1.5} />
               </div>
@@ -270,7 +273,7 @@ export const QueuePage: React.FC = () => {
               title="Processing"
               icon={<Loader2 size={13} strokeWidth={2} style={status === "running" ? { animation: "spin 1s linear infinite" } : {}} />}
               items={processing ? [processing] : []}
-              color="#A78BFA"
+              color={accent}
             />
             <Lane
               title="Completed"

@@ -10,6 +10,8 @@ import { useSelectionStore } from "../../stores/selectionStore";
 import { queueAddItems, queueStart, queueDryRun } from "../../lib/tauri/commands";
 import { formatInvokeError } from "../../lib/formatError";
 import type { QueueItemInput, DryRunResult, ExecutionMode } from "../../types/queue";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 
 const ACTION_LABELS: Record<string, string> = {
   delete: "Delete", archive: "Archive", set_private: "Make Private",
@@ -27,6 +29,7 @@ const EXECUTION_MODES: { value: ExecutionMode; label: string; desc: string }[] =
 ];
 
 export const ConfirmationModal: React.FC = () => {
+  const storeAccent = useSettingsStore((s) => s.accentColor);
   const { activeModal, modalData, closeModal } = useUIStore();
   const addToast = useUIStore((s) => s.addToast);
   const isDryRun = useUIStore((s) => s.isDryRunMode);
@@ -109,7 +112,7 @@ export const ConfirmationModal: React.FC = () => {
 
   const actionLabel = ACTION_LABELS[action] ?? action;
   const actionIcon = ACTION_ICONS[action];
-  const accentColor = isDanger ? "#EF4444" : isDryRun ? "#F59E0B" : action === "archive" ? "#F59E0B" : "#8B5CF6";
+  const accentColor = isDanger ? "#EF4444" : isDryRun ? "#F59E0B" : action === "archive" ? "#F59E0B" : storeAccent;
 
   const modal = (
     <div
@@ -248,14 +251,14 @@ export const ConfirmationModal: React.FC = () => {
                       onClick={() => setMode(m.value)}
                       style={{
                         flex: 1, padding: "9px 12px", borderRadius: 9, cursor: "pointer",
-                        background: active ? "rgba(139,92,246,0.14)" : "rgba(255,255,255,0.03)",
-                        border: active ? "1px solid rgba(139,92,246,0.35)" : "1px solid rgba(255,255,255,0.07)",
+                        background: active ? hexToRgba(storeAccent, 0.14) : "rgba(255,255,255,0.03)",
+                        border: active ? `1px solid ${hexToRgba(storeAccent, 0.35)}` : "1px solid rgba(255,255,255,0.07)",
                         textAlign: "left", transition: "all 130ms",
                       }}
                     >
                       <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 2 }}>
-                        {m.value === "fast" ? <Zap size={11} style={{ color: active ? "#A78BFA" : "#4A5580" }} /> : <ListChecks size={11} style={{ color: active ? "#A78BFA" : "#4A5580" }} />}
-                        <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: active ? "#C4B5FD" : "#7A8AAE" }}>
+                        {m.value === "fast" ? <Zap size={11} style={{ color: active ? storeAccent : "#4A5580" }} /> : <ListChecks size={11} style={{ color: active ? storeAccent : "#4A5580" }} />}
+                        <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: active ? storeAccent : "#7A8AAE" }}>
                           {m.label}
                         </span>
                       </div>
@@ -278,18 +281,18 @@ export const ConfirmationModal: React.FC = () => {
                   style={{
                     display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 12px",
                     borderRadius: 9, cursor: "pointer", textAlign: "left", transition: "all 130ms",
-                    background: autoStart ? "rgba(139,92,246,0.10)" : "rgba(255,255,255,0.025)",
-                    border: autoStart ? "1px solid rgba(139,92,246,0.30)" : "1px solid rgba(255,255,255,0.07)",
+                    background: autoStart ? hexToRgba(storeAccent, 0.10) : "rgba(255,255,255,0.025)",
+                    border: autoStart ? `1px solid ${hexToRgba(storeAccent, 0.30)}` : "1px solid rgba(255,255,255,0.07)",
                   }}
                 >
                   <div style={{
                     width: 16, height: 16, borderRadius: "50%", flexShrink: 0, marginTop: 1,
-                    border: autoStart ? "5px solid #8B5CF6" : "2px solid rgba(255,255,255,0.20)",
-                    background: autoStart ? "#8B5CF6" : "transparent",
+                    border: autoStart ? `5px solid ${storeAccent}` : "2px solid rgba(255,255,255,0.20)",
+                    background: autoStart ? storeAccent : "transparent",
                     transition: "all 150ms",
                   }} />
                   <div>
-                    <p style={{ fontSize: "0.8125rem", fontWeight: 600, color: autoStart ? "#C4B5FD" : "#7A8AAE", marginBottom: 2 }}>
+                    <p style={{ fontSize: "0.8125rem", fontWeight: 600, color: autoStart ? storeAccent : "#7A8AAE", marginBottom: 2 }}>
                       Auto-start after grace period
                     </p>
                     <p style={{ fontSize: "0.6875rem", color: "#4A5580", margin: 0 }}>
@@ -302,18 +305,18 @@ export const ConfirmationModal: React.FC = () => {
                   style={{
                     display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 12px",
                     borderRadius: 9, cursor: "pointer", textAlign: "left", transition: "all 130ms",
-                    background: !autoStart ? "rgba(139,92,246,0.10)" : "rgba(255,255,255,0.025)",
-                    border: !autoStart ? "1px solid rgba(139,92,246,0.30)" : "1px solid rgba(255,255,255,0.07)",
+                    background: !autoStart ? hexToRgba(storeAccent, 0.10) : "rgba(255,255,255,0.025)",
+                    border: !autoStart ? `1px solid ${hexToRgba(storeAccent, 0.30)}` : "1px solid rgba(255,255,255,0.07)",
                   }}
                 >
                   <div style={{
                     width: 16, height: 16, borderRadius: "50%", flexShrink: 0, marginTop: 1,
-                    border: !autoStart ? "5px solid #8B5CF6" : "2px solid rgba(255,255,255,0.20)",
-                    background: !autoStart ? "#8B5CF6" : "transparent",
+                    border: !autoStart ? `5px solid ${storeAccent}` : "2px solid rgba(255,255,255,0.20)",
+                    background: !autoStart ? storeAccent : "transparent",
                     transition: "all 150ms",
                   }} />
                   <div>
-                    <p style={{ fontSize: "0.8125rem", fontWeight: 600, color: !autoStart ? "#C4B5FD" : "#7A8AAE", marginBottom: 2 }}>
+                    <p style={{ fontSize: "0.8125rem", fontWeight: 600, color: !autoStart ? storeAccent : "#7A8AAE", marginBottom: 2 }}>
                       Queue only — I'll start manually
                     </p>
                     <p style={{ fontSize: "0.6875rem", color: "#4A5580", margin: 0 }}>
@@ -340,8 +343,8 @@ export const ConfirmationModal: React.FC = () => {
                 onChange={(e) => setGraceSeconds(Number(e.target.value))}
                 style={{
                   width: "100%", height: 4, borderRadius: 2, cursor: "pointer",
-                  accentColor: "#8B5CF6",
-                  background: `linear-gradient(to right, #8B5CF6 ${(graceSeconds / 60) * 100}%, rgba(255,255,255,0.10) 0%)`,
+                  accentColor: storeAccent,
+                  background: `linear-gradient(to right, ${storeAccent} ${(graceSeconds / 60) * 100}%, rgba(255,255,255,0.10) 0%)`,
                   appearance: "none",
                 }}
               />
@@ -424,12 +427,12 @@ export const ConfirmationModal: React.FC = () => {
                   cursor: (!canConfirm || loading) ? "not-allowed" : "pointer",
                   background: isDanger
                     ? "linear-gradient(135deg, #EF4444 0%, #DC2626 100%)"
-                    : "linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)",
+                    : `linear-gradient(135deg, ${storeAccent} 0%, ${storeAccent} 100%)`,
                   border: "none", color: "#fff",
                   fontSize: "0.8125rem", fontWeight: 600,
                   opacity: (!canConfirm || loading) ? 0.5 : 1,
                   display: "flex", alignItems: "center", gap: 6,
-                  boxShadow: isDanger ? "0 4px 16px rgba(239,68,68,0.30)" : "0 4px 16px rgba(139,92,246,0.30)",
+                  boxShadow: isDanger ? "0 4px 16px rgba(239,68,68,0.30)" : `0 4px 16px ${hexToRgba(storeAccent, 0.30)}`,
                   transition: "opacity 150ms",
                 }}
               >

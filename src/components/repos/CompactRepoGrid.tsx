@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from "react";
 import { Search } from "lucide-react";
 import type { Repo } from "../../types/repo";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 
 interface CompactRepoGridProps {
   repos: Repo[];
@@ -13,6 +15,7 @@ interface CompactRepoGridProps {
 export const CompactRepoGrid: React.FC<CompactRepoGridProps> = ({
   repos, selectedIds, onToggle, onSelectAll, onClearAll,
 }) => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const [search, setSearch] = useState("");
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
@@ -37,12 +40,12 @@ export const CompactRepoGrid: React.FC<CompactRepoGridProps> = ({
               background: "rgba(255,255,255,0.05)", border: "1px solid transparent",
               color: "#C8CDD8", fontSize: "0.75rem", outline: "none",
             }}
-            onFocus={(e) => { e.currentTarget.style.border = "1px solid rgba(139,92,246,0.35)"; }}
+            onFocus={(e) => { e.currentTarget.style.border = `1px solid ${hexToRgba(accent, 0.35)}`; }}
             onBlur={(e) => { e.currentTarget.style.border = "1px solid transparent"; }}
           />
         </div>
         {onSelectAll && (
-          <button onClick={onSelectAll} style={{ height: 24, padding: "0 10px", borderRadius: 5, fontSize: "0.6875rem", fontWeight: 600, cursor: "pointer", background: "rgba(139,92,246,0.10)", border: "1px solid rgba(139,92,246,0.20)", color: "#A78BFA", whiteSpace: "nowrap" }}>
+          <button onClick={onSelectAll} style={{ height: 24, padding: "0 10px", borderRadius: 5, fontSize: "0.6875rem", fontWeight: 600, cursor: "pointer", background: hexToRgba(accent, 0.10), border: `1px solid ${hexToRgba(accent, 0.20)}`, color: accent, whiteSpace: "nowrap" }}>
             All
           </button>
         )}
@@ -72,8 +75,8 @@ export const CompactRepoGrid: React.FC<CompactRepoGridProps> = ({
               style={{
                 display: "flex", alignItems: "center", gap: 6,
                 padding: "5px 8px", borderRadius: 6,
-                background: active ? "rgba(139,92,246,0.13)" : "transparent",
-                border: active ? "1px solid rgba(139,92,246,0.22)" : "1px solid transparent",
+                background: active ? hexToRgba(accent, 0.13) : "transparent",
+                border: active ? `1px solid ${hexToRgba(accent, 0.22)}` : "1px solid transparent",
                 cursor: "pointer", textAlign: "left", minWidth: 0,
               }}
               onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
@@ -81,15 +84,15 @@ export const CompactRepoGrid: React.FC<CompactRepoGridProps> = ({
             >
               <span style={{
                 width: 11, height: 11, borderRadius: 3, flexShrink: 0,
-                border: active ? "1.5px solid #8B5CF6" : "1.5px solid rgba(255,255,255,0.15)",
-                background: active ? "#8B5CF6" : "transparent",
+                border: active ? `1.5px solid ${accent}` : "1.5px solid rgba(255,255,255,0.15)",
+                background: active ? accent : "transparent",
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}>
                 {active && <span style={{ width: 5, height: 5, background: "#fff", borderRadius: 1, display: "block" }} />}
               </span>
               <span style={{
                 fontSize: "0.6875rem", fontWeight: 500,
-                color: active ? "#C4B5FD" : "#6A7A9A",
+                color: active ? accent : "#6A7A9A",
                 overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1,
               }}>
                 {repo.name}

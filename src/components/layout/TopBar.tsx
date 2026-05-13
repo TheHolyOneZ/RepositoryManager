@@ -2,8 +2,11 @@ import React from "react";
 import { useLocation } from "react-router-dom";
 import { Search, Eye, EyeOff, ChevronDown, Bell, GitFork, Zap, LayoutDashboard, Lightbulb, GitBranch, Webhook, Users, Network, Calendar, ArrowRightLeft, ScanSearch, Settings as SettingsIcon, Info, FolderUp, FilePen, ShieldCheck, ShieldAlert, PackageSearch } from "lucide-react";
 import { useUIStore } from "../../stores/uiStore";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 import { useAccountStore, selectActiveAccount } from "../../stores/accountStore";
 import { useNotificationStore, selectUnreadCount } from "../../stores/notificationStore";
+import { useContextSwitch } from "../../hooks/useContextSwitch";
 
 const pageTitles: Record<string, string> = {
   "/repos": "Repositories",
@@ -70,9 +73,13 @@ const pageIcons: Record<string, React.ElementType> = {
 };
 
 export const TopBar: React.FC = () => {
+  const storeAccent = useSettingsStore((s) => s.accentColor);
   const { pathname } = useLocation();
   const title = pageTitles[pathname] ?? "ZRepoManager";
-  const [accentA, accentB] = pageAccents[pathname] ?? ["#A78BFA", "#7C3AED"];
+  const rawAccents = pageAccents[pathname] ?? [storeAccent, storeAccent];
+
+  const [accentA, accentB] = (rawAccents[0] === "#A78BFA" || rawAccents[0] === "#A78BFA")
+    ? [storeAccent, storeAccent] : rawAccents;
   const PageIcon = pageIcons[pathname];
   const isDryRun = useUIStore((s) => s.isDryRunMode);
   const setDryRun = useUIStore((s) => s.setDryRunMode);
@@ -80,7 +87,7 @@ export const TopBar: React.FC = () => {
   const openSlideOver = useUIStore((s) => s.openSlideOver);
   const accounts = useAccountStore((s) => s.accounts);
   const activeAccount = useAccountStore(selectActiveAccount);
-  const setActive = useAccountStore((s) => s.setActiveAccount);
+  const { switchAccount } = useContextSwitch();
   const unreadCount = useNotificationStore(selectUnreadCount);
   const [acctOpen, setAcctOpen] = React.useState(false);
   const [searchHovered, setSearchHovered] = React.useState(false);
@@ -126,24 +133,24 @@ export const TopBar: React.FC = () => {
           height: 32, flex: 1, maxWidth: 260,
           borderRadius: 8, padding: "0 12px",
           background: searchHovered
-            ? "rgba(139,92,246,0.08)"
+            ? hexToRgba(storeAccent, 0.08)
             : "rgba(255,255,255,0.042)",
           border: searchHovered
-            ? "1px solid rgba(139,92,246,0.30)"
+            ? `1px solid ${hexToRgba(storeAccent, 0.30)}`
             : "1px solid rgba(255,255,255,0.07)",
           color: searchHovered ? "#9580C8" : "#3D4A66",
           fontSize: "0.75rem", fontWeight: 500,
           cursor: "pointer",
           transition: "all 160ms ease",
-          boxShadow: searchHovered ? "0 0 16px rgba(139,92,246,0.12), inset 0 1px 0 rgba(255,255,255,0.04)" : "none",
+          boxShadow: searchHovered ? `0 0 16px ${hexToRgba(storeAccent, 0.12)}, inset 0 1px 0 rgba(255,255,255,0.04)` : "none",
         }}
       >
-        <Search size={13} style={{ flexShrink: 0, color: searchHovered ? "#8B5CF6" : "#3D4A66", transition: "color 160ms ease" }} />
+        <Search size={13} style={{ flexShrink: 0, color: searchHovered ? storeAccent : "#3D4A66", transition: "color 160ms ease" }} />
         <span style={{ letterSpacing: "0.01em" }}>Search anything…</span>
         <span style={{
           marginLeft: "auto", padding: "2px 7px", borderRadius: 5,
-          background: searchHovered ? "rgba(139,92,246,0.15)" : "rgba(255,255,255,0.05)",
-          border: searchHovered ? "1px solid rgba(139,92,246,0.25)" : "1px solid rgba(255,255,255,0.08)",
+          background: searchHovered ? hexToRgba(storeAccent, 0.15) : "rgba(255,255,255,0.05)",
+          border: searchHovered ? `1px solid ${hexToRgba(storeAccent, 0.25)}` : "1px solid rgba(255,255,255,0.08)",
           color: searchHovered ? "#9580C8" : "#2A3350",
           fontFamily: "monospace", fontSize: 9, fontWeight: 700,
           letterSpacing: "0.05em",
@@ -178,11 +185,11 @@ export const TopBar: React.FC = () => {
             width: 32, height: 32, borderRadius: 8, cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "center",
             background: "transparent", border: "1px solid rgba(255,255,255,0.08)",
-            color: unreadCount > 0 ? "#A78BFA" : "#4A5580",
+            color: unreadCount > 0 ? storeAccent : "#4A5580",
             transition: "all 130ms",
           }}
           onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.06)"; (e.currentTarget as HTMLButtonElement).style.color = "#C8CDD8"; }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; (e.currentTarget as HTMLButtonElement).style.color = unreadCount > 0 ? "#A78BFA" : "#4A5580"; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; (e.currentTarget as HTMLButtonElement).style.color = unreadCount > 0 ? storeAccent : "#4A5580"; }}
         >
           <Bell size={14} />
         </button>
@@ -190,7 +197,7 @@ export const TopBar: React.FC = () => {
           <span style={{
             position: "absolute", top: -3, right: -3,
             minWidth: 15, height: 15, borderRadius: 8, padding: "0 3px",
-            background: "#8B5CF6", color: "#fff",
+            background: storeAccent, color: "#fff",
             fontSize: 8, fontWeight: 800,
             display: "flex", alignItems: "center", justifyContent: "center",
             border: "1.5px solid #06080F",
@@ -229,12 +236,12 @@ export const TopBar: React.FC = () => {
               onMouseLeave={() => setAcctOpen(false)}
             >
               {accounts.map((a) => (
-                <button key={a.id} onClick={() => { setActive(a.id); setAcctOpen(false); }}
+                <button key={a.id} onClick={() => { void switchAccount(a.id); setAcctOpen(false); }}
                   style={{
                     width: "100%", display: "flex", alignItems: "center", gap: 10,
                     padding: "8px 10px", borderRadius: 8, cursor: "pointer",
                     background: "transparent", border: "none", transition: "background 120ms",
-                    color: a.id === activeAccount?.id ? "#A78BFA" : "#8991A4",
+                    color: a.id === activeAccount?.id ? storeAccent : "#8991A4",
                     fontSize: "0.8125rem", fontWeight: 500,
                   }}
                   onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.06)")}

@@ -1,12 +1,13 @@
 import React from "react";
 import { X } from "lucide-react";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 
 const tagColors: Record<string, { color: string; bg: string; border: string }> = {
   keep:   { color: "#10B981", bg: "rgba(16,185,129,0.10)",  border: "rgba(16,185,129,0.25)"  },
   delete: { color: "#EF4444", bg: "rgba(239,68,68,0.10)",   border: "rgba(239,68,68,0.25)"   },
   review: { color: "#F59E0B", bg: "rgba(245,158,11,0.10)",  border: "rgba(245,158,11,0.25)"  },
 };
-const defaultTag = { color: "#A78BFA", bg: "rgba(139,92,246,0.10)", border: "rgba(139,92,246,0.25)" };
 
 interface TagChipProps {
   tag: string;
@@ -14,6 +15,8 @@ interface TagChipProps {
 }
 
 export const TagChip: React.FC<TagChipProps> = ({ tag, onRemove }) => {
+  const accent = useSettingsStore((s) => s.accentColor);
+  const defaultTag = { color: accent, bg: hexToRgba(accent, 0.10), border: hexToRgba(accent, 0.25) };
   const s = tagColors[tag] ?? defaultTag;
   return (
     <span style={{

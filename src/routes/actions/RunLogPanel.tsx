@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { Loader2, Copy, Check, ChevronRight, CheckCircle2, XCircle, Clock, AlertTriangle } from "lucide-react";
 import { ghListRunJobs, ghGetJobLogs } from "../../lib/tauri/commands";
 import { formatInvokeError } from "../../lib/formatError";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 import type { WorkflowJob, WorkflowStep } from "../../types/governance";
 
 function stripAnsi(s: string): string {
@@ -14,20 +16,24 @@ function fmtTime(iso: string | null): string {
   catch { return ""; }
 }
 
-const STATUS_ICON: Record<string, React.ReactNode> = {
-  completed_success: <CheckCircle2 size={13} style={{ color: "#10B981" }} />,
-  completed_failure: <XCircle size={13} style={{ color: "#EF4444" }} />,
-  completed_skipped: <span style={{ color: "#6B7280", fontSize: 11 }}>—</span>,
-  in_progress: <Loader2 size={13} style={{ color: "#8B5CF6", animation: "spin 1s linear infinite" }} />,
-  queued: <Clock size={13} style={{ color: "#F59E0B" }} />,
-};
+function getStatusIcon(accent: string): Record<string, React.ReactNode> {
+  return {
+    completed_success: <CheckCircle2 size={13} style={{ color: "#10B981" }} />,
+    completed_failure: <XCircle size={13} style={{ color: "#EF4444" }} />,
+    completed_skipped: <span style={{ color: "#6B7280", fontSize: 11 }}>—</span>,
+    in_progress: <Loader2 size={13} style={{ color: accent, animation: "spin 1s linear infinite" }} />,
+    queued: <Clock size={13} style={{ color: "#F59E0B" }} />,
+  };
+}
 
-function jobIcon(job: WorkflowJob) {
+function jobIcon(job: WorkflowJob, accent: string) {
+  const STATUS_ICON = getStatusIcon(accent);
   const key = job.status === "completed" ? `completed_${job.conclusion ?? ""}` : job.status;
   return STATUS_ICON[key] ?? <AlertTriangle size={13} style={{ color: "#F59E0B" }} />;
 }
 
-function stepIcon(step: WorkflowStep) {
+function stepIcon(step: WorkflowStep, accent: string) {
+  const STATUS_ICON = getStatusIcon(accent);
   const key = step.status === "completed" ? `completed_${step.conclusion ?? ""}` : step.status;
   return STATUS_ICON[key] ?? null;
 }
@@ -39,6 +45,7 @@ interface Props {
 }
 
 export const RunLogPanel: React.FC<Props> = ({ owner, repo, runId }) => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const [jobs, setJobs] = useState<WorkflowJob[]>([]);
   const [loadingJobs, setLoadingJobs] = useState(true);
   const [jobsError, setJobsError] = useState<string | null>(null);
@@ -113,15 +120,15 @@ export const RunLogPanel: React.FC<Props> = ({ owner, repo, runId }) => {
               style={{
                 width: "100%", display: "flex", alignItems: "center", gap: 8,
                 padding: "7px 12px", cursor: "pointer", border: "none",
-                background: selectedJobId === job.id ? "rgba(139,92,246,0.14)" : "transparent",
-                color: selectedJobId === job.id ? "#C4B5FD" : "#9AA5BE",
+                background: selectedJobId === job.id ? hexToRgba(accent, 0.14) : "transparent",
+                color: selectedJobId === job.id ? accent : "#9AA5BE",
                 fontSize: "0.7813rem", fontWeight: 500, textAlign: "left",
                 transition: "background 120ms ease",
               }}
               onMouseEnter={(e) => { if (selectedJobId !== job.id) (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.05)"; }}
               onMouseLeave={(e) => { if (selectedJobId !== job.id) (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
             >
-              <span style={{ flexShrink: 0 }}>{jobIcon(job)}</span>
+              <span style={{ flexShrink: 0 }}>{jobIcon(job, accent)}</span>
               <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{job.name}</span>
             </button>
             {selectedJobId === job.id && job.steps.map((step) => (
@@ -129,7 +136,7 @@ export const RunLogPanel: React.FC<Props> = ({ owner, repo, runId }) => {
                 display: "flex", alignItems: "center", gap: 6,
                 padding: "4px 12px 4px 30px", color: "#5A6A8A", fontSize: "0.7188rem",
               }}>
-                <span style={{ flexShrink: 0 }}>{stepIcon(step)}</span>
+                <span style={{ flexShrink: 0 }}>{stepIcon(step, accent)}</span>
                 <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{step.name}</span>
               </div>
             ))}
@@ -191,7 +198,7 @@ export const RunLogPanel: React.FC<Props> = ({ owner, repo, runId }) => {
           {!loadingLogs && !logsError && (
             search.trim()
               ? (displayedLines as Array<{ line: string; match: boolean }>).map((item, i) => (
-                  <div key={i} style={{ background: item.match ? "rgba(139,92,246,0.15)" : "transparent" }}>
+                  <div key={i} style={{ background: item.match ? hexToRgba(accent, 0.15) : "transparent" }}>
                     {item.line || " "}
                   </div>
                 ))

@@ -7,6 +7,8 @@ import {
 import { RepoPicker } from "../../components/repos/RepoPicker";
 import { useRepoStore } from "../../stores/repoStore";
 import { useUIStore } from "../../stores/uiStore";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 import { fanout } from "../../lib/utils/fanout";
 import { formatInvokeError } from "../../lib/formatError";
 import {
@@ -61,6 +63,7 @@ const PATCH_TEXT_COLOR = (line: string): string => {
 };
 
 export const PullRequestsPage: React.FC = () => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const repos = useRepoStore((s) => s.repos);
   const addToast = useUIStore((s) => s.addToast);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -318,15 +321,15 @@ export const PullRequestsPage: React.FC = () => {
 
   const TAB_STYLE = (active: boolean): React.CSSProperties => ({
     padding: "6px 16px", borderRadius: 8, cursor: "pointer", border: "none",
-    background: active ? "rgba(139,92,246,0.18)" : "transparent",
-    color: active ? "#C4B5FD" : "#7A8AAE", fontSize: "0.8125rem", fontWeight: 500,
+    background: active ? hexToRgba(accent, 0.18) : "transparent",
+    color: active ? accent : "#7A8AAE", fontSize: "0.8125rem", fontWeight: 500,
     transition: "all 130ms ease",
   });
 
   const DETAIL_TAB = (active: boolean): React.CSSProperties => ({
     padding: "4px 12px", borderRadius: 6, cursor: "pointer", border: "none",
-    background: active ? "rgba(139,92,246,0.15)" : "transparent",
-    color: active ? "#C4B5FD" : "#7A8AAE", fontSize: "0.75rem", fontWeight: 500,
+    background: active ? hexToRgba(accent, 0.15) : "transparent",
+    color: active ? accent : "#7A8AAE", fontSize: "0.75rem", fontWeight: 500,
   });
 
   return (
@@ -340,7 +343,7 @@ export const PullRequestsPage: React.FC = () => {
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", padding: "20px 24px 0" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-          <GitPullRequest size={18} style={{ color: "#8B5CF6" }} />
+          <GitPullRequest size={18} style={{ color: accent }} />
           <h1 style={{ fontSize: "1.125rem", fontWeight: 700, color: "#D4D8E8" }}>Pull Requests</h1>
           {viewingRepo && <span style={{ fontSize: "0.8125rem", color: "#4A5580" }}>{viewingRepo.full_name}</span>}
           <div style={{ marginLeft: "auto", display: "flex", gap: 4 }}>
@@ -357,7 +360,7 @@ export const PullRequestsPage: React.FC = () => {
             <div style={{ display: "flex", gap: 8, marginBottom: 12, alignItems: "center" }}>
               {(["open", "closed", "all"] as StateFilter[]).map((s) => (
                 <button key={s} type="button" onClick={() => setStateFilter(s)}
-                  style={{ padding: "4px 12px", borderRadius: 7, cursor: "pointer", border: "none", background: stateFilter === s ? "rgba(139,92,246,0.18)" : "rgba(255,255,255,0.04)", color: stateFilter === s ? "#C4B5FD" : "#7A8AAE", fontSize: "0.8125rem", fontWeight: 500, textTransform: "capitalize" }}>
+                  style={{ padding: "4px 12px", borderRadius: 7, cursor: "pointer", border: "none", background: stateFilter === s ? hexToRgba(accent, 0.18) : "rgba(255,255,255,0.04)", color: stateFilter === s ? accent : "#7A8AAE", fontSize: "0.8125rem", fontWeight: 500, textTransform: "capitalize" }}>
                   {s}
                 </button>
               ))}
@@ -381,14 +384,14 @@ export const PullRequestsPage: React.FC = () => {
                 {filtered.map((pr) => (
                   <div key={pr.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.055)", marginBottom: 1 }}>
                     <div
-                      style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", cursor: "pointer", borderRadius: 8, background: expandedId === pr.id ? "rgba(139,92,246,0.07)" : "transparent", transition: "background 120ms ease" }}
+                      style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", cursor: "pointer", borderRadius: 8, background: expandedId === pr.id ? hexToRgba(accent, 0.07) : "transparent", transition: "background 120ms ease" }}
                       onClick={() => toggleExpand(pr)}
                     >
                       {pr.state === "open"
                         ? <GitPullRequest size={15} style={{ color: "#10B981", flexShrink: 0 }} />
                         : pr.state === "closed"
                         ? <X size={15} style={{ color: "#EF4444", flexShrink: 0 }} />
-                        : <GitMerge size={15} style={{ color: "#8B5CF6", flexShrink: 0 }} />}
+                        : <GitMerge size={15} style={{ color: accent, flexShrink: 0 }} />}
                       <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#C8CDD8", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         #{pr.number} {pr.title}
                       </span>
@@ -425,13 +428,13 @@ export const PullRequestsPage: React.FC = () => {
                           )}
                           {pr.state === "open" && !pr.draft && (
                             <>
-                              <div style={{ display: "flex", gap: 0, borderRadius: 8, overflow: "hidden", border: "1px solid rgba(139,92,246,0.3)" }}>
+                              <div style={{ display: "flex", gap: 0, borderRadius: 8, overflow: "hidden", border: `1px solid ${hexToRgba(accent, 0.3)}` }}>
                                 <button type="button" onClick={() => handleMerge(pr)} disabled={mergeLoading}
-                                  style={{ padding: "5px 14px", cursor: "pointer", border: "none", background: "rgba(139,92,246,0.2)", color: "#C4B5FD", fontSize: "0.8125rem", fontWeight: 600, display: "flex", alignItems: "center", gap: 5 }}>
+                                  style={{ padding: "5px 14px", cursor: "pointer", border: "none", background: hexToRgba(accent, 0.2), color: accent, fontSize: "0.8125rem", fontWeight: 600, display: "flex", alignItems: "center", gap: 5 }}>
                                   <GitMerge size={13} />{mergeLoading ? "Merging…" : "Merge"}
                                 </button>
                                 <select value={mergeMethod} onChange={(e) => setMergeMethod(e.target.value as typeof mergeMethod)}
-                                  style={{ padding: "0 8px", cursor: "pointer", border: "none", borderLeft: "1px solid rgba(139,92,246,0.3)", backgroundColor: "rgba(139,92,246,0.12)", color: "#C4B5FD", fontSize: "0.75rem" }}>
+                                  style={{ padding: "0 8px", cursor: "pointer", border: "none", borderLeft: `1px solid ${hexToRgba(accent, 0.3)}`, backgroundColor: hexToRgba(accent, 0.12), color: accent, fontSize: "0.75rem" }}>
                                   <option value="merge">Merge</option>
                                   <option value="squash">Squash</option>
                                   <option value="rebase">Rebase</option>
@@ -547,7 +550,7 @@ export const PullRequestsPage: React.FC = () => {
                               placeholder="Write a comment…"
                               style={{ width: "100%", minHeight: 80, borderRadius: 8, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.10)", color: "#C8CDD8", fontSize: "0.8125rem", padding: "8px 12px", outline: "none", resize: "vertical" }} />
                             <button type="button" onClick={() => handlePostComment(pr)} disabled={commentLoading || !commentBody.trim()}
-                              style={{ alignSelf: "flex-end", padding: "6px 18px", borderRadius: 8, cursor: "pointer", border: "none", background: "rgba(139,92,246,0.25)", color: "#C4B5FD", fontSize: "0.8125rem", fontWeight: 600, opacity: commentLoading || !commentBody.trim() ? 0.5 : 1 }}>
+                              style={{ alignSelf: "flex-end", padding: "6px 18px", borderRadius: 8, cursor: "pointer", border: "none", background: hexToRgba(accent, 0.25), color: accent, fontSize: "0.8125rem", fontWeight: 600, opacity: commentLoading || !commentBody.trim() ? 0.5 : 1 }}>
                               {commentLoading ? "Posting…" : "Post Comment"}
                             </button>
                           </div>
@@ -597,10 +600,10 @@ export const PullRequestsPage: React.FC = () => {
                                 {livePr.assignees.length > 0 && (
                                   <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
                                     {livePr.assignees.map((login) => (
-                                      <div key={login} style={{ display: "flex", alignItems: "center", gap: 5, padding: "3px 8px 3px 6px", borderRadius: 20, background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.28)" }}>
-                                        <span style={{ fontSize: "0.75rem", color: "#C4B5FD", fontWeight: 500 }}>{login}</span>
+                                      <div key={login} style={{ display: "flex", alignItems: "center", gap: 5, padding: "3px 8px 3px 6px", borderRadius: 20, background: hexToRgba(accent, 0.12), border: `1px solid ${hexToRgba(accent, 0.28)}` }}>
+                                        <span style={{ fontSize: "0.75rem", color: accent, fontWeight: 500 }}>{login}</span>
                                         <button type="button" onClick={() => handleTogglePrAssignee(livePr, login)}
-                                          style={{ background: "none", border: "none", cursor: "pointer", color: "#A78BFA", padding: 0, display: "flex" }}>
+                                          style={{ background: "none", border: "none", cursor: "pointer", color: accent, padding: 0, display: "flex" }}>
                                           <X size={11} />
                                         </button>
                                       </div>
@@ -683,7 +686,7 @@ export const PullRequestsPage: React.FC = () => {
                     const sel = createReviewers.includes(c);
                     return (
                       <button key={c} type="button" onClick={() => setCreateReviewers((prev) => sel ? prev.filter((x) => x !== c) : [...prev, c])}
-                        style={{ padding: "3px 10px", borderRadius: 7, cursor: "pointer", border: sel ? "1px solid rgba(139,92,246,0.5)" : "1px solid rgba(255,255,255,0.10)", background: sel ? "rgba(139,92,246,0.15)" : "rgba(255,255,255,0.04)", color: sel ? "#C4B5FD" : "#9AA5BE", fontSize: "0.75rem" }}>
+                        style={{ padding: "3px 10px", borderRadius: 7, cursor: "pointer", border: sel ? `1px solid ${hexToRgba(accent, 0.5)}` : "1px solid rgba(255,255,255,0.10)", background: sel ? hexToRgba(accent, 0.15) : "rgba(255,255,255,0.04)", color: sel ? accent : "#9AA5BE", fontSize: "0.75rem" }}>
                         {c}
                       </button>
                     );
@@ -702,7 +705,7 @@ export const PullRequestsPage: React.FC = () => {
               Draft PR
             </label>
             <button type="button" onClick={handleCreate} disabled={createLoading || !createForm.title.trim() || !createForm.head || !createForm.base || !viewingRepo}
-              style={{ alignSelf: "flex-start", padding: "8px 24px", borderRadius: 8, cursor: "pointer", border: "none", background: "linear-gradient(135deg, rgba(139,92,246,0.45), rgba(109,60,221,0.45))", color: "#E0D7FF", fontSize: "0.875rem", fontWeight: 700, opacity: createLoading || !createForm.title.trim() || !createForm.head || !viewingRepo ? 0.5 : 1 }}>
+              style={{ alignSelf: "flex-start", padding: "8px 24px", borderRadius: 8, cursor: "pointer", border: "none", background: `linear-gradient(135deg, ${hexToRgba(accent, 0.45)}, ${hexToRgba(accent, 0.45)})`, color: "#E0D7FF", fontSize: "0.875rem", fontWeight: 700, opacity: createLoading || !createForm.title.trim() || !createForm.head || !viewingRepo ? 0.5 : 1 }}>
               {createLoading ? "Creating…" : "Create Pull Request"}
             </button>
           </div>
@@ -726,7 +729,7 @@ export const PullRequestsPage: React.FC = () => {
                   {prs.map((pr) => (
                     <div key={pr.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", borderBottom: "1px solid rgba(255,255,255,0.04)", cursor: "pointer" }}
                       onClick={() => setBulkSelected((prev) => { const n = new Set(prev); n.has(pr.id) ? n.delete(pr.id) : n.add(pr.id); return n; })}>
-                      {bulkSelected.has(pr.id) ? <CheckSquare size={15} style={{ color: "#8B5CF6", flexShrink: 0 }} /> : <Square size={15} style={{ color: "#4A5580", flexShrink: 0 }} />}
+                      {bulkSelected.has(pr.id) ? <CheckSquare size={15} style={{ color: accent, flexShrink: 0 }} /> : <Square size={15} style={{ color: "#4A5580", flexShrink: 0 }} />}
                       {pr.state === "open" ? <GitPullRequest size={13} style={{ color: "#10B981", flexShrink: 0 }} /> : <X size={13} style={{ color: "#EF4444", flexShrink: 0 }} />}
                       <span style={{ fontSize: "0.8125rem", color: "#C8CDD8", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>#{pr.number} {pr.title}</span>
                       <span style={{ fontSize: "0.6875rem", color: "#4A5580" }}>{pr.user_login}</span>

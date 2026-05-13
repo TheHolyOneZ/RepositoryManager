@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { useSettingsStore } from "../../stores/settingsStore";
 
 interface GraceWindowCountdownProps {
   seconds: number;
@@ -12,12 +13,13 @@ export const GraceWindowCountdown: React.FC<GraceWindowCountdownProps> = ({
   totalSeconds,
   onAbort,
 }) => {
+  const storeAccent = useSettingsStore((s) => s.accentColor);
   const radius = 38;
   const circumference = 2 * Math.PI * radius;
   const progress = seconds / totalSeconds;
   const dashOffset = circumference * (1 - progress);
   const isRed = seconds <= 5;
-  const color = isRed ? "#EF4444" : "#8B5CF6";
+  const color = isRed ? "#EF4444" : storeAccent;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>

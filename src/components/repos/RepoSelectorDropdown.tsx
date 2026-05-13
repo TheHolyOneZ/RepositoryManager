@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 import { createPortal } from "react-dom";
 import { ChevronDown, Search } from "lucide-react";
 import { motion } from "framer-motion";
@@ -16,9 +18,12 @@ interface RepoSelectorDropdownProps {
 export const RepoSelectorDropdown: React.FC<RepoSelectorDropdownProps> = ({
   repos, selectedId, onSelect,
   placeholder = "Select repository…",
-  accentColor = "#C4B5FD",
-  accentBg = "rgba(139,92,246,0.10)",
+  accentColor: accentColorProp,
+  accentBg: accentBgProp,
 }) => {
+  const storeAccent = useSettingsStore((s) => s.accentColor);
+  const accentColor = accentColorProp ?? storeAccent;
+  const accentBg = accentBgProp ?? hexToRgba(storeAccent, 0.10);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [pos, setPos] = useState<{ top: number; left: number; minWidth: number } | null>(null);

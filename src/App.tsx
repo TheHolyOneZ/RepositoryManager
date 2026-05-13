@@ -27,8 +27,11 @@ import { SecurityPage } from "./routes/security/SecurityPage";
 import { DepsPage } from "./routes/deps/DepsPage";
 import { ErrorBoundary } from "./components/shared/ErrorBoundary";
 import { useAccountStore } from "./stores/accountStore";
+import { useSettingsStore } from "./stores/settingsStore";
+import { hexToRgba } from "./lib/utils/color";
 
 function App() {
+  const accent = useSettingsStore((s) => s.accentColor);
   const sessionReady = useSessionSync();
   const hasAccount = useAccountStore((s) => s.accounts.length > 0);
 
@@ -46,7 +49,8 @@ function App() {
         <div
           className="h-8 w-8 rounded-xl"
           style={{
-            background: "linear-gradient(135deg, rgba(139,92,246,0.35), rgba(6,182,212,0.20))",
+            background: `linear-gradient(135deg, ${hexToRgba(accent, 0.35)}, rgba(6,182,212,0.20))`,
+
             animation: "pulse 2s ease-in-out infinite",
           }}
         />

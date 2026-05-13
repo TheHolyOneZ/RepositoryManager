@@ -20,6 +20,8 @@ import {
 } from "../../lib/tauri/commands";
 import type { Collaborator, PendingInvite } from "../../types/governance";
 import type { Repo } from "../../types/repo";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 
 type Tab = "collaborators" | "invites" | "bulk";
 type Permission = "pull" | "triage" | "push" | "maintain" | "admin";
@@ -50,6 +52,7 @@ const INPUT_STYLE: React.CSSProperties = {
 };
 
 export const CollaboratorsPage: React.FC = () => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const repos = useRepoStore((s) => s.repos);
   const addToast = useUIStore((s) => s.addToast);
   const activeAccount = useAccountStore((s) => s.accounts.find((a) => a.id === s.activeAccountId));
@@ -250,7 +253,7 @@ export const CollaboratorsPage: React.FC = () => {
               <strong style={{ color: "#6A7A90" }}>Roles:</strong>{" "}
               <span style={{ color: "#10B981" }}>Read</span> — view &amp; clone only ·{" "}
               <span style={{ color: "#60A5FA" }}>Triage</span> — manage issues/PRs, no push ·{" "}
-              <span style={{ color: "#8B5CF6" }}>Write</span> — push branches, create releases ·{" "}
+              <span style={{ color: accent }}>Write</span> — push branches, create releases ·{" "}
               <span style={{ color: "#F59E0B" }}>Maintain</span> — write + settings (no destructive ops) ·{" "}
               <span style={{ color: "#EF4444" }}>Admin</span> — full access (GitHub Free: owner-only settings on private repos)
             </p>
@@ -271,9 +274,9 @@ export const CollaboratorsPage: React.FC = () => {
             <button key={t} onClick={() => setActiveTab(t)}
               style={{
                 height: 28, padding: "0 12px", borderRadius: 6, cursor: "pointer",
-                background: activeTab === t ? "rgba(139,92,246,0.14)" : "transparent",
-                border: activeTab === t ? "1px solid rgba(139,92,246,0.28)" : "1px solid transparent",
-                color: activeTab === t ? "#C4B5FD" : "#4A5580",
+                background: activeTab === t ? hexToRgba(accent, 0.14) : "transparent",
+                border: activeTab === t ? `1px solid ${hexToRgba(accent, 0.28)}` : "1px solid transparent",
+                color: activeTab === t ? accent : "#4A5580",
                 fontSize: "0.8125rem", fontWeight: 500, textTransform: "capitalize",
               }}>
               {t === "invites" ? "Pending Invites" : t.charAt(0).toUpperCase() + t.slice(1)}
@@ -335,9 +338,9 @@ export const CollaboratorsPage: React.FC = () => {
                   <button key={p} onClick={() => setPermFilter(p)}
                     style={{
                       height: 24, padding: "0 9px", borderRadius: 5, cursor: "pointer", fontSize: "0.6875rem", fontWeight: 600,
-                      background: permFilter === p ? `${PERM_COLOR[p] ?? "#8B5CF6"}18` : "rgba(255,255,255,0.04)",
-                      border: permFilter === p ? `1px solid ${PERM_COLOR[p] ?? "#8B5CF6"}35` : "1px solid rgba(255,255,255,0.08)",
-                      color: permFilter === p ? (PERM_COLOR[p] ?? "#A78BFA") : "#4A5580",
+                      background: permFilter === p ? `${PERM_COLOR[p] ?? accent}18` : "rgba(255,255,255,0.04)",
+                      border: permFilter === p ? `1px solid ${PERM_COLOR[p] ?? accent}35` : "1px solid rgba(255,255,255,0.08)",
+                      color: permFilter === p ? (PERM_COLOR[p] ?? accent) : "#4A5580",
                     }}>
                     {p === "all" ? "All" : permLabel(p)}
                   </button>
@@ -426,7 +429,7 @@ export const CollaboratorsPage: React.FC = () => {
               }}>
                 <Info size={14} style={{ color: "#60A5FA", flexShrink: 0, marginTop: 1 }} />
                 <p style={{ fontSize: "0.75rem", color: "#7A90B4", lineHeight: 1.55, margin: 0 }}>
-                  Add or remove collaborators across all <strong style={{ color: "#C4B5FD" }}>{selectedIds.size} selected repo{selectedIds.size !== 1 ? "s" : ""}</strong>.
+                  Add or remove collaborators across all <strong style={{ color: accent }}>{selectedIds.size} selected repo{selectedIds.size !== 1 ? "s" : ""}</strong>.
                   Enter one or more GitHub usernames (comma-separated or one per line).
                   Each username will be processed against every selected repo.
                 </p>
@@ -495,10 +498,10 @@ export const CollaboratorsPage: React.FC = () => {
                   <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 8, padding: "10px 14px" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                       <span style={{ fontSize: "0.75rem", color: "#7A88A6" }}>Progress</span>
-                      <span style={{ fontSize: "0.75rem", color: "#C4B5FD" }}>{bulkProgress.done} / {bulkProgress.total}</span>
+                      <span style={{ fontSize: "0.75rem", color: accent }}>{bulkProgress.done} / {bulkProgress.total}</span>
                     </div>
                     <div style={{ height: 4, borderRadius: 2, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
-                      <div style={{ height: "100%", borderRadius: 2, background: "linear-gradient(90deg, #8B5CF6, #7C3AED)", width: `${(bulkProgress.done / bulkProgress.total) * 100}%`, transition: "width 200ms" }} />
+                      <div style={{ height: "100%", borderRadius: 2, background: `linear-gradient(90deg, ${accent}, ${accent})`, width: `${(bulkProgress.done / bulkProgress.total) * 100}%`, transition: "width 200ms" }} />
                     </div>
                   </div>
                 )}
@@ -508,7 +511,7 @@ export const CollaboratorsPage: React.FC = () => {
                   style={{
                     height: 38, borderRadius: 9, cursor: "pointer", fontWeight: 700, fontSize: "0.875rem",
                     display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-                    background: "rgba(139,92,246,0.80)", border: "1px solid rgba(139,92,246,0.40)", color: "#fff",
+                    background: hexToRgba(accent, 0.80), border: `1px solid ${hexToRgba(accent, 0.40)}`, color: "#fff",
                     opacity: (!selectedIds.size || !parsedUsernames.length) ? 0.4 : 1,
                   }}>
                   {bulkRunning ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> : <ChevronRight size={14} />}
@@ -611,7 +614,7 @@ export const CollaboratorsPage: React.FC = () => {
                 onClick={() => handleChangeRole(editModal, editPerm)}
                 style={{
                   flex: 1, height: 34, borderRadius: 8, cursor: "pointer", fontWeight: 700, fontSize: "0.8125rem",
-                  background: "rgba(139,92,246,0.80)", border: "1px solid rgba(139,92,246,0.40)", color: "#fff",
+                  background: hexToRgba(accent, 0.80), border: `1px solid ${hexToRgba(accent, 0.40)}`, color: "#fff",
                 }}>
                 Save
               </button>

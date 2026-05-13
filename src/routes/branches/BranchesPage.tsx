@@ -16,6 +16,8 @@ import {
 } from "../../lib/tauri/commands";
 import type { Branch, BranchProtection } from "../../types/governance";
 import type { Repo } from "../../types/repo";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 
 type Tab = "overview" | "protect" | "create";
 
@@ -52,6 +54,7 @@ const INPUT_STYLE: React.CSSProperties = {
 };
 
 export const BranchesPage: React.FC = () => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const repos = useRepoStore((s) => s.repos);
   const addToast = useUIStore((s) => s.addToast);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -190,7 +193,7 @@ export const BranchesPage: React.FC = () => {
             onClick={() => setProtection((p) => ({ ...p, [field]: !val }))}
             style={{
               width: 36, height: 20, borderRadius: 10, cursor: "pointer", transition: "background 150ms",
-              background: val ? "#8B5CF6" : "rgba(255,255,255,0.08)", border: "none", position: "relative", flexShrink: 0,
+              background: val ? accent : "rgba(255,255,255,0.08)", border: "none", position: "relative", flexShrink: 0,
             }}
           >
             <span style={{
@@ -208,10 +211,10 @@ export const BranchesPage: React.FC = () => {
     <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 8, padding: "10px 14px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
         <span style={{ fontSize: "0.75rem", color: "#7A88A6" }}>Progress</span>
-        <span style={{ fontSize: "0.75rem", color: "#C4B5FD" }}>{progress.done} / {progress.total}</span>
+        <span style={{ fontSize: "0.75rem", color: accent }}>{progress.done} / {progress.total}</span>
       </div>
       <div style={{ height: 4, borderRadius: 2, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
-        <div style={{ height: "100%", borderRadius: 2, background: "linear-gradient(90deg, #8B5CF6, #7C3AED)", width: `${(progress.done / progress.total) * 100}%`, transition: "width 200ms" }} />
+        <div style={{ height: "100%", borderRadius: 2, background: `linear-gradient(90deg, ${accent}, ${accent})`, width: `${(progress.done / progress.total) * 100}%`, transition: "width 200ms" }} />
       </div>
     </div>
   );
@@ -268,9 +271,9 @@ export const BranchesPage: React.FC = () => {
             <button key={t} onClick={() => setActiveTab(t)}
               style={{
                 height: 28, padding: "0 12px", borderRadius: 6, cursor: "pointer",
-                background: activeTab === t ? "rgba(139,92,246,0.14)" : "transparent",
-                border: activeTab === t ? "1px solid rgba(139,92,246,0.28)" : "1px solid transparent",
-                color: activeTab === t ? "#C4B5FD" : "#4A5580",
+                background: activeTab === t ? hexToRgba(accent, 0.14) : "transparent",
+                border: activeTab === t ? `1px solid ${hexToRgba(accent, 0.28)}` : "1px solid transparent",
+                color: activeTab === t ? accent : "#4A5580",
                 fontSize: "0.8125rem", fontWeight: 500,
                 display: "flex", alignItems: "center", gap: 5,
               }}>
@@ -312,7 +315,7 @@ export const BranchesPage: React.FC = () => {
                     <GitBranch size={13} style={{ color: "#4A5580", flexShrink: 0 }} />
                     <span style={{ fontWeight: 600, color: "#D4D8E8", fontSize: "0.8125rem", flex: 1 }}>{repo.full_name}</span>
                     <span style={{ fontSize: "0.6875rem", color: "#3A4560" }}>
-                      default: <code style={{ color: "#A78BFA", fontSize: "0.6875rem" }}>{repo.default_branch}</code>
+                      default: <code style={{ color: accent, fontSize: "0.6875rem" }}>{repo.default_branch}</code>
                     </span>
                     {rowLoading && <Loader2 size={13} style={{ color: "#4A5580", animation: "spin 1s linear infinite" }} />}
                     {!rowLoading && branches !== null && (
@@ -338,9 +341,9 @@ export const BranchesPage: React.FC = () => {
                           <span key={b.name} title={days !== null ? `Last commit: ${days} days ago` : undefined} style={{
                             display: "inline-flex", alignItems: "center", gap: 4,
                             fontSize: "0.6875rem", padding: "2px 7px", borderRadius: 4,
-                            background: b.is_default ? "rgba(139,92,246,0.12)" : isStale ? "rgba(245,158,11,0.08)" : "rgba(255,255,255,0.04)",
-                            border: b.is_default ? "1px solid rgba(139,92,246,0.22)" : isStale ? "1px solid rgba(245,158,11,0.15)" : "1px solid rgba(255,255,255,0.07)",
-                            color: b.is_default ? "#C4B5FD" : isStale ? "#F59E0B" : "#4A5580",
+                            background: b.is_default ? hexToRgba(accent, 0.12) : isStale ? "rgba(245,158,11,0.08)" : "rgba(255,255,255,0.04)",
+                            border: b.is_default ? `1px solid ${hexToRgba(accent, 0.22)}` : isStale ? "1px solid rgba(245,158,11,0.15)" : "1px solid rgba(255,255,255,0.07)",
+                            color: b.is_default ? accent : isStale ? "#F59E0B" : "#4A5580",
                             cursor: "default",
                           }}>
                             {b.protected && <CheckCircle2 size={9} />}
@@ -375,8 +378,8 @@ export const BranchesPage: React.FC = () => {
               }}>
                 <Info size={14} style={{ color: "#60A5FA", flexShrink: 0, marginTop: 1 }} />
                 <p style={{ fontSize: "0.75rem", color: "#7A90B4", lineHeight: 1.55, margin: 0 }}>
-                  Apply branch protection rules to the <strong style={{ color: "#A78BFA" }}>default branch</strong> of
-                  all <strong style={{ color: "#C4B5FD" }}>{selectedIds.size} selected repo{selectedIds.size !== 1 ? "s" : ""}</strong>.
+                  Apply branch protection rules to the <strong style={{ color: accent }}>default branch</strong> of
+                  all <strong style={{ color: accent }}>{selectedIds.size} selected repo{selectedIds.size !== 1 ? "s" : ""}</strong>.
                   Branch protection requires <strong>admin access</strong> to each repo.
                   On <strong>GitHub Free</strong>, branch protection is only available on <em>public repos</em> — private repos need GitHub Pro/Team.
                   Common errors: <em>"Resource not accessible by integration"</em> = PAT needs <code style={{ background: "rgba(255,255,255,0.06)", padding: "1px 4px", borderRadius: 3 }}>repo</code> scope + admin access;
@@ -390,9 +393,9 @@ export const BranchesPage: React.FC = () => {
                     <button key={a} onClick={() => setProtectAction(a)}
                       style={{
                         flex: 1, height: 34, borderRadius: 8, cursor: "pointer", fontWeight: 600, fontSize: "0.8125rem",
-                        background: protectAction === a ? "rgba(139,92,246,0.14)" : "rgba(255,255,255,0.04)",
-                        border: protectAction === a ? "1px solid rgba(139,92,246,0.28)" : "1px solid rgba(255,255,255,0.08)",
-                        color: protectAction === a ? "#C4B5FD" : "#4A5580",
+                        background: protectAction === a ? hexToRgba(accent, 0.14) : "rgba(255,255,255,0.04)",
+                        border: protectAction === a ? `1px solid ${hexToRgba(accent, 0.28)}` : "1px solid rgba(255,255,255,0.08)",
+                        color: protectAction === a ? accent : "#4A5580",
                         display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
                       }}>
                       {a === "protect" && <Shield size={12} />}
@@ -418,7 +421,7 @@ export const BranchesPage: React.FC = () => {
                           <div style={{ display: "flex", gap: 4 }}>
                             {[1, 2, 3].map((n) => (
                               <button key={n} onClick={() => setProtection((p) => ({ ...p, required_approving_review_count: n }))}
-                                style={{ width: 28, height: 28, borderRadius: 6, cursor: "pointer", fontWeight: 700, fontSize: "0.75rem", background: protection.required_approving_review_count === n ? "rgba(139,92,246,0.20)" : "rgba(255,255,255,0.05)", border: protection.required_approving_review_count === n ? "1px solid rgba(139,92,246,0.35)" : "1px solid rgba(255,255,255,0.08)", color: protection.required_approving_review_count === n ? "#C4B5FD" : "#4A5580" }}>
+                                style={{ width: 28, height: 28, borderRadius: 6, cursor: "pointer", fontWeight: 700, fontSize: "0.75rem", background: protection.required_approving_review_count === n ? hexToRgba(accent, 0.20) : "rgba(255,255,255,0.05)", border: protection.required_approving_review_count === n ? `1px solid ${hexToRgba(accent, 0.35)}` : "1px solid rgba(255,255,255,0.08)", color: protection.required_approving_review_count === n ? accent : "#4A5580" }}>
                                 {n}
                               </button>
                             ))}
@@ -473,8 +476,8 @@ export const BranchesPage: React.FC = () => {
                   style={{
                     height: 38, borderRadius: 9, cursor: "pointer", fontWeight: 700, fontSize: "0.875rem",
                     display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-                    background: protectAction === "unprotect" ? "rgba(239,68,68,0.75)" : "rgba(139,92,246,0.80)",
-                    border: protectAction === "unprotect" ? "1px solid rgba(239,68,68,0.40)" : "1px solid rgba(139,92,246,0.40)",
+                    background: protectAction === "unprotect" ? "rgba(239,68,68,0.75)" : hexToRgba(accent, 0.80),
+                    border: protectAction === "unprotect" ? "1px solid rgba(239,68,68,0.40)" : `1px solid ${hexToRgba(accent, 0.40)}`,
                     color: "#fff", opacity: (!selectedIds.size) ? 0.4 : 1,
                   }}>
                   {protectRunning ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> : <ChevronRight size={14} />}
@@ -497,7 +500,7 @@ export const BranchesPage: React.FC = () => {
                 <Info size={14} style={{ color: "#60A5FA", flexShrink: 0, marginTop: 1 }} />
                 <p style={{ fontSize: "0.75rem", color: "#7A90B4", lineHeight: 1.55, margin: 0 }}>
                   Create a new branch from an existing source branch across all
-                  <strong style={{ color: "#C4B5FD" }}> {selectedIds.size} selected repo{selectedIds.size !== 1 ? "s" : ""}</strong>.
+                  <strong style={{ color: accent }}> {selectedIds.size} selected repo{selectedIds.size !== 1 ? "s" : ""}</strong>.
                   The source branch must exist in each repo. The new branch will be created at the same commit as the source.
                   Branch names with slashes (e.g. <code style={{ background: "rgba(255,255,255,0.06)", padding: "1px 4px", borderRadius: 3 }}>feature/my-thing</code>) are supported.
                 </p>
@@ -533,11 +536,11 @@ export const BranchesPage: React.FC = () => {
                 <div style={{ background: "rgba(255,255,255,0.025)", borderRadius: 8, padding: "10px 14px", border: "1px solid rgba(255,255,255,0.06)" }}>
                   <p style={{ fontSize: "0.75rem", color: "#4A5580", marginBottom: 6 }}>Summary</p>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <GitMerge size={13} style={{ color: "#A78BFA" }} />
+                    <GitMerge size={13} style={{ color: accent }} />
                     <span style={{ fontSize: "0.8125rem", color: "#C8CDD8" }}>
-                      Create <code style={{ color: "#A78BFA" }}>{newBranchName || "…"}</code>
+                      Create <code style={{ color: accent }}>{newBranchName || "…"}</code>
                       {" from "}<code style={{ color: "#60A5FA" }}>{fromBranchName || "…"}</code>
-                      {" across "}<strong style={{ color: "#C4B5FD" }}>{selectedIds.size}</strong> repo{selectedIds.size !== 1 ? "s" : ""}
+                      {" across "}<strong style={{ color: accent }}>{selectedIds.size}</strong> repo{selectedIds.size !== 1 ? "s" : ""}
                     </span>
                   </div>
                 </div>
@@ -550,7 +553,7 @@ export const BranchesPage: React.FC = () => {
                   style={{
                     height: 38, borderRadius: 9, cursor: "pointer", fontWeight: 700, fontSize: "0.875rem",
                     display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-                    background: "rgba(139,92,246,0.80)", border: "1px solid rgba(139,92,246,0.40)", color: "#fff",
+                    background: hexToRgba(accent, 0.80), border: `1px solid ${hexToRgba(accent, 0.40)}`, color: "#fff",
                     opacity: (!selectedIds.size || !newBranchName.trim() || !fromBranchName.trim()) ? 0.4 : 1,
                   }}>
                   {createRunning ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> : <Plus size={14} />}

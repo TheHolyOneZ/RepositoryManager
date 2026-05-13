@@ -1,4 +1,6 @@
 import React from "react";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 
 interface GlassInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   icon?: React.ReactNode;
@@ -8,6 +10,7 @@ interface GlassInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 
 export const GlassInput = React.forwardRef<HTMLInputElement, GlassInputProps>(
   ({ icon, suffix, label, className = "", style, ...props }, ref) => {
+    const accent = useSettingsStore((s) => s.accentColor);
     const [focused, setFocused] = React.useState(false);
     return (
       <div>
@@ -20,7 +23,7 @@ export const GlassInput = React.forwardRef<HTMLInputElement, GlassInputProps>(
           {icon && (
             <span style={{
               position: "absolute", left: 12, pointerEvents: "none",
-              color: focused ? "#A78BFA" : "#4A5580",
+              color: focused ? accent : "#4A5580",
               display: "flex", transition: "color 160ms",
             }}>
               {icon}
@@ -36,8 +39,8 @@ export const GlassInput = React.forwardRef<HTMLInputElement, GlassInputProps>(
               height: 40,
               borderRadius: 8,
               background: "rgba(255,255,255,0.06)",
-              border: focused ? "1px solid rgba(139,92,246,0.48)" : "1px solid transparent",
-              boxShadow: focused ? "0 0 0 3px rgba(139,92,246,0.10)" : "none",
+              border: focused ? `1px solid ${hexToRgba(accent, 0.48)}` : "1px solid transparent",
+              boxShadow: focused ? `0 0 0 3px ${hexToRgba(accent, 0.10)}` : "none",
               color: "#ECEEF5",
               fontSize: "0.875rem",
               paddingLeft: icon ? 36 : 12,

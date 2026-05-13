@@ -7,6 +7,8 @@ import {
 import { RepoPicker } from "../../components/repos/RepoPicker";
 import { useRepoStore } from "../../stores/repoStore";
 import { useUIStore } from "../../stores/uiStore";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 import { fanout } from "../../lib/utils/fanout";
 import { formatInvokeError } from "../../lib/formatError";
 import {
@@ -62,6 +64,7 @@ const CTX_ITEM: React.CSSProperties = {
 };
 
 export const ActionsPage: React.FC = () => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const repos = useRepoStore((s) => s.repos);
   const addToast = useUIStore((s) => s.addToast);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -308,9 +311,9 @@ export const ActionsPage: React.FC = () => {
               onClick={() => setActiveTab(t)}
               style={{
                 height: 28, padding: "0 12px", borderRadius: 6, cursor: "pointer",
-                background: activeTab === t ? "rgba(139,92,246,0.14)" : "transparent",
-                border: activeTab === t ? "1px solid rgba(139,92,246,0.28)" : "1px solid transparent",
-                color: activeTab === t ? "#C4B5FD" : "#4A5580",
+                background: activeTab === t ? hexToRgba(accent, 0.14) : "transparent",
+                border: activeTab === t ? `1px solid ${hexToRgba(accent, 0.28)}` : "1px solid transparent",
+                color: activeTab === t ? accent : "#4A5580",
                 fontSize: "0.8125rem", fontWeight: 500,
                 display: "flex", alignItems: "center", gap: 5,
               }}
@@ -419,9 +422,9 @@ export const ActionsPage: React.FC = () => {
                           style={{
                             display: "flex", alignItems: "center", gap: 4,
                             height: 26, padding: "0 9px", borderRadius: 6, cursor: "pointer",
-                            background: isTriggering ? "rgba(245,158,11,0.12)" : "rgba(139,92,246,0.10)",
-                            border: isTriggering ? "1px solid rgba(245,158,11,0.28)" : "1px solid rgba(139,92,246,0.20)",
-                            color: isTriggering ? "#F59E0B" : "#A78BFA",
+                            background: isTriggering ? "rgba(245,158,11,0.12)" : hexToRgba(accent, 0.10),
+                            border: isTriggering ? "1px solid rgba(245,158,11,0.28)" : `1px solid ${hexToRgba(accent, 0.20)}`,
+                            color: isTriggering ? "#F59E0B" : accent,
                             fontSize: "0.6875rem", fontWeight: 600, transition: "all 150ms",
                           }}
                         >
@@ -512,7 +515,7 @@ export const ActionsPage: React.FC = () => {
                       )}
                       {(run.conclusion === "success" || run.conclusion === "failure" || run.conclusion === "cancelled") && (
                         <button onClick={() => { handleToggleExpand(run, "logs"); if (!isExpanded && run.conclusion === "success") ensureArtifactsLoaded(run); }} title={isExpanded ? "Collapse" : "View logs & artifacts"}
-                          style={{ display: "flex", alignItems: "center", gap: 4, height: 26, padding: "0 8px", borderRadius: 6, cursor: "pointer", background: isExpanded ? "rgba(139,92,246,0.12)" : "rgba(255,255,255,0.04)", border: isExpanded ? "1px solid rgba(139,92,246,0.22)" : "1px solid rgba(255,255,255,0.08)", color: isExpanded ? "#A78BFA" : "#4A5580", fontSize: "0.6875rem", transition: "all 120ms" }}>
+                          style={{ display: "flex", alignItems: "center", gap: 4, height: 26, padding: "0 8px", borderRadius: 6, cursor: "pointer", background: isExpanded ? hexToRgba(accent, 0.12) : "rgba(255,255,255,0.04)", border: isExpanded ? `1px solid ${hexToRgba(accent, 0.22)}` : "1px solid rgba(255,255,255,0.08)", color: isExpanded ? accent : "#4A5580", fontSize: "0.6875rem", transition: "all 120ms" }}>
                           <ChevronDown size={10} style={{ transform: isExpanded ? "rotate(180deg)" : "none", transition: "transform 150ms" }} />
                           {loadingArts ? <Loader2 size={9} style={{ animation: "spin 1s linear infinite" }} /> : "Logs"}
                         </button>
@@ -528,7 +531,7 @@ export const ActionsPage: React.FC = () => {
                         <div style={{ display: "flex", gap: 4, padding: "8px 12px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
                           {(["logs", "artifacts"] as const).map((t) => (
                             <button key={t} type="button" onClick={() => { setExpandedRunTab(t); if (t === "artifacts") ensureArtifactsLoaded(run); }}
-                              style={{ padding: "3px 12px", borderRadius: 6, cursor: "pointer", border: "none", background: expandedRunTab === t ? "rgba(139,92,246,0.2)" : "transparent", color: expandedRunTab === t ? "#C4B5FD" : "#7A8AAE", fontSize: "0.75rem", fontWeight: 500, textTransform: "capitalize" }}>
+                              style={{ padding: "3px 12px", borderRadius: 6, cursor: "pointer", border: "none", background: expandedRunTab === t ? hexToRgba(accent, 0.2) : "transparent", color: expandedRunTab === t ? accent : "#7A8AAE", fontSize: "0.75rem", fontWeight: 500, textTransform: "capitalize" }}>
                               {t}
                             </button>
                           ))}
@@ -614,7 +617,7 @@ export const ActionsPage: React.FC = () => {
                 <p style={{ fontSize: "0.75rem", color: "#7A90B4", lineHeight: 1.55, margin: 0 }}>
                   Enable or disable workflows by name across all selected repos simultaneously.
                   Enter any part of the workflow name — all matching workflows in each selected repo will be toggled.
-                  Currently <strong style={{ color: "#C4B5FD" }}>{selectedIds.size} repo{selectedIds.size !== 1 ? "s" : ""} selected</strong> on the left.
+                  Currently <strong style={{ color: accent }}>{selectedIds.size} repo{selectedIds.size !== 1 ? "s" : ""} selected</strong> on the left.
                 </p>
               </div>
 
@@ -653,10 +656,10 @@ export const ActionsPage: React.FC = () => {
                   <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 8, padding: "10px 14px" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                       <span style={{ fontSize: "0.75rem", color: "#7A88A6" }}>Progress</span>
-                      <span style={{ fontSize: "0.75rem", color: "#C4B5FD" }}>{bulkProgress.done} / {bulkProgress.total}</span>
+                      <span style={{ fontSize: "0.75rem", color: accent }}>{bulkProgress.done} / {bulkProgress.total}</span>
                     </div>
                     <div style={{ height: 4, borderRadius: 2, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
-                      <div style={{ height: "100%", borderRadius: 2, background: "linear-gradient(90deg, #8B5CF6, #7C3AED)", width: `${(bulkProgress.done / bulkProgress.total) * 100}%`, transition: "width 200ms" }} />
+                      <div style={{ height: "100%", borderRadius: 2, background: `linear-gradient(90deg, ${accent}, ${accent})`, width: `${(bulkProgress.done / bulkProgress.total) * 100}%`, transition: "width 200ms" }} />
                     </div>
                   </div>
                 )}
@@ -667,8 +670,8 @@ export const ActionsPage: React.FC = () => {
                   style={{
                     height: 38, borderRadius: 9, cursor: "pointer", fontWeight: 700, fontSize: "0.875rem",
                     display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-                    background: bulkRunning ? "rgba(139,92,246,0.15)" : "rgba(139,92,246,0.80)",
-                    border: "1px solid rgba(139,92,246,0.40)", color: "#fff",
+                    background: bulkRunning ? hexToRgba(accent, 0.15) : hexToRgba(accent, 0.80),
+                    border: `1px solid ${hexToRgba(accent, 0.40)}`, color: "#fff",
                     opacity: (!selectedIds.size || !bulkWorkflowName.trim()) ? 0.4 : 1,
                   }}
                 >
@@ -724,8 +727,8 @@ export const ActionsPage: React.FC = () => {
                   <p style={{ fontSize: "0.75rem", fontWeight: 600, color: "#A0AAC0", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 160 }}>{wf.name}</p>
                   <p style={{ fontSize: "0.6rem", color: "#3A4A6A", margin: "1px 0 0" }}>{wf.path}</p>
                 </div>
-                <button style={{ ...CTX_ITEM, color: "#A78BFA", width: "100%" }}
-                  onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = "rgba(139,92,246,0.10)"}
+                <button style={{ ...CTX_ITEM, color: accent, width: "100%" }}
+                  onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = hexToRgba(accent, 0.10)}
                   onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = "transparent"}
                   onClick={() => { handleTrigger(wf); setCtxMenu(null); }}>
                   <Play size={12} /> Run workflow

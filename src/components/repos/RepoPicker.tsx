@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from "react";
 import { Search } from "lucide-react";
 import { useRepoStore } from "../../stores/repoStore";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 import type { Repo } from "../../types/repo";
 
 interface RepoPickerProps {
@@ -15,6 +17,7 @@ interface RepoPickerProps {
 export const RepoPicker: React.FC<RepoPickerProps> = ({
   selectedIds, onToggle, onSelectAll, onClearAll, singleSelect = false, footer,
 }) => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const repos = useRepoStore((s) => s.repos);
   const [search, setSearch] = useState("");
 
@@ -42,7 +45,7 @@ export const RepoPicker: React.FC<RepoPickerProps> = ({
               color: "#C8CDD8", fontSize: "0.75rem", paddingLeft: 26, paddingRight: 8,
               outline: "none",
             }}
-            onFocus={(e) => { e.currentTarget.style.border = "1px solid rgba(139,92,246,0.35)"; }}
+            onFocus={(e) => { e.currentTarget.style.border = `1px solid ${hexToRgba(accent, 0.35)}`; }}
             onBlur={(e) => { e.currentTarget.style.border = "1px solid transparent"; }}
           />
         </div>
@@ -50,7 +53,7 @@ export const RepoPicker: React.FC<RepoPickerProps> = ({
           <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
             <button
               onClick={onSelectAll}
-              style={{ flex: 1, height: 22, borderRadius: 5, fontSize: "0.6875rem", fontWeight: 600, cursor: "pointer", background: "rgba(139,92,246,0.10)", border: "1px solid rgba(139,92,246,0.20)", color: "#A78BFA" }}
+              style={{ flex: 1, height: 22, borderRadius: 5, fontSize: "0.6875rem", fontWeight: 600, cursor: "pointer", background: hexToRgba(accent, 0.10), border: `1px solid ${hexToRgba(accent, 0.20)}`, color: accent }}
             >
               All
             </button>
@@ -79,16 +82,16 @@ export const RepoPicker: React.FC<RepoPickerProps> = ({
               style={{
                 width: "100%", display: "flex", alignItems: "center", gap: 8,
                 padding: "5px 7px", borderRadius: 7, marginBottom: 1,
-                background: active ? "rgba(139,92,246,0.13)" : "transparent",
-                border: active ? "1px solid rgba(139,92,246,0.22)" : "1px solid transparent",
+                background: active ? hexToRgba(accent, 0.13) : "transparent",
+                border: active ? `1px solid ${hexToRgba(accent, 0.22)}` : "1px solid transparent",
                 cursor: "pointer", textAlign: "left",
               }}
             >
               {!singleSelect && (
                 <span style={{
                   width: 13, height: 13, borderRadius: 3, flexShrink: 0,
-                  border: active ? "1.5px solid #8B5CF6" : "1.5px solid rgba(255,255,255,0.15)",
-                  background: active ? "#8B5CF6" : "transparent",
+                  border: active ? `1.5px solid ${accent}` : "1.5px solid rgba(255,255,255,0.15)",
+                  background: active ? accent : "transparent",
                   display: "flex", alignItems: "center", justifyContent: "center",
                 }}>
                   {active && <span style={{ width: 7, height: 7, background: "#fff", borderRadius: 1.5, display: "block" }} />}
@@ -97,13 +100,13 @@ export const RepoPicker: React.FC<RepoPickerProps> = ({
               {singleSelect && (
                 <span style={{
                   width: 11, height: 11, borderRadius: "50%", flexShrink: 0,
-                  border: active ? "1.5px solid #8B5CF6" : "1.5px solid rgba(255,255,255,0.15)",
-                  background: active ? "#8B5CF6" : "transparent",
+                  border: active ? `1.5px solid ${accent}` : "1.5px solid rgba(255,255,255,0.15)",
+                  background: active ? accent : "transparent",
                 }} />
               )}
               <span style={{
                 fontSize: "0.75rem", fontWeight: 500,
-                color: active ? "#C4B5FD" : "#6A7A9A",
+                color: active ? accent : "#6A7A9A",
                 overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1,
               }}>
                 {repo.name}

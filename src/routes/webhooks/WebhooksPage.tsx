@@ -17,6 +17,8 @@ import {
 } from "../../lib/tauri/commands";
 import type { Webhook, WebhookDelivery } from "../../types/governance";
 import type { Repo } from "../../types/repo";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 
 type Tab = "webhooks" | "bulk";
 
@@ -74,6 +76,7 @@ interface EditModalProps {
 const MODAL_EVENTS = COMMON_EVENTS;
 
 const EditModal: React.FC<EditModalProps> = ({ hook, repo, onClose, onSaved }) => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const addToast = useUIStore((s) => s.addToast);
   const [url, setUrl] = useState(hook.config.url);
   const [secret, setSecret] = useState("");
@@ -132,7 +135,7 @@ const EditModal: React.FC<EditModalProps> = ({ hook, repo, onClose, onSaved }) =
             <div style={{ display: "flex", gap: 8 }}>
               {(["json", "form"] as const).map((ct) => (
                 <button key={ct} onClick={() => setContentType(ct)}
-                  style={{ flex: 1, height: 30, borderRadius: 7, cursor: "pointer", fontSize: "0.75rem", fontWeight: 600, background: contentType === ct ? "rgba(139,92,246,0.14)" : "rgba(255,255,255,0.04)", border: contentType === ct ? "1px solid rgba(139,92,246,0.28)" : "1px solid rgba(255,255,255,0.08)", color: contentType === ct ? "#C4B5FD" : "#4A5580" }}>
+                  style={{ flex: 1, height: 30, borderRadius: 7, cursor: "pointer", fontSize: "0.75rem", fontWeight: 600, background: contentType === ct ? hexToRgba(accent, 0.14) : "rgba(255,255,255,0.04)", border: contentType === ct ? `1px solid ${hexToRgba(accent, 0.28)}` : "1px solid rgba(255,255,255,0.08)", color: contentType === ct ? accent : "#4A5580" }}>
                   {ct === "json" ? "application/json" : "application/x-www-form-urlencoded"}
                 </button>
               ))}
@@ -145,7 +148,7 @@ const EditModal: React.FC<EditModalProps> = ({ hook, repo, onClose, onSaved }) =
                 const on = events.has(ev);
                 return (
                   <button key={ev} onClick={() => toggleEv(ev)}
-                    style={{ height: 26, padding: "0 10px", borderRadius: 6, cursor: "pointer", fontSize: "0.6875rem", fontWeight: 600, background: on ? "rgba(139,92,246,0.14)" : "rgba(255,255,255,0.04)", border: on ? "1px solid rgba(139,92,246,0.28)" : "1px solid rgba(255,255,255,0.08)", color: on ? "#C4B5FD" : "#4A5580" }}>
+                    style={{ height: 26, padding: "0 10px", borderRadius: 6, cursor: "pointer", fontSize: "0.6875rem", fontWeight: 600, background: on ? hexToRgba(accent, 0.14) : "rgba(255,255,255,0.04)", border: on ? `1px solid ${hexToRgba(accent, 0.28)}` : "1px solid rgba(255,255,255,0.08)", color: on ? accent : "#4A5580" }}>
                     {ev}
                   </button>
                 );
@@ -155,7 +158,7 @@ const EditModal: React.FC<EditModalProps> = ({ hook, repo, onClose, onSaved }) =
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <span style={{ fontSize: "0.8125rem", color: "#8A94AA" }}>Active</span>
             <button onClick={() => setActive((v) => !v)}
-              style={{ width: 36, height: 20, borderRadius: 10, cursor: "pointer", transition: "background 150ms", background: active ? "#8B5CF6" : "rgba(255,255,255,0.08)", border: "none", position: "relative" }}>
+              style={{ width: 36, height: 20, borderRadius: 10, cursor: "pointer", transition: "background 150ms", background: active ? accent : "rgba(255,255,255,0.08)", border: "none", position: "relative" }}>
               <span style={{ position: "absolute", top: 2, width: 16, height: 16, borderRadius: "50%", background: "#fff", transition: "left 150ms", left: active ? 18 : 2 }} />
             </button>
           </div>
@@ -165,7 +168,7 @@ const EditModal: React.FC<EditModalProps> = ({ hook, repo, onClose, onSaved }) =
             Cancel
           </button>
           <button onClick={handleSave} disabled={saving || !url.trim()}
-            style={{ height: 34, padding: "0 20px", borderRadius: 8, cursor: "pointer", fontWeight: 700, fontSize: "0.875rem", display: "flex", alignItems: "center", gap: 7, background: "rgba(139,92,246,0.80)", border: "1px solid rgba(139,92,246,0.40)", color: "#fff", opacity: !url.trim() ? 0.4 : 1 }}>
+            style={{ height: 34, padding: "0 20px", borderRadius: 8, cursor: "pointer", fontWeight: 700, fontSize: "0.875rem", display: "flex", alignItems: "center", gap: 7, background: hexToRgba(accent, 0.80), border: `1px solid ${hexToRgba(accent, 0.40)}`, color: "#fff", opacity: !url.trim() ? 0.4 : 1 }}>
             {saving ? <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> : null}
             Save
           </button>
@@ -176,6 +179,7 @@ const EditModal: React.FC<EditModalProps> = ({ hook, repo, onClose, onSaved }) =
 };
 
 export const WebhooksPage: React.FC = () => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const repos = useRepoStore((s) => s.repos);
   const addToast = useUIStore((s) => s.addToast);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -389,9 +393,9 @@ export const WebhooksPage: React.FC = () => {
             <button key={t} onClick={() => setActiveTab(t)}
               style={{
                 height: 28, padding: "0 12px", borderRadius: 6, cursor: "pointer",
-                background: activeTab === t ? "rgba(139,92,246,0.14)" : "transparent",
-                border: activeTab === t ? "1px solid rgba(139,92,246,0.28)" : "1px solid transparent",
-                color: activeTab === t ? "#C4B5FD" : "#4A5580",
+                background: activeTab === t ? hexToRgba(accent, 0.14) : "transparent",
+                border: activeTab === t ? `1px solid ${hexToRgba(accent, 0.28)}` : "1px solid transparent",
+                color: activeTab === t ? accent : "#4A5580",
                 fontSize: "0.8125rem", fontWeight: 500,
               }}
             >
@@ -472,7 +476,7 @@ export const WebhooksPage: React.FC = () => {
                     </button>
                     <button onClick={() => handlePing(hook)}
                       title="Send a ping event to test connectivity"
-                      style={{ height: 26, padding: "0 8px", borderRadius: 6, cursor: "pointer", background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.18)", color: "#A78BFA", fontSize: "0.6875rem" }}>
+                      style={{ height: 26, padding: "0 8px", borderRadius: 6, cursor: "pointer", background: hexToRgba(accent, 0.08), border: `1px solid ${hexToRgba(accent, 0.18)}`, color: accent, fontSize: "0.6875rem" }}>
                       Ping
                     </button>
                     <button onClick={() => setEditingHook(hook)}
@@ -499,7 +503,7 @@ export const WebhooksPage: React.FC = () => {
                 }}>
                   <Info size={14} style={{ color: "#60A5FA", flexShrink: 0, marginTop: 1 }} />
                   <p style={{ fontSize: "0.75rem", color: "#7A90B4", lineHeight: 1.55, margin: 0 }}>
-                    Creates the exact same webhook on all <strong style={{ color: "#C4B5FD" }}>{selectedIds.size} selected repo{selectedIds.size !== 1 ? "s" : ""}</strong> at once.
+                    Creates the exact same webhook on all <strong style={{ color: accent }}>{selectedIds.size} selected repo{selectedIds.size !== 1 ? "s" : ""}</strong> at once.
                     GitHub will immediately start sending events to your URL.
                   </p>
                 </div>
@@ -521,7 +525,7 @@ export const WebhooksPage: React.FC = () => {
                     <div style={{ display: "flex", gap: 8 }}>
                       {(["json", "form"] as const).map((ct) => (
                         <button key={ct} onClick={() => setBulkContentType(ct)}
-                          style={{ flex: 1, height: 30, borderRadius: 7, cursor: "pointer", fontSize: "0.75rem", fontWeight: 600, background: bulkContentType === ct ? "rgba(139,92,246,0.14)" : "rgba(255,255,255,0.04)", border: bulkContentType === ct ? "1px solid rgba(139,92,246,0.28)" : "1px solid rgba(255,255,255,0.08)", color: bulkContentType === ct ? "#C4B5FD" : "#4A5580" }}>
+                          style={{ flex: 1, height: 30, borderRadius: 7, cursor: "pointer", fontSize: "0.75rem", fontWeight: 600, background: bulkContentType === ct ? hexToRgba(accent, 0.14) : "rgba(255,255,255,0.04)", border: bulkContentType === ct ? `1px solid ${hexToRgba(accent, 0.28)}` : "1px solid rgba(255,255,255,0.08)", color: bulkContentType === ct ? accent : "#4A5580" }}>
                           {ct === "json" ? "application/json" : "application/x-www-form-urlencoded"}
                         </button>
                       ))}
@@ -535,7 +539,7 @@ export const WebhooksPage: React.FC = () => {
                         const on = bulkEvents.has(ev);
                         return (
                           <button key={ev} onClick={() => toggleEvent(ev)}
-                            style={{ height: 26, padding: "0 10px", borderRadius: 6, cursor: "pointer", fontSize: "0.6875rem", fontWeight: 600, background: on ? "rgba(139,92,246,0.14)" : "rgba(255,255,255,0.04)", border: on ? "1px solid rgba(139,92,246,0.28)" : "1px solid rgba(255,255,255,0.08)", color: on ? "#C4B5FD" : "#4A5580" }}>
+                            style={{ height: 26, padding: "0 10px", borderRadius: 6, cursor: "pointer", fontSize: "0.6875rem", fontWeight: 600, background: on ? hexToRgba(accent, 0.14) : "rgba(255,255,255,0.04)", border: on ? `1px solid ${hexToRgba(accent, 0.28)}` : "1px solid rgba(255,255,255,0.08)", color: on ? accent : "#4A5580" }}>
                             {ev}
                           </button>
                         );
@@ -547,10 +551,10 @@ export const WebhooksPage: React.FC = () => {
                     <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 8, padding: "10px 14px" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                         <span style={{ fontSize: "0.75rem", color: "#7A88A6" }}>Progress</span>
-                        <span style={{ fontSize: "0.75rem", color: "#C4B5FD" }}>{bulkProgress.done} / {bulkProgress.total}</span>
+                        <span style={{ fontSize: "0.75rem", color: accent }}>{bulkProgress.done} / {bulkProgress.total}</span>
                       </div>
                       <div style={{ height: 4, borderRadius: 2, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
-                        <div style={{ height: "100%", borderRadius: 2, background: "linear-gradient(90deg, #8B5CF6, #7C3AED)", width: `${(bulkProgress.done / bulkProgress.total) * 100}%`, transition: "width 200ms" }} />
+                        <div style={{ height: "100%", borderRadius: 2, background: `linear-gradient(90deg, ${accent}, ${accent})`, width: `${(bulkProgress.done / bulkProgress.total) * 100}%`, transition: "width 200ms" }} />
                       </div>
                     </div>
                   )}
@@ -560,7 +564,7 @@ export const WebhooksPage: React.FC = () => {
                     style={{
                       height: 38, borderRadius: 9, cursor: "pointer", fontWeight: 700, fontSize: "0.875rem",
                       display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-                      background: "rgba(139,92,246,0.80)", border: "1px solid rgba(139,92,246,0.40)", color: "#fff",
+                      background: hexToRgba(accent, 0.80), border: `1px solid ${hexToRgba(accent, 0.40)}`, color: "#fff",
                       opacity: (!selectedIds.size || !bulkUrl.trim() || !bulkEvents.size) ? 0.4 : 1,
                     }}
                   >

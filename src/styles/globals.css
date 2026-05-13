@@ -62,10 +62,13 @@
 
 
 :root {
+  --accent:              #8B5CF6;
+  --accent-rgb:          139, 92, 246;
+
   --glass-border:        rgba(255,255,255,0.08);
   --glass-border-mid:    rgba(255,255,255,0.11);
-  --glass-border-accent: rgba(139,92,246,0.40);
-  --primary-glow:        rgba(139,92,246,0.22);
+  --glass-border-accent: rgba(var(--accent-rgb), 0.40);
+  --primary-glow:        rgba(var(--accent-rgb), 0.22);
   --secondary-glow:      rgba(6,182,212,0.18);
   --success-glow:        rgba(16,185,129,0.18);
   --warning-glow:        rgba(245,158,11,0.18);
@@ -106,7 +109,7 @@ body::before {
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 70% 55% at 15% 15%, rgba(139,92,246,0.09) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 55% at 15% 15%, rgba(var(--accent-rgb), 0.09) 0%, transparent 65%),
     radial-gradient(ellipse 55% 75% at 85% 75%, rgba(6,182,212,0.06) 0%, transparent 65%),
     radial-gradient(ellipse 45% 45% at 50% 105%, rgba(236,72,153,0.04) 0%, transparent 55%);
   animation: bgDrift 28s ease-in-out infinite alternate;
@@ -137,13 +140,13 @@ body::after {
 
 
 ::selection {
-  background: rgba(139,92,246,0.32);
+  background: rgba(var(--accent-rgb), 0.32);
   color: #E8EAF0;
 }
 
 
 :focus-visible {
-  outline: 2px solid rgba(139,92,246,0.55);
+  outline: 2px solid rgba(var(--accent-rgb), 0.55);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -166,7 +169,7 @@ select option {
 }
 select option:checked,
 select option:hover {
-  background-color: rgba(139,92,246,0.25);
+  background-color: rgba(var(--accent-rgb), 0.25);
 }
 
 
@@ -195,8 +198,8 @@ input[type="checkbox"].zrm-check {
   transition: background 150ms ease, border-color 150ms ease;
 }
 input[type="checkbox"].zrm-check:checked {
-  background: rgba(139,92,246,0.5);
-  border-color: rgba(139,92,246,0.8);
+  background: rgba(var(--accent-rgb), 0.5);
+  border-color: rgba(var(--accent-rgb), 0.8);
 }
 input[type="checkbox"].zrm-check:checked::after {
   content: '';

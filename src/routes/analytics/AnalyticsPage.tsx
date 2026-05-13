@@ -5,19 +5,9 @@ import {
 } from "recharts";
 import { LayoutDashboard, BarChart3, Star, GitFork, Globe, Lock, Activity, Tag } from "lucide-react";
 import { useRepoStore } from "../../stores/repoStore";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 
-const CHART_COLORS = ["#8B5CF6", "#06B6D4", "#10B981", "#F59E0B", "#EF4444", "#EC4899", "#3B82F6", "#F97316"];
-const tooltipStyle = {
-  contentStyle: {
-    background: "rgba(8,10,20,0.97)",
-    border: "1px solid rgba(255,255,255,0.12)",
-    borderRadius: 12, fontSize: 12, color: "#D4D8E8",
-    boxShadow: "0 8px 32px rgba(0,0,0,0.50)",
-  },
-  labelStyle: { color: "#D4D8E8", fontWeight: 700, marginBottom: 4 },
-  itemStyle: { color: "#A78BFA" },
-  cursor: { fill: "rgba(255,255,255,0.04)" },
-};
 
 interface StatCardProps { label: string; value: string | number; sub?: string; color?: string; icon?: React.ReactNode }
 const StatCard: React.FC<StatCardProps> = ({ label, value, sub, color = "#D4D8E8", icon }) => (
@@ -56,7 +46,20 @@ const ChartCard: React.FC<{ kicker: string; title: string; children: React.React
 );
 
 export const AnalyticsPage: React.FC = () => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const repos = useRepoStore((s) => s.repos);
+  const CHART_COLORS = [accent, "#06B6D4", "#10B981", "#F59E0B", "#EF4444", "#EC4899", "#3B82F6", "#F97316"];
+  const tooltipStyle = {
+    contentStyle: {
+      background: "rgba(8,10,20,0.97)",
+      border: "1px solid rgba(255,255,255,0.12)",
+      borderRadius: 12, fontSize: 12, color: "#D4D8E8",
+      boxShadow: "0 8px 32px rgba(0,0,0,0.50)",
+    },
+    labelStyle: { color: "#D4D8E8", fontWeight: 700, marginBottom: 4 },
+    itemStyle: { color: accent },
+    cursor: { fill: "rgba(255,255,255,0.04)" },
+  };
 
   const total = repos.length;
   const publicCount = repos.filter((r) => !r.private).length;
@@ -113,8 +116,8 @@ export const AnalyticsPage: React.FC = () => {
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{
               width: 32, height: 32, borderRadius: 9,
-              background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.25)",
-              display: "flex", alignItems: "center", justifyContent: "center", color: "#A78BFA",
+              background: hexToRgba(accent, 0.15), border: `1px solid ${hexToRgba(accent, 0.25)}`,
+              display: "flex", alignItems: "center", justifyContent: "center", color: accent,
             }}>
               <LayoutDashboard size={15} />
             </div>
@@ -147,8 +150,8 @@ export const AnalyticsPage: React.FC = () => {
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
           <div style={{
             width: 32, height: 32, borderRadius: 9,
-            background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.25)",
-            display: "flex", alignItems: "center", justifyContent: "center", color: "#A78BFA",
+            background: hexToRgba(accent, 0.15), border: `1px solid ${hexToRgba(accent, 0.25)}`,
+            display: "flex", alignItems: "center", justifyContent: "center", color: accent,
           }}>
             <LayoutDashboard size={15} />
           </div>
@@ -167,7 +170,7 @@ export const AnalyticsPage: React.FC = () => {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 10 }}>
           <StatCard label="Total repos"   value={total}                      icon={<Activity size={11} />} />
           <StatCard label="Public"        value={publicCount}  color="#22D3EE" icon={<Globe size={11} />} />
-          <StatCard label="Private"       value={privateCount} color="#A78BFA" icon={<Lock size={11} />} />
+          <StatCard label="Private"       value={privateCount} color={accent} icon={<Lock size={11} />} />
           <StatCard label="Active"        value={activeCount}  color="#10B981" />
           <StatCard label="Total stars"   value={totalStars.toLocaleString()} color="#F59E0B" icon={<Star size={11} />} />
           <StatCard label="Disk (approx)" value={sizeLabel} />
@@ -178,7 +181,7 @@ export const AnalyticsPage: React.FC = () => {
           <StatCard label="Archived"  value={archivedCount}   color="#6B7280" />
           <StatCard label="Dead"      value={deadCount}       color="#EF4444" />
           <StatCard label="Avg stars" value={avgStars}        color="#F59E0B" icon={<Star size={11} />} />
-          <StatCard label="Topics used" value={topicMap.size} color="#8B5CF6" icon={<Tag size={11} />} />
+          <StatCard label="Topics used" value={topicMap.size} color={accent} icon={<Tag size={11} />} />
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>

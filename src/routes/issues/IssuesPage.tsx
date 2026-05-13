@@ -7,6 +7,8 @@ import {
 import { RepoPicker } from "../../components/repos/RepoPicker";
 import { useRepoStore } from "../../stores/repoStore";
 import { useUIStore } from "../../stores/uiStore";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 import { fanout } from "../../lib/utils/fanout";
 import { formatInvokeError } from "../../lib/formatError";
 import { openUrlExternal, ghListIssues, ghCreateIssue, ghUpdateIssue, ghListIssueComments, ghCreateIssueComment, ghListLabels, ghListMilestones, ghAddLabelsToIssue } from "../../lib/tauri/commands";
@@ -45,6 +47,7 @@ const INPUT: React.CSSProperties = {
 };
 
 export const IssuesPage: React.FC = () => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const repos = useRepoStore((s) => s.repos);
   const addToast = useUIStore((s) => s.addToast);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -194,8 +197,8 @@ export const IssuesPage: React.FC = () => {
 
   const TAB_STYLE = (active: boolean): React.CSSProperties => ({
     padding: "6px 16px", borderRadius: 8, cursor: "pointer",
-    border: "none", background: active ? "rgba(139,92,246,0.18)" : "transparent",
-    color: active ? "#C4B5FD" : "#7A8AAE", fontSize: "0.8125rem", fontWeight: 500,
+    border: "none", background: active ? hexToRgba(accent, 0.18) : "transparent",
+    color: active ? accent : "#7A8AAE", fontSize: "0.8125rem", fontWeight: 500,
     transition: "all 130ms ease",
   });
 
@@ -217,7 +220,7 @@ export const IssuesPage: React.FC = () => {
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", padding: "20px 24px 0" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-          <CircleDot size={18} style={{ color: "#8B5CF6" }} />
+          <CircleDot size={18} style={{ color: accent }} />
           <h1 style={{ fontSize: "1.125rem", fontWeight: 700, color: "#D4D8E8" }}>Issues</h1>
           {viewingRepo && <span style={{ fontSize: "0.8125rem", color: "#4A5580" }}>{viewingRepo.full_name}</span>}
           <div style={{ marginLeft: "auto", display: "flex", gap: 4 }}>
@@ -237,8 +240,8 @@ export const IssuesPage: React.FC = () => {
                   onClick={() => setStateFilter(s)}
                   style={{
                     padding: "4px 12px", borderRadius: 7, cursor: "pointer", border: "none",
-                    background: stateFilter === s ? "rgba(139,92,246,0.18)" : "rgba(255,255,255,0.04)",
-                    color: stateFilter === s ? "#C4B5FD" : "#7A8AAE", fontSize: "0.8125rem", fontWeight: 500,
+                    background: stateFilter === s ? hexToRgba(accent, 0.18) : "rgba(255,255,255,0.04)",
+                    color: stateFilter === s ? accent : "#7A8AAE", fontSize: "0.8125rem", fontWeight: 500,
                     textTransform: "capitalize",
                   }}
                 >{s}</button>
@@ -269,14 +272,14 @@ export const IssuesPage: React.FC = () => {
                       style={{
                         display: "flex", alignItems: "center", gap: 10, padding: "10px 12px",
                         cursor: "pointer", borderRadius: 8,
-                        background: expandedId === issue.id ? "rgba(139,92,246,0.07)" : "transparent",
+                        background: expandedId === issue.id ? hexToRgba(accent, 0.07) : "transparent",
                         transition: "background 120ms ease",
                       }}
                       onClick={() => toggleExpand(issue)}
                     >
                       {issue.state === "open"
                         ? <CircleDot size={15} style={{ color: "#10B981", flexShrink: 0 }} />
-                        : <CheckCircle2 size={15} style={{ color: "#8B5CF6", flexShrink: 0 }} />}
+                        : <CheckCircle2 size={15} style={{ color: accent, flexShrink: 0 }} />}
                       <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#C8CDD8", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         #{issue.number} {issue.title}
                       </span>
@@ -321,8 +324,8 @@ export const IssuesPage: React.FC = () => {
                             style={{
                               display: "flex", alignItems: "center", gap: 5,
                               padding: "4px 12px", borderRadius: 6, cursor: "pointer", border: "none",
-                              background: issue.state === "open" ? "rgba(139,92,246,0.14)" : "rgba(16,185,129,0.12)",
-                              color: issue.state === "open" ? "#C4B5FD" : "#6EE7B7",
+                              background: issue.state === "open" ? hexToRgba(accent, 0.14) : "rgba(16,185,129,0.12)",
+                              color: issue.state === "open" ? accent : "#6EE7B7",
                               fontSize: "0.75rem", fontWeight: 600,
                             }}>
                             {issue.state === "open" ? <><X size={11} />Close issue</> : <><CheckCircle2 size={11} />Reopen</>}
@@ -348,12 +351,12 @@ export const IssuesPage: React.FC = () => {
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{
                                 borderRadius: "0 10px 10px 10px",
-                                border: "1px solid rgba(139,92,246,0.18)",
-                                background: "rgba(139,92,246,0.06)",
+                                border: `1px solid ${hexToRgba(accent, 0.18)}`,
+                                background: hexToRgba(accent, 0.06),
                                 overflow: "hidden",
                               }}>
-                                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 12px", borderBottom: "1px solid rgba(139,92,246,0.10)", background: "rgba(139,92,246,0.04)" }}>
-                                  <span style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#C4B5FD" }}>{issue.user_login}</span>
+                                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 12px", borderBottom: `1px solid ${hexToRgba(accent, 0.10)}`, background: hexToRgba(accent, 0.04) }}>
+                                  <span style={{ fontSize: "0.8125rem", fontWeight: 700, color: accent }}>{issue.user_login}</span>
                                   <span style={{ fontSize: "0.6875rem", color: "#3A4560" }}>opened · {fmtDate(issue.created_at)}</span>
                                   <div style={{ flex: 1 }} />
                                   {issue.labels.map((l) => (
@@ -407,10 +410,10 @@ export const IssuesPage: React.FC = () => {
                           <div style={{ display: "flex", gap: 10, paddingTop: 4 }}>
                             <div style={{
                               width: 28, height: 28, borderRadius: "50%", flexShrink: 0, marginTop: 2,
-                              background: "linear-gradient(135deg, rgba(139,92,246,0.35), rgba(109,60,221,0.25))",
-                              border: "1.5px solid rgba(139,92,246,0.30)",
+                              background: `linear-gradient(135deg, ${hexToRgba(accent, 0.35)}, ${hexToRgba(accent, 0.25)})`,
+                              border: `1.5px solid ${hexToRgba(accent, 0.30)}`,
                               display: "flex", alignItems: "center", justifyContent: "center",
-                              fontSize: "0.75rem", fontWeight: 800, color: "#A78BFA",
+                              fontSize: "0.75rem", fontWeight: 800, color: accent,
                             }}>
                               Y
                             </div>
@@ -428,7 +431,7 @@ export const IssuesPage: React.FC = () => {
                                   padding: "9px 12px", outline: "none", resize: "vertical",
                                   lineHeight: 1.6,
                                 }}
-                                onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(139,92,246,0.40)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(139,92,246,0.08)"; }}
+                                onFocus={(e) => { e.currentTarget.style.borderColor = hexToRgba(accent, 0.40); e.currentTarget.style.boxShadow = `0 0 0 3px ${hexToRgba(accent, 0.08)}`; }}
                                 onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.10)"; e.currentTarget.style.boxShadow = "none"; }}
                               />
                               <div style={{ display: "flex", justifyContent: "flex-end" }}>
@@ -438,7 +441,7 @@ export const IssuesPage: React.FC = () => {
                                   style={{
                                     display: "flex", alignItems: "center", gap: 6,
                                     padding: "6px 18px", borderRadius: 8, cursor: "pointer", border: "none",
-                                    background: "linear-gradient(135deg, rgba(139,92,246,0.55), rgba(109,60,221,0.55))",
+                                    background: `linear-gradient(135deg, ${hexToRgba(accent, 0.55)}, ${hexToRgba(accent, 0.55)})`,
                                     color: "#E0D7FF", fontSize: "0.8125rem", fontWeight: 600,
                                     opacity: replyLoading || !replyBody.trim() ? 0.45 : 1,
                                     transition: "opacity 130ms",
@@ -497,7 +500,7 @@ export const IssuesPage: React.FC = () => {
             <button type="button" onClick={handleCreateIssue} disabled={createLoading || !createTitle.trim() || !viewingRepo}
               style={{
                 alignSelf: "flex-start", padding: "8px 24px", borderRadius: 8, cursor: "pointer", border: "none",
-                background: "linear-gradient(135deg, rgba(139,92,246,0.45), rgba(109,60,221,0.45))",
+                background: `linear-gradient(135deg, ${hexToRgba(accent, 0.45)}, ${hexToRgba(accent, 0.45)})`,
                 color: "#E0D7FF", fontSize: "0.875rem", fontWeight: 700,
                 opacity: createLoading || !createTitle.trim() || !viewingRepo ? 0.5 : 1,
               }}>
@@ -542,8 +545,8 @@ export const IssuesPage: React.FC = () => {
                       style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", borderBottom: "1px solid rgba(255,255,255,0.04)", cursor: "pointer" }}
                       onClick={() => setBulkSelected((prev) => { const n = new Set(prev); n.has(issue.id) ? n.delete(issue.id) : n.add(issue.id); return n; })}
                     >
-                      {bulkSelected.has(issue.id) ? <CheckSquare size={15} style={{ color: "#8B5CF6", flexShrink: 0 }} /> : <Square size={15} style={{ color: "#4A5580", flexShrink: 0 }} />}
-                      {issue.state === "open" ? <CircleDot size={13} style={{ color: "#10B981", flexShrink: 0 }} /> : <CheckCircle2 size={13} style={{ color: "#8B5CF6", flexShrink: 0 }} />}
+                      {bulkSelected.has(issue.id) ? <CheckSquare size={15} style={{ color: accent, flexShrink: 0 }} /> : <Square size={15} style={{ color: "#4A5580", flexShrink: 0 }} />}
+                      {issue.state === "open" ? <CircleDot size={13} style={{ color: "#10B981", flexShrink: 0 }} /> : <CheckCircle2 size={13} style={{ color: accent, flexShrink: 0 }} />}
                       <span style={{ fontSize: "0.8125rem", color: "#C8CDD8", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>#{issue.number} {issue.title}</span>
                     </div>
                   ))}

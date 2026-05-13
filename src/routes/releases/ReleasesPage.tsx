@@ -7,6 +7,8 @@ import { open as tauriOpen } from "@tauri-apps/plugin-dialog";
 import { RepoPicker } from "../../components/repos/RepoPicker";
 import { useRepoStore } from "../../stores/repoStore";
 import { useUIStore } from "../../stores/uiStore";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 import { formatInvokeError } from "../../lib/formatError";
 import {
   ghListReleases, ghCreateRelease, ghUpdateRelease, ghDeleteRelease,
@@ -50,6 +52,7 @@ const BADGE: React.CSSProperties = {
 };
 
 export const ReleasesPage: React.FC = () => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const repos = useRepoStore((s) => s.repos);
   const addToast = useUIStore((s) => s.addToast);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -215,8 +218,8 @@ export const ReleasesPage: React.FC = () => {
 
   const TAB_STYLE = (active: boolean): React.CSSProperties => ({
     padding: "6px 16px", borderRadius: 8, cursor: "pointer", border: "none",
-    background: active ? "rgba(139,92,246,0.18)" : "transparent",
-    color: active ? "#C4B5FD" : "#7A8AAE", fontSize: "0.8125rem", fontWeight: 500,
+    background: active ? hexToRgba(accent, 0.18) : "transparent",
+    color: active ? accent : "#7A8AAE", fontSize: "0.8125rem", fontWeight: 500,
     transition: "all 130ms ease",
   });
 
@@ -231,7 +234,7 @@ export const ReleasesPage: React.FC = () => {
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", padding: "20px 24px 0" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-          <Tag size={18} style={{ color: "#8B5CF6" }} />
+          <Tag size={18} style={{ color: accent }} />
           <h1 style={{ fontSize: "1.125rem", fontWeight: 700, color: "#D4D8E8" }}>Releases</h1>
           {viewingRepo && <span style={{ fontSize: "0.8125rem", color: "#4A5580" }}>{viewingRepo.full_name}</span>}
           <div style={{ marginLeft: "auto", display: "flex", gap: 4 }}>
@@ -263,11 +266,11 @@ export const ReleasesPage: React.FC = () => {
                 {releases.map((rel) => (
                   <div key={rel.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.055)", marginBottom: 1 }}>
                     <div
-                      style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", cursor: "pointer", borderRadius: 8, background: expandedId === rel.id ? "rgba(139,92,246,0.07)" : "transparent", transition: "background 120ms ease" }}
+                      style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", cursor: "pointer", borderRadius: 8, background: expandedId === rel.id ? hexToRgba(accent, 0.07) : "transparent", transition: "background 120ms ease" }}
                       onClick={() => setExpandedId(expandedId === rel.id ? null : rel.id)}
                     >
-                      <Tag size={14} style={{ color: "#8B5CF6", flexShrink: 0 }} />
-                      <span style={{ fontFamily: "monospace", fontSize: "0.875rem", fontWeight: 700, color: "#C4B5FD", flexShrink: 0 }}>{rel.tag_name}</span>
+                      <Tag size={14} style={{ color: accent, flexShrink: 0 }} />
+                      <span style={{ fontFamily: "monospace", fontSize: "0.875rem", fontWeight: 700, color: accent, flexShrink: 0 }}>{rel.tag_name}</span>
                       <span style={{ fontSize: "0.8125rem", color: "#C8CDD8", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{rel.name ?? ""}</span>
                       {rel.draft && <span style={{ ...BADGE, background: "rgba(107,114,128,0.2)", color: "#9CA3AF", border: "1px solid rgba(107,114,128,0.3)" }}>Draft</span>}
                       {rel.prerelease && <span style={{ ...BADGE, background: "rgba(245,158,11,0.15)", color: "#FCD34D", border: "1px solid rgba(245,158,11,0.25)" }}>Pre-release</span>}
@@ -312,7 +315,7 @@ export const ReleasesPage: React.FC = () => {
                                 <span style={{ fontSize: "0.6875rem", color: "#4A5580" }}>{fmtSize(asset.size)}</span>
                                 <span style={{ fontSize: "0.6875rem", color: "#4A5580" }}>{asset.download_count} dl</span>
                                 <button type="button" onClick={() => openUrlExternal(asset.browser_download_url)}
-                                  style={{ padding: "3px 10px", borderRadius: 6, cursor: "pointer", border: "none", background: "rgba(139,92,246,0.15)", color: "#C4B5FD", fontSize: "0.75rem" }}>
+                                  style={{ padding: "3px 10px", borderRadius: 6, cursor: "pointer", border: "none", background: hexToRgba(accent, 0.15), color: accent, fontSize: "0.75rem" }}>
                                   <Download size={11} style={{ display: "inline", marginRight: 4 }} />Download
                                 </button>
                                 <button type="button" onClick={() => handleDeleteAsset(rel, asset)}
@@ -361,11 +364,11 @@ export const ReleasesPage: React.FC = () => {
             </div>
             <div style={{ display: "flex", gap: 16 }}>
               <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: "0.875rem", color: "#9AA5BE" }}>
-                <input type="checkbox" checked={createForm.draft} onChange={(e) => setCreateForm((f) => ({ ...f, draft: e.target.checked }))} style={{ accentColor: "#8B5CF6" }} />
+                <input type="checkbox" checked={createForm.draft} onChange={(e) => setCreateForm((f) => ({ ...f, draft: e.target.checked }))} style={{ accentColor: accent }} />
                 Draft
               </label>
               <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: "0.875rem", color: "#9AA5BE" }}>
-                <input type="checkbox" checked={createForm.prerelease} onChange={(e) => setCreateForm((f) => ({ ...f, prerelease: e.target.checked }))} style={{ accentColor: "#8B5CF6" }} />
+                <input type="checkbox" checked={createForm.prerelease} onChange={(e) => setCreateForm((f) => ({ ...f, prerelease: e.target.checked }))} style={{ accentColor: accent }} />
                 Pre-release
               </label>
             </div>
@@ -373,7 +376,7 @@ export const ReleasesPage: React.FC = () => {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                 <label style={{ fontSize: "0.75rem", color: "#7A8AAE" }}>Assets to upload ({createAssets.length})</label>
                 <button type="button" onClick={handlePickCreateAssets}
-                  style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 12px", borderRadius: 7, cursor: "pointer", border: "1px solid rgba(139,92,246,0.35)", background: "rgba(139,92,246,0.1)", color: "#C4B5FD", fontSize: "0.8125rem" }}>
+                  style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 12px", borderRadius: 7, cursor: "pointer", border: `1px solid ${hexToRgba(accent, 0.35)}`, background: hexToRgba(accent, 0.1), color: accent, fontSize: "0.8125rem" }}>
                   <Upload size={12} />Pick files
                 </button>
               </div>
@@ -392,15 +395,15 @@ export const ReleasesPage: React.FC = () => {
               )}
               {uploadProgress && (
                 <div style={{ marginTop: 8 }}>
-                  <div style={{ fontSize: "0.75rem", color: "#C4B5FD", marginBottom: 4 }}>Uploading {uploadProgress.current}/{uploadProgress.total}…</div>
+                  <div style={{ fontSize: "0.75rem", color: accent, marginBottom: 4 }}>Uploading {uploadProgress.current}/{uploadProgress.total}…</div>
                   <div style={{ height: 4, borderRadius: 4, background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
-                    <div style={{ height: "100%", borderRadius: 4, background: "linear-gradient(90deg, #8B5CF6, #6D3CDD)", width: `${(uploadProgress.current / uploadProgress.total) * 100}%`, transition: "width 200ms ease" }} />
+                    <div style={{ height: "100%", borderRadius: 4, background: `linear-gradient(90deg, ${accent}, ${accent})`, width: `${(uploadProgress.current / uploadProgress.total) * 100}%`, transition: "width 200ms ease" }} />
                   </div>
                 </div>
               )}
             </div>
             <button type="button" onClick={handleCreate} disabled={createLoading || !createForm.tagName.trim() || !viewingRepo}
-              style={{ alignSelf: "flex-start", padding: "8px 24px", borderRadius: 8, cursor: "pointer", border: "none", background: "linear-gradient(135deg, rgba(139,92,246,0.45), rgba(109,60,221,0.45))", color: "#E0D7FF", fontSize: "0.875rem", fontWeight: 700, opacity: createLoading || !createForm.tagName.trim() || !viewingRepo ? 0.5 : 1 }}>
+              style={{ alignSelf: "flex-start", padding: "8px 24px", borderRadius: 8, cursor: "pointer", border: "none", background: `linear-gradient(135deg, ${hexToRgba(accent, 0.45)}, ${hexToRgba(accent, 0.45)})`, color: "#E0D7FF", fontSize: "0.875rem", fontWeight: 700, opacity: createLoading || !createForm.tagName.trim() || !viewingRepo ? 0.5 : 1 }}>
               {uploadProgress ? `Uploading ${uploadProgress.current}/${uploadProgress.total}…` : createLoading ? "Creating…" : createAssets.length > 0 ? `Create & Upload ${createAssets.length} file(s)` : "Create Release"}
             </button>
           </div>
@@ -410,7 +413,7 @@ export const ReleasesPage: React.FC = () => {
           <div style={{ flex: 1, overflowY: "auto" }}>
             <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
               <button type="button" onClick={loadOverview} disabled={overviewLoading}
-                style={{ padding: "5px 14px", borderRadius: 7, border: "none", background: "rgba(139,92,246,0.15)", color: "#C4B5FD", cursor: "pointer", fontSize: "0.8125rem" }}>
+                style={{ padding: "5px 14px", borderRadius: 7, border: "none", background: hexToRgba(accent, 0.15), color: accent, cursor: "pointer", fontSize: "0.8125rem" }}>
                 {overviewLoading ? <Loader2 size={13} style={{ animation: "spin 1s linear infinite", display: "inline" }} /> : <RefreshCw size={13} style={{ display: "inline" }} />} Refresh
               </button>
             </div>
@@ -425,7 +428,7 @@ export const ReleasesPage: React.FC = () => {
                     <span style={{ fontSize: "0.75rem", color: "#EF4444", background: "rgba(239,68,68,0.1)", padding: "2px 8px", borderRadius: 6 }}>No releases</span>
                   ) : (
                     <>
-                      <span style={{ fontFamily: "monospace", fontSize: "0.8125rem", color: "#C4B5FD", background: "rgba(139,92,246,0.12)", padding: "2px 8px", borderRadius: 6 }}>{rel.tag_name}</span>
+                      <span style={{ fontFamily: "monospace", fontSize: "0.8125rem", color: accent, background: hexToRgba(accent, 0.12), padding: "2px 8px", borderRadius: 6 }}>{rel.tag_name}</span>
                       <span style={{ fontSize: "0.6875rem", color: "#4A5580" }}>{fmtDate(rel.published_at)}</span>
                     </>
                   )}
@@ -464,16 +467,16 @@ export const ReleasesPage: React.FC = () => {
               style={{ width: "100%", minHeight: 120, borderRadius: 8, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.10)", color: "#C8CDD8", fontSize: "0.875rem", padding: "8px 12px", outline: "none", resize: "vertical" }} />
             <div style={{ display: "flex", gap: 16 }}>
               <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: "0.875rem", color: "#9AA5BE" }}>
-                <input type="checkbox" checked={editForm.draft} onChange={(e) => setEditForm((f) => ({ ...f, draft: e.target.checked }))} style={{ accentColor: "#8B5CF6" }} />Draft
+                <input type="checkbox" checked={editForm.draft} onChange={(e) => setEditForm((f) => ({ ...f, draft: e.target.checked }))} style={{ accentColor: accent }} />Draft
               </label>
               <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: "0.875rem", color: "#9AA5BE" }}>
-                <input type="checkbox" checked={editForm.prerelease} onChange={(e) => setEditForm((f) => ({ ...f, prerelease: e.target.checked }))} style={{ accentColor: "#8B5CF6" }} />Pre-release
+                <input type="checkbox" checked={editForm.prerelease} onChange={(e) => setEditForm((f) => ({ ...f, prerelease: e.target.checked }))} style={{ accentColor: accent }} />Pre-release
               </label>
             </div>
             <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
               <button type="button" onClick={() => setEditingRelease(null)} style={{ padding: "7px 18px", borderRadius: 8, cursor: "pointer", border: "1px solid rgba(255,255,255,0.10)", background: "transparent", color: "#7A8AAE", fontSize: "0.875rem" }}>Cancel</button>
               <button type="button" onClick={handleEdit} disabled={editLoading}
-                style={{ padding: "7px 18px", borderRadius: 8, cursor: "pointer", border: "none", background: "rgba(139,92,246,0.3)", color: "#E0D7FF", fontSize: "0.875rem", fontWeight: 600 }}>
+                style={{ padding: "7px 18px", borderRadius: 8, cursor: "pointer", border: "none", background: hexToRgba(accent, 0.3), color: "#E0D7FF", fontSize: "0.875rem", fontWeight: 600 }}>
                 {editLoading ? "Saving…" : "Save"}
               </button>
             </div>

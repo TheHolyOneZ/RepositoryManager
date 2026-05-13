@@ -9,6 +9,8 @@ import { useRepoStore } from "../../stores/repoStore";
 import { useUIStore } from "../../stores/uiStore";
 import type { Repo } from "../../types/repo";
 import type { QueueItemInput } from "../../types/queue";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 
 
 type MigrationOp = "transfer" | "rename" | "visibility";
@@ -40,6 +42,7 @@ interface RepoPickerProps {
 }
 
 const RepoPicker: React.FC<RepoPickerProps> = ({ repos, picked, onToggle }) => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const [search, setSearch] = useState("");
 
   const filtered = useMemo(() => {
@@ -85,7 +88,7 @@ const RepoPicker: React.FC<RepoPickerProps> = ({ repos, picked, onToggle }) => {
               onClick={() => onToggle(repo)}
               style={{
                 width: "100%", display: "flex", alignItems: "center", gap: 10,
-                padding: "8px 14px", background: isPicked ? "rgba(139,92,246,0.08)" : "transparent",
+                padding: "8px 14px", background: isPicked ? hexToRgba(accent, 0.08) : "transparent",
                 border: "none", cursor: "pointer", textAlign: "left",
                 borderBottom: "1px solid rgba(255,255,255,0.03)",
                 transition: "background 100ms",
@@ -95,7 +98,7 @@ const RepoPicker: React.FC<RepoPickerProps> = ({ repos, picked, onToggle }) => {
             >
               <div style={{
                 width: 16, height: 16, borderRadius: 4, flexShrink: 0,
-                background: isPicked ? "linear-gradient(135deg, #8B5CF6, #7C3AED)" : "rgba(255,255,255,0.06)",
+                background: isPicked ? `linear-gradient(135deg, ${accent}, ${accent})` : "rgba(255,255,255,0.06)",
                 border: isPicked ? "none" : "1px solid rgba(255,255,255,0.10)",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 transition: "all 120ms",
@@ -104,7 +107,7 @@ const RepoPicker: React.FC<RepoPickerProps> = ({ repos, picked, onToggle }) => {
               </div>
               <span style={{
                 fontFamily: "'Cascadia Code','Consolas',monospace",
-                fontSize: "0.75rem", color: isPicked ? "#C4B5FD" : "#8991A4",
+                fontSize: "0.75rem", color: isPicked ? accent : "#8991A4",
                 overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
               }}>
                 {repo.name}
@@ -133,6 +136,7 @@ interface EntryRowProps {
 }
 
 const EntryRow: React.FC<EntryRowProps> = ({ entry, onChange, onRemove }) => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const cfg = OP_CONFIG[entry.op];
 
   const isValid =
@@ -153,7 +157,8 @@ const EntryRow: React.FC<EntryRowProps> = ({ entry, onChange, onRemove }) => {
       display: "flex", alignItems: "center", gap: 10,
       padding: "10px 14px", borderRadius: 10,
       background: isValid ? "rgba(255,255,255,0.025)" : "rgba(255,255,255,0.015)",
-      border: `1px solid ${isValid ? "rgba(139,92,246,0.18)" : "rgba(255,255,255,0.07)"}`,
+      border: `1px solid ${isValid ? hexToRgba(accent, 0.18) : "rgba(255,255,255,0.07)"}`,
+
       transition: "all 140ms",
     }}>
       <div style={{
@@ -165,7 +170,7 @@ const EntryRow: React.FC<EntryRowProps> = ({ entry, onChange, onRemove }) => {
 
       <span style={{
         fontFamily: "'Cascadia Code','Consolas',monospace",
-        fontSize: "0.75rem", color: "#A78BFA", flexShrink: 0, width: 160,
+        fontSize: "0.75rem", color: accent, flexShrink: 0, width: 160,
         overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
       }}>
         {entry.repo.full_name}
@@ -189,7 +194,7 @@ const EntryRow: React.FC<EntryRowProps> = ({ entry, onChange, onRemove }) => {
           onChange={(e) => onChange({ ...entry, newOwner: e.target.value })}
           placeholder="new-owner or org"
           style={{ ...inputStyle, flex: 1 }}
-          onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(139,92,246,0.45)"; }}
+          onFocus={(e) => { e.currentTarget.style.borderColor = hexToRgba(accent, 0.45); }}
           onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.10)"; }}
         />
       )}
@@ -199,7 +204,7 @@ const EntryRow: React.FC<EntryRowProps> = ({ entry, onChange, onRemove }) => {
           onChange={(e) => onChange({ ...entry, newName: e.target.value })}
           placeholder={`new name (was: ${entry.repo.name})`}
           style={{ ...inputStyle, flex: 1 }}
-          onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(139,92,246,0.45)"; }}
+          onFocus={(e) => { e.currentTarget.style.borderColor = hexToRgba(accent, 0.45); }}
           onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.10)"; }}
         />
       )}
@@ -240,6 +245,7 @@ const EntryRow: React.FC<EntryRowProps> = ({ entry, onChange, onRemove }) => {
 
 
 export const MigrationPage: React.FC = () => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const repos     = useRepoStore((s) => s.repos);
   const openModal = useUIStore((s) => s.openModal);
 
@@ -314,8 +320,8 @@ export const MigrationPage: React.FC = () => {
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
             <div style={{
               width: 32, height: 32, borderRadius: 9,
-              background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.25)",
-              display: "flex", alignItems: "center", justifyContent: "center", color: "#A78BFA",
+              background: hexToRgba(accent, 0.15), border: `1px solid ${hexToRgba(accent, 0.25)}`,
+              display: "flex", alignItems: "center", justifyContent: "center", color: accent,
             }}>
               <ArrowRightLeft size={15} />
             </div>
@@ -342,11 +348,11 @@ export const MigrationPage: React.FC = () => {
               height: 34, padding: "0 16px", borderRadius: 9, cursor: validEntries.length > 0 ? "pointer" : "not-allowed",
               display: "flex", alignItems: "center", gap: 6, flexShrink: 0,
               background: validEntries.length > 0
-                ? "linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)"
-                : "rgba(139,92,246,0.08)",
+                ? `linear-gradient(135deg, ${accent} 0%, ${accent} 100%)`
+                : hexToRgba(accent, 0.08),
               border: "none", color: validEntries.length > 0 ? "#fff" : "#4A5580",
               fontSize: "0.8125rem", fontWeight: 600,
-              boxShadow: validEntries.length > 0 ? "0 4px 14px rgba(139,92,246,0.30)" : "none",
+              boxShadow: validEntries.length > 0 ? `0 4px 14px ${hexToRgba(accent, 0.30)}` : "none",
               transition: "all 150ms",
             }}
           >
@@ -362,9 +368,9 @@ export const MigrationPage: React.FC = () => {
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{
                 width: 22, height: 22, borderRadius: 6,
-                background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.25)",
+                background: hexToRgba(accent, 0.15), border: `1px solid ${hexToRgba(accent, 0.25)}`,
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: "0.625rem", fontWeight: 800, color: "#A78BFA",
+                fontSize: "0.625rem", fontWeight: 800, color: accent,
               }}>1</div>
               <p style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#D4D8E8", letterSpacing: "-0.01em" }}>
                 Pick repositories
@@ -372,8 +378,8 @@ export const MigrationPage: React.FC = () => {
               {pickedIds.size > 0 && (
                 <span style={{
                   padding: "1px 7px", borderRadius: 6,
-                  fontSize: "0.625rem", fontWeight: 800, color: "#A78BFA",
-                  background: "rgba(139,92,246,0.14)", border: "1px solid rgba(139,92,246,0.25)",
+                  fontSize: "0.625rem", fontWeight: 800, color: accent,
+                  background: hexToRgba(accent, 0.14), border: `1px solid ${hexToRgba(accent, 0.25)}`,
                 }}>
                   {pickedIds.size} selected
                 </span>
@@ -421,9 +427,9 @@ export const MigrationPage: React.FC = () => {
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
               <div style={{
                 width: 22, height: 22, borderRadius: 6,
-                background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.25)",
+                background: hexToRgba(accent, 0.15), border: `1px solid ${hexToRgba(accent, 0.25)}`,
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: "0.625rem", fontWeight: 800, color: "#A78BFA",
+                fontSize: "0.625rem", fontWeight: 800, color: accent,
               }}>2</div>
               <p style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#D4D8E8", letterSpacing: "-0.01em" }}>
                 Configure operations

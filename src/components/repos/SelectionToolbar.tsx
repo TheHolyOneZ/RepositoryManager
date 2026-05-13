@@ -9,6 +9,8 @@ import { useSelectionStore } from "../../stores/selectionStore";
 import { useRepoStore, selectFilteredRepos } from "../../stores/repoStore";
 import { useShallow } from "zustand/react/shallow";
 import { useUIStore } from "../../stores/uiStore";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 
 import {
   exportReadmes, fetchReleases, exportReleaseAssets, exportRepoMetadata,
@@ -36,6 +38,7 @@ const ADVANCED_OPS: { id: AdvancedOp; icon: React.ReactNode; label: string; desc
 type RunState = { loading: boolean; result: ExportBatchResult | ReleaseResult[] | null; error: string | null };
 
 export const SelectionToolbar: React.FC = () => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const selectedIds = useSelectionStore((s) => s.selectedIds);
   const count = selectedIds.size;
   const deselectAll = useSelectionStore((s) => s.deselectAll);
@@ -130,7 +133,7 @@ export const SelectionToolbar: React.FC = () => {
                 padding: 16,
                 width: 520, maxWidth: "100%",
                 pointerEvents: "auto",
-                boxShadow: "0 20px 60px rgba(0,0,0,0.65), 0 0 0 1px rgba(139,92,246,0.08)",
+                boxShadow: `0 20px 60px rgba(0,0,0,0.65), 0 0 0 1px ${hexToRgba(accent, 0.08)}`,
               }}
             >
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
@@ -157,11 +160,11 @@ export const SelectionToolbar: React.FC = () => {
                       style={{
                         padding: "9px 12px", borderRadius: 10, cursor: "pointer",
                         textAlign: "left", transition: "all 130ms",
-                        background: active ? "rgba(139,92,246,0.14)" : "rgba(255,255,255,0.03)",
-                        border: active ? "1px solid rgba(139,92,246,0.35)" : "1px solid rgba(255,255,255,0.07)",
+                        background: active ? hexToRgba(accent, 0.14) : "rgba(255,255,255,0.03)",
+                        border: active ? `1px solid ${hexToRgba(accent, 0.35)}` : "1px solid rgba(255,255,255,0.07)",
                       }}
                     >
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3, color: active ? "#C4B5FD" : "#6B7A9B" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3, color: active ? accent : "#6B7A9B" }}>
                         {op.icon}
                         <span style={{ fontSize: "0.75rem", fontWeight: 600 }}>{op.label}</span>
                       </div>
@@ -190,7 +193,7 @@ export const SelectionToolbar: React.FC = () => {
                           outline: "none", boxSizing: "border-box",
                           fontFamily: "'Cascadia Code','Consolas',monospace",
                         }}
-                        onFocus={(e) => { e.currentTarget.style.border = "1px solid rgba(139,92,246,0.45)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(139,92,246,0.10)"; }}
+                        onFocus={(e) => { e.currentTarget.style.border = `1px solid ${hexToRgba(accent, 0.45)}`; e.currentTarget.style.boxShadow = `0 0 0 3px ${hexToRgba(accent, 0.10)}`; }}
                         onBlur={(e) => { e.currentTarget.style.border = "1px solid rgba(255,255,255,0.10)"; e.currentTarget.style.boxShadow = "none"; }}
                       />
                     </div>
@@ -252,7 +255,7 @@ export const SelectionToolbar: React.FC = () => {
                             {r.repo_name}
                           </p>
                           {r.success && r.release ? (
-                            <p style={{ fontSize: "0.625rem", color: "#8B5CF6" }}>
+                            <p style={{ fontSize: "0.625rem", color: accent }}>
                               {r.release.tag_name}{r.release.name ? ` — ${r.release.name}` : ""} · {r.release.assets.length} asset{r.release.assets.length !== 1 ? "s" : ""}
                             </p>
                           ) : (
@@ -284,11 +287,11 @@ export const SelectionToolbar: React.FC = () => {
                   disabled={run.loading}
                   style={{
                     height: 34, padding: "0 16px", borderRadius: 8,
-                    background: run.loading ? "rgba(139,92,246,0.20)" : "linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)",
+                    background: run.loading ? hexToRgba(accent, 0.20) : `linear-gradient(135deg, ${accent} 0%, ${accent} 100%)`,
                     border: "none", color: "#fff",
                     fontSize: "0.8125rem", fontWeight: 600, cursor: run.loading ? "not-allowed" : "pointer",
                     display: "flex", alignItems: "center", gap: 7,
-                    boxShadow: run.loading ? "none" : "0 4px 14px rgba(139,92,246,0.30)",
+                    boxShadow: run.loading ? "none" : `0 4px 14px ${hexToRgba(accent, 0.30)}`,
                     opacity: run.loading ? 0.7 : 1,
                     transition: "all 140ms",
                     flexShrink: 0,
@@ -310,7 +313,7 @@ export const SelectionToolbar: React.FC = () => {
           border: "1px solid rgba(255,255,255,0.12)",
           borderRadius: 18,
           padding: "6px 8px",
-          boxShadow: "0 20px 60px rgba(0,0,0,0.60), 0 0 0 1px rgba(139,92,246,0.10), 0 1px 0 rgba(255,255,255,0.06) inset",
+          boxShadow: `0 20px 60px rgba(0,0,0,0.60), 0 0 0 1px ${hexToRgba(accent, 0.10)}, 0 1px 0 rgba(255,255,255,0.06) inset`,
           maxWidth: "100%", overflow: "visible",
           pointerEvents: "auto",
         }}>
@@ -321,9 +324,9 @@ export const SelectionToolbar: React.FC = () => {
           }}>
             <div style={{
               width: 28, height: 28, borderRadius: 8,
-              background: "rgba(139,92,246,0.18)", border: "1px solid rgba(139,92,246,0.28)",
+              background: hexToRgba(accent, 0.18), border: `1px solid ${hexToRgba(accent, 0.28)}`,
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: "0.8125rem", fontWeight: 800, color: "#A78BFA",
+              fontSize: "0.8125rem", fontWeight: 800, color: accent,
               fontVariantNumeric: "tabular-nums",
             }}>
               {count}
@@ -426,9 +429,9 @@ export const SelectionToolbar: React.FC = () => {
               style={{
                 display: "flex", alignItems: "center", gap: 5,
                 height: 32, padding: "0 10px", borderRadius: 8, cursor: "pointer",
-                background: showAdvanced ? "rgba(139,92,246,0.18)" : "rgba(255,255,255,0.04)",
-                border: showAdvanced ? "1px solid rgba(139,92,246,0.35)" : "1px solid rgba(255,255,255,0.08)",
-                color: showAdvanced ? "#A78BFA" : "#6B7A9B",
+                background: showAdvanced ? hexToRgba(accent, 0.18) : "rgba(255,255,255,0.04)",
+                border: showAdvanced ? `1px solid ${hexToRgba(accent, 0.35)}` : "1px solid rgba(255,255,255,0.08)",
+                color: showAdvanced ? accent : "#6B7A9B",
                 fontSize: "0.75rem", fontWeight: 500, transition: "all 130ms",
               }}
             >

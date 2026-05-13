@@ -13,12 +13,16 @@ import {
   ghBulkSetSecret,
 } from "../../lib/tauri/commands";
 import { formatInvokeError } from "../../lib/formatError";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 import type { Environment, RepoSecret } from "../../types/governance";
 
 type TabId = "repo-secrets" | "environments" | "bulk-copy";
 
 
-const SecretRow: React.FC<{ secret: RepoSecret; onDelete: () => void }> = ({ secret, onDelete }) => (
+const SecretRow: React.FC<{ secret: RepoSecret; onDelete: () => void }> = ({ secret, onDelete }) => {
+  const accent = useSettingsStore((s) => s.accentColor);
+  return (
   <div style={{
     display: "grid", gridTemplateColumns: "1fr auto auto", alignItems: "center", gap: 16,
     padding: "11px 16px", borderRadius: 8,
@@ -26,7 +30,7 @@ const SecretRow: React.FC<{ secret: RepoSecret; onDelete: () => void }> = ({ sec
     marginBottom: 3,
   }}>
     <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-      <KeyRound size={12} style={{ color: "#8B5CF6", flexShrink: 0 }} />
+      <KeyRound size={12} style={{ color: accent, flexShrink: 0 }} />
       <span style={{ fontFamily: "'Cascadia Code','Consolas',monospace", fontSize: "0.8125rem", color: "#D4D8E8", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
         {secret.name}
       </span>
@@ -48,10 +52,12 @@ const SecretRow: React.FC<{ secret: RepoSecret; onDelete: () => void }> = ({ sec
       <Trash2 size={11} />
     </button>
   </div>
-);
+  );
+};
 
 
 const AddSecretForm: React.FC<{ onAdd: (name: string, value: string) => Promise<void>; compact?: boolean }> = ({ onAdd, compact }) => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const [name, setName] = useState("");
   const [value, setValue] = useState("");
   const [show, setShow] = useState(false);
@@ -78,7 +84,7 @@ const AddSecretForm: React.FC<{ onAdd: (name: string, value: string) => Promise<
           color: "#C8CDD8", fontSize: "0.75rem", fontFamily: "monospace", outline: "none",
           transition: "border-color 140ms",
         }}
-        onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(139,92,246,0.40)"; }}
+        onFocus={(e) => { e.currentTarget.style.borderColor = hexToRgba(accent, 0.40); }}
         onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.09)"; }}
       />
       <div style={{ position: "relative", flex: 1 }}>
@@ -93,7 +99,7 @@ const AddSecretForm: React.FC<{ onAdd: (name: string, value: string) => Promise<
             background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.09)",
             color: "#C8CDD8", fontSize: "0.75rem", outline: "none", transition: "border-color 140ms",
           }}
-          onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(139,92,246,0.40)"; }}
+          onFocus={(e) => { e.currentTarget.style.borderColor = hexToRgba(accent, 0.40); }}
           onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.09)"; }}
         />
         <button
@@ -109,9 +115,9 @@ const AddSecretForm: React.FC<{ onAdd: (name: string, value: string) => Promise<
         disabled={!canAdd || loading}
         style={{
           height: 34, padding: "0 16px", borderRadius: 7, cursor: "pointer", flexShrink: 0,
-          background: canAdd ? "rgba(139,92,246,0.18)" : "rgba(255,255,255,0.04)",
-          border: canAdd ? "1px solid rgba(139,92,246,0.35)" : "1px solid rgba(255,255,255,0.08)",
-          color: canAdd ? "#C4B5FD" : "#3A4560",
+          background: canAdd ? hexToRgba(accent, 0.18) : "rgba(255,255,255,0.04)",
+          border: canAdd ? `1px solid ${hexToRgba(accent, 0.35)}` : "1px solid rgba(255,255,255,0.08)",
+          color: canAdd ? accent : "#3A4560",
           fontSize: "0.75rem", fontWeight: 600,
           display: "flex", alignItems: "center", gap: 5,
           opacity: loading ? 0.5 : 1, transition: "all 140ms",
@@ -125,6 +131,7 @@ const AddSecretForm: React.FC<{ onAdd: (name: string, value: string) => Promise<
 
 
 export const EnvironmentsPage: React.FC = () => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const repos = useRepoStore((s) => s.repos);
   const addToast = useUIStore((s) => s.addToast);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -273,7 +280,7 @@ export const EnvironmentsPage: React.FC = () => {
                 background: tab === t.id ? "rgba(255,255,255,0.05)" : "transparent",
                 border: tab === t.id ? "1px solid rgba(255,255,255,0.09)" : "1px solid transparent",
                 borderBottom: tab === t.id ? "1px solid rgba(6,8,16,0.01)" : "1px solid transparent",
-                color: tab === t.id ? "#C4B5FD" : "#4A5580",
+                color: tab === t.id ? accent : "#4A5580",
                 fontSize: "0.8125rem", fontWeight: tab === t.id ? 600 : 400, marginBottom: -1,
                 transition: "all 130ms",
               }}
@@ -307,7 +314,7 @@ export const EnvironmentsPage: React.FC = () => {
         {tab === "bulk-copy" && (
           <div style={{ paddingRight: 20, display: "flex", alignItems: "center", gap: 12 }}>
             <span style={{ fontSize: "0.6875rem", color: "#3A4560" }}>
-              {bulkTargets.size > 0 ? <><span style={{ color: "#A78BFA", fontWeight: 700 }}>{bulkTargets.size}</span> repos selected</> : "No repos selected"}
+              {bulkTargets.size > 0 ? <><span style={{ color: accent, fontWeight: 700 }}>{bulkTargets.size}</span> repos selected</> : "No repos selected"}
             </span>
           </div>
         )}
@@ -316,7 +323,7 @@ export const EnvironmentsPage: React.FC = () => {
         {tab === "repo-secrets" && selectedRepo && !loading && (
           <div style={{ paddingRight: 20 }}>
             <span style={{ fontSize: "0.6875rem", color: "#3A4560" }}>
-              <span style={{ color: "#A78BFA", fontWeight: 700 }}>{secrets.length}</span> secret{secrets.length !== 1 ? "s" : ""}
+              <span style={{ color: accent, fontWeight: 700 }}>{secrets.length}</span> secret{secrets.length !== 1 ? "s" : ""}
             </span>
           </div>
         )}
@@ -330,7 +337,7 @@ export const EnvironmentsPage: React.FC = () => {
           <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
             {!selectedRepo ? (
               <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14, padding: 40 }}>
-                <div style={{ width: 56, height: 56, borderRadius: 16, background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <div style={{ width: 56, height: 56, borderRadius: 16, background: hexToRgba(accent, 0.08), border: `1px solid ${hexToRgba(accent, 0.15)}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <KeyRound size={22} style={{ color: "#6B5A8A" }} />
                 </div>
                 <div style={{ textAlign: "center" }}>
@@ -371,7 +378,7 @@ export const EnvironmentsPage: React.FC = () => {
           <div style={{ flex: 1, overflow: "hidden" }}>
             {!selectedRepo ? (
               <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14, padding: 40, height: "100%" }}>
-                <div style={{ width: 56, height: 56, borderRadius: 16, background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <div style={{ width: 56, height: 56, borderRadius: 16, background: hexToRgba(accent, 0.08), border: `1px solid ${hexToRgba(accent, 0.15)}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <Layers size={22} style={{ color: "#6B5A8A" }} />
                 </div>
                 <p style={{ fontSize: "0.9375rem", fontWeight: 700, color: "#8991A4" }}>No repository selected</p>
@@ -400,7 +407,7 @@ export const EnvironmentsPage: React.FC = () => {
                           background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.09)",
                           color: "#C8CDD8", fontSize: "0.75rem", outline: "none",
                         }}
-                        onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(139,92,246,0.40)"; }}
+                        onFocus={(e) => { e.currentTarget.style.borderColor = hexToRgba(accent, 0.40); }}
                         onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.09)"; }}
                       />
                       <button
@@ -408,8 +415,8 @@ export const EnvironmentsPage: React.FC = () => {
                         disabled={!newEnvName.trim()}
                         style={{
                           width: 30, height: 30, borderRadius: 7, cursor: "pointer", flexShrink: 0,
-                          background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.30)",
-                          color: "#A78BFA", display: "flex", alignItems: "center", justifyContent: "center",
+                          background: hexToRgba(accent, 0.15), border: `1px solid ${hexToRgba(accent, 0.30)}`,
+                          color: accent, display: "flex", alignItems: "center", justifyContent: "center",
                         }}
                       >
                         <Plus size={13} />
@@ -425,9 +432,9 @@ export const EnvironmentsPage: React.FC = () => {
                           onClick={() => loadEnvSecrets(env.name)}
                           style={{
                             flex: 1, height: 34, borderRadius: 7, textAlign: "left", padding: "0 10px",
-                            background: selectedEnv === env.name ? "rgba(139,92,246,0.14)" : "rgba(255,255,255,0.025)",
-                            border: selectedEnv === env.name ? "1px solid rgba(139,92,246,0.28)" : "1px solid rgba(255,255,255,0.06)",
-                            color: selectedEnv === env.name ? "#C4B5FD" : "#6B7A9B",
+                            background: selectedEnv === env.name ? hexToRgba(accent, 0.14) : "rgba(255,255,255,0.025)",
+                            border: selectedEnv === env.name ? `1px solid ${hexToRgba(accent, 0.28)}` : "1px solid rgba(255,255,255,0.06)",
+                            color: selectedEnv === env.name ? accent : "#6B7A9B",
                             fontSize: "0.8125rem", fontWeight: selectedEnv === env.name ? 600 : 400, cursor: "pointer",
                             overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                           }}
@@ -497,7 +504,7 @@ export const EnvironmentsPage: React.FC = () => {
                     background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)",
                     color: "#C8CDD8", fontSize: "0.8125rem", fontFamily: "monospace", outline: "none",
                   }}
-                  onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(139,92,246,0.40)"; }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = hexToRgba(accent, 0.40); }}
                   onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.10)"; }}
                 />
                 <div style={{ position: "relative", flex: 1, maxWidth: 360 }}>
@@ -511,7 +518,7 @@ export const EnvironmentsPage: React.FC = () => {
                       background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)",
                       color: "#C8CDD8", fontSize: "0.8125rem", outline: "none",
                     }}
-                    onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(139,92,246,0.40)"; }}
+                    onFocus={(e) => { e.currentTarget.style.borderColor = hexToRgba(accent, 0.40); }}
                     onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.10)"; }}
                   />
                   <button
@@ -527,11 +534,11 @@ export const EnvironmentsPage: React.FC = () => {
                   disabled={!bulkName.trim() || !bulkValue.trim() || bulkTargets.size === 0 || bulkLoading}
                   style={{
                     height: 36, padding: "0 20px", borderRadius: 8, cursor: "pointer", flexShrink: 0,
-                    background: "linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)",
+                    background: `linear-gradient(135deg, ${accent} 0%, ${accent} 100%)`,
                     border: "none", color: "#fff", fontSize: "0.875rem", fontWeight: 700,
                     display: "flex", alignItems: "center", gap: 7,
                     opacity: !bulkName.trim() || !bulkValue.trim() || bulkTargets.size === 0 || bulkLoading ? 0.45 : 1,
-                    boxShadow: bulkTargets.size > 0 && bulkName.trim() && bulkValue.trim() ? "0 4px 16px rgba(139,92,246,0.35)" : "none",
+                    boxShadow: bulkTargets.size > 0 && bulkName.trim() && bulkValue.trim() ? `0 4px 16px ${hexToRgba(accent, 0.35)}` : "none",
                     transition: "all 140ms",
                   }}
                 >

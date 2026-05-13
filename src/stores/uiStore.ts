@@ -20,6 +20,7 @@ interface UIState {
   isCommandPaletteOpen: boolean;
   isDryRunMode: boolean;
   repoRefreshToken: number;
+  contextVersion: number;
 
   setSidebarCollapsed: (collapsed: boolean) => void;
   openSlideOver: (type: SlideOverType, data?: unknown) => void;
@@ -32,6 +33,7 @@ interface UIState {
   closeCommandPalette: () => void;
   setDryRunMode: (enabled: boolean) => void;
   triggerRepoRefresh: () => void;
+  bumpContextVersion: () => void;
 }
 
 let toastIdCounter = 0;
@@ -46,6 +48,7 @@ export const useUIStore = create<UIState>((set) => ({
   isCommandPaletteOpen: false,
   isDryRunMode: false,
   repoRefreshToken: 0,
+  contextVersion: 0,
 
   setSidebarCollapsed: (isSidebarCollapsed) => set({ isSidebarCollapsed }),
 
@@ -76,4 +79,5 @@ export const useUIStore = create<UIState>((set) => ({
   closeCommandPalette: () => set({ isCommandPaletteOpen: false }),
   setDryRunMode: (isDryRunMode) => set({ isDryRunMode }),
   triggerRepoRefresh: () => set((s) => ({ repoRefreshToken: s.repoRefreshToken + 1 })),
+  bumpContextVersion: () => set((s) => ({ contextVersion: s.contextVersion + 1 })),
 }));

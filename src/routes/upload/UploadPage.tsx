@@ -8,6 +8,8 @@ import type { FileEntry, UploadFileInput } from "../../lib/tauri/commands";
 import { FileTree, collectPaths } from "./FileTree";
 import { useRepoStore } from "../../stores/repoStore";
 import { ContextMenu } from "../../components/shared/ContextMenu";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 import type { ContextMenuItemDef } from "../../components/shared/ContextMenu";
 
 interface ProgressEvent {
@@ -20,6 +22,7 @@ interface ProgressEvent {
 type UploadState = "idle" | "loading-tree" | "ready" | "uploading" | "done" | "error";
 
 export const UploadPage: React.FC = () => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const repos = useRepoStore((s) => s.repos);
 
   const [folderPath, setFolderPath] = useState<string>("");
@@ -156,7 +159,7 @@ export const UploadPage: React.FC = () => {
                   color: targetRepo ? "#C8CDD8" : "#4A5580", fontSize: "0.8125rem", fontWeight: 500,
                   transition: "border-color 130ms ease",
                 }}
-                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(139,92,246,0.35)"; }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = hexToRgba(accent, 0.35); }}
                 onMouseLeave={e => { if (!repoDropOpen) (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(255,255,255,0.10)"; }}
               >
                 <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -183,7 +186,7 @@ export const UploadPage: React.FC = () => {
                     <div style={{ maxHeight: 200, overflowY: "auto" }}>
                       {filteredRepos.slice(0, 80).map(r => (
                         <div key={r.id} onClick={() => { setTargetRepo(r.full_name); setRepoDropOpen(false); setRepoSearch(""); }}
-                          style={{ padding: "8px 14px", cursor: "pointer", fontSize: "0.8125rem", color: r.full_name === targetRepo ? "#A78BFA" : "#8A91A8", background: r.full_name === targetRepo ? "rgba(139,92,246,0.10)" : "transparent", transition: "background 100ms" }}
+                          style={{ padding: "8px 14px", cursor: "pointer", fontSize: "0.8125rem", color: r.full_name === targetRepo ? accent : "#8A91A8", background: r.full_name === targetRepo ? hexToRgba(accent, 0.10) : "transparent", transition: "background 100ms" }}
                           onMouseEnter={e => { if (r.full_name !== targetRepo) (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.04)"; }}
                           onMouseLeave={e => { if (r.full_name !== targetRepo) (e.currentTarget as HTMLDivElement).style.background = "transparent"; }}
                         >{r.full_name}</div>
@@ -199,7 +202,7 @@ export const UploadPage: React.FC = () => {
                 <p style={{ margin: "0 0 5px", fontSize: "0.6875rem", color: "#3A4060" }}>Branch</p>
                 <input value={branch} onChange={e => setBranch(e.target.value)} placeholder="main"
                   style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 7, padding: "7px 10px", color: "#C8CDD8", fontSize: "0.8125rem", outline: "none", transition: "border-color 130ms" }}
-                  onFocus={e => { (e.target as HTMLInputElement).style.borderColor = "rgba(139,92,246,0.40)"; }}
+                  onFocus={e => { (e.target as HTMLInputElement).style.borderColor = hexToRgba(accent, 0.40); }}
                   onBlur={e => { (e.target as HTMLInputElement).style.borderColor = "rgba(255,255,255,0.08)"; }}
                 />
               </div>
@@ -207,7 +210,7 @@ export const UploadPage: React.FC = () => {
                 <p style={{ margin: "0 0 5px", fontSize: "0.6875rem", color: "#3A4060" }}>Target path <span style={{ color: "#2D3450" }}>(opt.)</span></p>
                 <input value={targetPath} onChange={e => setTargetPath(e.target.value)} placeholder="e.g. src/assets"
                   style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 7, padding: "7px 10px", color: "#C8CDD8", fontSize: "0.8125rem", outline: "none", transition: "border-color 130ms" }}
-                  onFocus={e => { (e.target as HTMLInputElement).style.borderColor = "rgba(139,92,246,0.40)"; }}
+                  onFocus={e => { (e.target as HTMLInputElement).style.borderColor = hexToRgba(accent, 0.40); }}
                   onBlur={e => { (e.target as HTMLInputElement).style.borderColor = "rgba(255,255,255,0.08)"; }}
                 />
               </div>
@@ -219,7 +222,7 @@ export const UploadPage: React.FC = () => {
             <p style={{ margin: "0 0 10px", fontSize: "0.6875rem", fontWeight: 700, letterSpacing: "0.10em", textTransform: "uppercase", color: "#3A4060" }}>Commit Message</p>
             <textarea value={commitMessage} onChange={e => setCommitMessage(e.target.value)} rows={2}
               style={{ width: "100%", resize: "none", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 7, padding: "8px 10px", color: "#C8CDD8", fontSize: "0.8125rem", outline: "none", fontFamily: "inherit", lineHeight: 1.5, transition: "border-color 130ms" }}
-              onFocus={e => { (e.target as HTMLTextAreaElement).style.borderColor = "rgba(139,92,246,0.40)"; }}
+              onFocus={e => { (e.target as HTMLTextAreaElement).style.borderColor = hexToRgba(accent, 0.40); }}
               onBlur={e => { (e.target as HTMLTextAreaElement).style.borderColor = "rgba(255,255,255,0.08)"; }}
             />
           </div>
@@ -229,11 +232,11 @@ export const UploadPage: React.FC = () => {
             style={{
               display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
               padding: "12px 20px", borderRadius: 10, cursor: canUpload ? "pointer" : "not-allowed",
-              background: canUpload ? "linear-gradient(135deg, #8B5CF6, #7C3AED)" : "rgba(255,255,255,0.04)",
-              border: canUpload ? "1px solid rgba(139,92,246,0.40)" : "1px solid rgba(255,255,255,0.06)",
+              background: canUpload ? `linear-gradient(135deg, ${accent}, ${accent})` : "rgba(255,255,255,0.04)",
+              border: canUpload ? `1px solid ${hexToRgba(accent, 0.40)}` : "1px solid rgba(255,255,255,0.06)",
               color: canUpload ? "#fff" : "#3A4060",
               fontSize: "0.875rem", fontWeight: 700, letterSpacing: "-0.01em",
-              boxShadow: canUpload ? "0 4px 20px rgba(139,92,246,0.30)" : "none",
+              boxShadow: canUpload ? `0 4px 20px ${hexToRgba(accent, 0.30)}` : "none",
               transition: "all 150ms ease",
             }}
           >
@@ -261,7 +264,7 @@ export const UploadPage: React.FC = () => {
               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                 {uploadState === "ready" && (
                   <>
-                    <button onClick={() => setSelected(new Set(tree.flatMap(collectPaths)))} style={{ fontSize: "0.6875rem", color: "#8B5CF6", background: "none", border: "none", cursor: "pointer", padding: "2px 6px" }}>all</button>
+                    <button onClick={() => setSelected(new Set(tree.flatMap(collectPaths)))} style={{ fontSize: "0.6875rem", color: accent, background: "none", border: "none", cursor: "pointer", padding: "2px 6px" }}>all</button>
                     <button onClick={() => setSelected(new Set())} style={{ fontSize: "0.6875rem", color: "#4A5580", background: "none", border: "none", cursor: "pointer", padding: "2px 6px" }}>none</button>
                   </>
                 )}
@@ -283,7 +286,7 @@ export const UploadPage: React.FC = () => {
               padding: "0 10px 10px",
 
               scrollbarWidth: "thin" as const,
-              scrollbarColor: "rgba(139,92,246,0.25) transparent",
+              scrollbarColor: `${hexToRgba(accent, 0.25)} transparent`,
             }}>
               {uploadState === "idle" && (
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 12, padding: "60px 20px" }}>
@@ -324,14 +327,14 @@ export const UploadPage: React.FC = () => {
       <AnimatePresence>
         {uploadState === "uploading" && progress && (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-            style={{ borderRadius: 12, background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.20)", padding: "14px 18px", flexShrink: 0 }}>
+            style={{ borderRadius: 12, background: hexToRgba(accent, 0.08), border: `1px solid ${hexToRgba(accent, 0.20)}`, padding: "14px 18px", flexShrink: 0 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-              <p style={{ margin: 0, fontSize: "0.8125rem", fontWeight: 600, color: "#A78BFA" }}>Uploading… {progress.done} / {progress.total}</p>
+              <p style={{ margin: 0, fontSize: "0.8125rem", fontWeight: 600, color: accent }}>Uploading… {progress.done} / {progress.total}</p>
               <span style={{ fontSize: "0.75rem", color: "#6B5FA0" }}>{Math.round((progress.done / progress.total) * 100)}%</span>
             </div>
-            <div style={{ height: 4, borderRadius: 4, background: "rgba(139,92,246,0.15)", overflow: "hidden" }}>
+            <div style={{ height: 4, borderRadius: 4, background: hexToRgba(accent, 0.15), overflow: "hidden" }}>
               <motion.div animate={{ width: `${(progress.done / progress.total) * 100}%` }} transition={{ type: "spring", stiffness: 120, damping: 20 }}
-                style={{ height: "100%", borderRadius: 4, background: "linear-gradient(90deg, #8B5CF6, #A78BFA)" }} />
+                style={{ height: "100%", borderRadius: 4, background: `linear-gradient(90deg, ${accent}, ${accent})` }} />
             </div>
             <p style={{ margin: "6px 0 0", fontSize: "0.6875rem", color: "#4A5580", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{progress.file}</p>
           </motion.div>

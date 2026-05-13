@@ -10,6 +10,7 @@ interface AppSettings {
   desktopNotificationsEnabled: boolean;
   notifyOnQueueComplete: boolean;
   notifyOnQueueFailure: boolean;
+  showDevBuildStamp: boolean;
 }
 
 interface SettingsState extends AppSettings {
@@ -25,6 +26,7 @@ const DEFAULTS: AppSettings = {
   desktopNotificationsEnabled: false,
   notifyOnQueueComplete: true,
   notifyOnQueueFailure: true,
+  showDevBuildStamp: false,
 };
 
 export const useSettingsStore = create<SettingsState>()(
@@ -34,7 +36,7 @@ export const useSettingsStore = create<SettingsState>()(
       setSetting: (key, value) => {
         set({ [key]: value });
         if (key === "accentColor") {
-          document.documentElement.style.setProperty("--accent", value as string);
+          applyAccentColor(value as string);
         }
       },
     }),
@@ -44,4 +46,10 @@ export const useSettingsStore = create<SettingsState>()(
 
 export function applyAccentColor(color: string) {
   document.documentElement.style.setProperty("--accent", color);
+  if (/^#[0-9a-fA-F]{6}$/.test(color)) {
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    document.documentElement.style.setProperty("--accent-rgb", `${r}, ${g}, ${b}`);
+  }
 }

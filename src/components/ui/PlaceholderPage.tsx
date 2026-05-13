@@ -1,6 +1,8 @@
 import React from "react";
 import type { LucideIcon } from "lucide-react";
 import { Sparkles, Clock } from "lucide-react";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 
 interface PlaceholderPageProps {
   title: string;
@@ -14,7 +16,9 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
   description,
   icon: Icon = Sparkles,
   phase,
-}) => (
+}) => {
+  const accent = useSettingsStore((s) => s.accentColor);
+  return (
   <div style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
     <div style={{
       padding: "20px 24px 16px",
@@ -25,8 +29,8 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
         <div style={{
           width: 32, height: 32, borderRadius: 9,
-          background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.25)",
-          display: "flex", alignItems: "center", justifyContent: "center", color: "#A78BFA",
+          background: hexToRgba(accent, 0.15), border: `1px solid ${hexToRgba(accent, 0.25)}`,
+          display: "flex", alignItems: "center", justifyContent: "center", color: accent,
         }}>
           <Icon size={15} strokeWidth={1.75} />
         </div>
@@ -54,10 +58,10 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
       }}>
         <div style={{
           width: 60, height: 60, borderRadius: 16, margin: "0 auto 20px",
-          background: "linear-gradient(135deg, rgba(139,92,246,0.14), rgba(6,182,212,0.07))",
-          border: "1px solid rgba(139,92,246,0.22)",
+          background: `linear-gradient(135deg, ${hexToRgba(accent, 0.14)}, rgba(6,182,212,0.07))`,
+          border: `1px solid ${hexToRgba(accent, 0.22)}`,
           display: "flex", alignItems: "center", justifyContent: "center",
-          color: "#A78BFA",
+          color: accent,
         }}>
           <Icon size={26} strokeWidth={1.75} />
         </div>
@@ -87,4 +91,5 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
       </div>
     </div>
   </div>
-);
+  );
+};

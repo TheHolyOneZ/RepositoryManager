@@ -2,6 +2,8 @@ import React from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Keyboard } from "lucide-react";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 
 interface ShortcutEntry {
   keys: string[];
@@ -27,7 +29,9 @@ interface ShortcutsOverlayProps {
   onClose: () => void;
 }
 
-export const ShortcutsOverlay: React.FC<ShortcutsOverlayProps> = ({ open, onClose }) => {
+export const ShortcutsOverlay: React.FC<ShortcutsOverlayProps> = ({
+  open, onClose }) => {
+  const accent = useSettingsStore((s) => s.accentColor);
   return createPortal(
     <AnimatePresence>
       {open && (
@@ -49,11 +53,11 @@ export const ShortcutsOverlay: React.FC<ShortcutsOverlayProps> = ({ open, onClos
               background: "rgba(8,10,22,0.98)", backdropFilter: "blur(28px) saturate(160%)",
               border: "1px solid rgba(255,255,255,0.10)",
               borderRadius: 16, overflow: "hidden",
-              boxShadow: "0 24px 80px rgba(0,0,0,0.65), 0 0 0 1px rgba(139,92,246,0.12)",
+              boxShadow: `0 24px 80px rgba(0,0,0,0.65), 0 0 0 1px ${hexToRgba(accent, 0.12)}`,
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-              <div style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.25)", display: "flex", alignItems: "center", justifyContent: "center", color: "#A78BFA" }}>
+              <div style={{ width: 30, height: 30, borderRadius: 8, background: hexToRgba(accent, 0.15), border: `1px solid ${hexToRgba(accent, 0.25)}`, display: "flex", alignItems: "center", justifyContent: "center", color: accent }}>
                 <Keyboard size={13} />
               </div>
               <p style={{ fontSize: "0.9375rem", fontWeight: 700, color: "#D4D8E8", letterSpacing: "-0.02em", flex: 1 }}>

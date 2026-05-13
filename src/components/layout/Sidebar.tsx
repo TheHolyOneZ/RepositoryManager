@@ -13,6 +13,8 @@ import { useAccountStore, selectActiveAccount } from "../../stores/accountStore"
 import { useQueueStore, selectPending } from "../../stores/queueStore";
 import { useNotificationStore, selectUnreadCount } from "../../stores/notificationStore";
 import { useUIStore } from "../../stores/uiStore";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 
 const NAV_SECTIONS = [
   {
@@ -59,8 +61,9 @@ const NAV_SECTIONS = [
 const QueuePip: React.FC = () => {
   const status = useQueueStore((s) => s.status);
   const count = useQueueStore((s) => selectPending(s).length);
+  const accent = useSettingsStore((s) => s.accentColor);
   if (status === "idle" || status === "done") return null;
-  const color = status === "running" ? "#8B5CF6" : status === "paused" ? "#F59E0B" : "#EF4444";
+  const color = status === "running" ? accent : status === "paused" ? "#F59E0B" : "#EF4444";
   return (
     <div className="mx-2 mb-2 flex items-center gap-2 rounded-lg px-3 py-2"
       style={{ background: `${color}12`, border: `1px solid ${color}25` }}>
@@ -78,6 +81,7 @@ export const Sidebar: React.FC = () => {
   const activeAccount = useAccountStore(selectActiveAccount);
   const unreadCount = useNotificationStore(selectUnreadCount);
   const openNotifications = useUIStore((s) => s.openSlideOver);
+  const accent = useSettingsStore((s) => s.accentColor);
 
   return (
     <motion.aside
@@ -142,8 +146,8 @@ export const Sidebar: React.FC = () => {
                       padding: collapsed ? "8px 0" : "7px 10px",
                       justifyContent: collapsed ? "center" : "flex-start",
                       borderRadius: 8, marginBottom: 1,
-                      background: isActive ? "rgba(139,92,246,0.15)" : "transparent",
-                      color: isActive ? "#C4B5FD" : "#7A8AAE",
+                      background: isActive ? hexToRgba(accent, 0.15) : "transparent",
+                      color: isActive ? accent : "#7A8AAE",
                       fontSize: "0.8125rem", fontWeight: 500,
                       letterSpacing: "-0.01em", whiteSpace: "nowrap",
                       cursor: "pointer", position: "relative",
@@ -166,7 +170,7 @@ export const Sidebar: React.FC = () => {
                       <span style={{
                         position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)",
                         width: 2.5, height: "60%", borderRadius: "0 2px 2px 0",
-                        background: "linear-gradient(180deg, #A78BFA, #7C3AED)",
+                        background: accent,
                       }} />
                     )}
                     <Icon size={collapsed ? 17 : 15} style={{ flexShrink: 0 }} />
@@ -223,7 +227,7 @@ export const Sidebar: React.FC = () => {
               <span style={{
                 position: "absolute", top: -4, right: -4,
                 minWidth: 14, height: 14, borderRadius: 7,
-                background: "linear-gradient(135deg, #8B5CF6, #7C3AED)",
+                background: accent,
                 color: "#fff", fontSize: 8, fontWeight: 800,
                 display: "flex", alignItems: "center", justifyContent: "center",
                 padding: "0 3px",
@@ -242,8 +246,8 @@ export const Sidebar: React.FC = () => {
                 <span>Notifications</span>
                 {unreadCount > 0 && (
                   <span style={{
-                    fontSize: "0.625rem", fontWeight: 700, color: "#8B5CF6",
-                    background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.22)",
+                    fontSize: "0.625rem", fontWeight: 700, color: accent,
+                    background: hexToRgba(accent, 0.12), border: `1px solid ${hexToRgba(accent, 0.22)}`,
                     borderRadius: 5, padding: "1px 5px",
                   }}>
                     {unreadCount}
@@ -262,14 +266,14 @@ export const Sidebar: React.FC = () => {
                 padding: collapsed ? "7px 0" : "7px 10px",
                 justifyContent: collapsed ? "center" : "flex-start",
                 borderRadius: 7, cursor: "pointer", position: "relative",
-                background: isActive ? "rgba(139,92,246,0.12)" : "transparent",
-                color: isActive ? "#A78BFA" : "#4A5580",
+                background: isActive ? hexToRgba(accent, 0.12) : "transparent",
+                color: isActive ? accent : "#4A5580",
                 fontSize: "0.8125rem", fontWeight: 500, transition: "all 130ms ease",
               }}
               onMouseEnter={(e) => { if (!isActive) { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.05)"; (e.currentTarget as HTMLDivElement).style.color = "#C8CDD8"; } }}
               onMouseLeave={(e) => { if (!isActive) { (e.currentTarget as HTMLDivElement).style.background = "transparent"; (e.currentTarget as HTMLDivElement).style.color = "#4A5580"; } }}
             >
-              {isActive && <span style={{ position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)", width: 2.5, height: "55%", borderRadius: "0 2px 2px 0", background: "linear-gradient(180deg, #A78BFA, #7C3AED)" }} />}
+              {isActive && <span style={{ position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)", width: 2.5, height: "55%", borderRadius: "0 2px 2px 0", background: accent }} />}
               <Settings size={collapsed ? 16 : 14} style={{ flexShrink: 0 }} />
               <AnimatePresence>
                 {!collapsed && (
@@ -290,14 +294,14 @@ export const Sidebar: React.FC = () => {
                 padding: collapsed ? "7px 0" : "7px 10px",
                 justifyContent: collapsed ? "center" : "flex-start",
                 borderRadius: 7, cursor: "pointer", position: "relative",
-                background: isActive ? "rgba(139,92,246,0.12)" : "transparent",
-                color: isActive ? "#A78BFA" : "#4A5580",
+                background: isActive ? hexToRgba(accent, 0.12) : "transparent",
+                color: isActive ? accent : "#4A5580",
                 fontSize: "0.8125rem", fontWeight: 500, transition: "all 130ms ease",
               }}
               onMouseEnter={(e) => { if (!isActive) { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.05)"; (e.currentTarget as HTMLDivElement).style.color = "#C8CDD8"; } }}
               onMouseLeave={(e) => { if (!isActive) { (e.currentTarget as HTMLDivElement).style.background = "transparent"; (e.currentTarget as HTMLDivElement).style.color = "#4A5580"; } }}
             >
-              {isActive && <span style={{ position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)", width: 2.5, height: "55%", borderRadius: "0 2px 2px 0", background: "linear-gradient(180deg, #A78BFA, #7C3AED)" }} />}
+              {isActive && <span style={{ position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)", width: 2.5, height: "55%", borderRadius: "0 2px 2px 0", background: accent }} />}
               <Info size={collapsed ? 16 : 14} style={{ flexShrink: 0 }} />
               <AnimatePresence>
                 {!collapsed && (
@@ -356,7 +360,7 @@ export const Sidebar: React.FC = () => {
           position: "absolute", right: -14, top: "50%", transform: "translateY(-50%)",
           width: 28, height: 28, borderRadius: "50%", zIndex: 30,
           background: "#0D1025",
-          border: "1.5px solid rgba(139,92,246,0.30)",
+          border: `1.5px solid ${hexToRgba(accent, 0.30)}`,
           color: "#7C6DB5", cursor: "pointer",
           display: "flex", alignItems: "center", justifyContent: "center",
           boxShadow: "0 2px 12px rgba(0,0,0,0.55), 0 0 0 1px rgba(0,0,0,0.4)",
@@ -364,14 +368,14 @@ export const Sidebar: React.FC = () => {
         }}
         onMouseEnter={(e) => {
           const btn = e.currentTarget as HTMLButtonElement;
-          btn.style.borderColor = "rgba(139,92,246,0.65)";
+          btn.style.borderColor = hexToRgba(accent, 0.65);
           btn.style.color = "#C4B5FD";
           btn.style.background = "#131630";
-          btn.style.boxShadow = "0 2px 14px rgba(139,92,246,0.25), 0 0 0 1px rgba(0,0,0,0.4)";
+          btn.style.boxShadow = `0 2px 14px ${hexToRgba(accent, 0.25)}, 0 0 0 1px rgba(0,0,0,0.4)`;
         }}
         onMouseLeave={(e) => {
           const btn = e.currentTarget as HTMLButtonElement;
-          btn.style.borderColor = "rgba(139,92,246,0.30)";
+          btn.style.borderColor = hexToRgba(accent, 0.30);
           btn.style.color = "#7C6DB5";
           btn.style.background = "#0D1025";
           btn.style.boxShadow = "0 2px 12px rgba(0,0,0,0.55), 0 0 0 1px rgba(0,0,0,0.4)";

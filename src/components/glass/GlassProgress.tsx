@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { useSettingsStore } from "../../stores/settingsStore";
 
 interface GlassProgressProps {
   value: number;
@@ -12,12 +13,14 @@ interface GlassProgressProps {
 
 export const GlassProgress: React.FC<GlassProgressProps> = ({
   value,
-  color = "#8B5CF6",
+  color,
   glow,
   height = 4,
   className = "",
   animated = true,
 }) => {
+  const storeAccent = useSettingsStore((s) => s.accentColor);
+  const resolvedColor = color ?? storeAccent;
   const pct = Math.max(0, Math.min(100, value));
   return (
     <div
@@ -30,8 +33,8 @@ export const GlassProgress: React.FC<GlassProgressProps> = ({
         animate={{ width: `${pct}%` }}
         transition={{ duration: animated ? 0.7 : 0, ease: [0.22, 1, 0.36, 1] }}
         style={{
-          background: color,
-          boxShadow: glow ?? `0 0 8px ${color}50`,
+          background: resolvedColor,
+          boxShadow: glow ?? `0 0 8px ${resolvedColor}50`,
         }}
       />
     </div>

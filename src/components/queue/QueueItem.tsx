@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { CheckCircle, XCircle, SkipForward, Loader2, Clock, RotateCcw } from "lucide-react";
 import type { QueueItem as QueueItemType } from "../../types/queue";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 
 const ACTION_LABELS: Record<string, string> = {
   delete: "Delete",
@@ -15,13 +17,13 @@ const ACTION_LABELS: Record<string, string> = {
   update_metadata: "Update Metadata",
 };
 
-const STATUS_CONFIG: Record<string, { color: string; bg: string; border: string; icon: React.ReactNode; label: string }> = {
+const getStatusConfig = (accent: string): Record<string, { color: string; bg: string; border: string; icon: React.ReactNode; label: string }> => ({
   pending: {
     color: "#4A5580", bg: "transparent", border: "rgba(255,255,255,0.06)",
     icon: <Clock size={13} />, label: "Pending",
   },
   processing: {
-    color: "#A78BFA", bg: "rgba(139,92,246,0.06)", border: "rgba(139,92,246,0.22)",
+    color: accent, bg: hexToRgba(accent, 0.06), border: hexToRgba(accent, 0.22),
     icon: <Loader2 size={13} style={{ animation: "spin 0.9s linear infinite" }} />, label: "Processing",
   },
   completed: {
@@ -36,7 +38,7 @@ const STATUS_CONFIG: Record<string, { color: string; bg: string; border: string;
     color: "#6B7A9B", bg: "rgba(255,255,255,0.025)", border: "rgba(255,255,255,0.06)",
     icon: <SkipForward size={13} />, label: "Skipped",
   },
-};
+});
 
 interface QueueItemProps {
   item: QueueItemType;
@@ -45,7 +47,9 @@ interface QueueItemProps {
 }
 
 export const QueueItemCard: React.FC<QueueItemProps> = ({ item, onRetry, onSkip }) => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const [retryHover, setRetryHover] = useState(false);
+  const STATUS_CONFIG = getStatusConfig(accent);
   const cfg = STATUS_CONFIG[item.status] ?? STATUS_CONFIG.pending;
 
   return (

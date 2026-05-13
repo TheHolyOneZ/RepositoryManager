@@ -7,6 +7,8 @@ import { TagChip } from "./TagChip";
 import { formatDate, formatBytes } from "../../lib/utils/formatters";
 import { useSelectionStore } from "../../stores/selectionStore";
 import { useUIStore } from "../../stores/uiStore";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 import { ContextMenu } from "../shared/ContextMenu";
 import type { ContextMenuItemDef } from "../shared/ContextMenu";
 
@@ -23,7 +25,7 @@ interface RepoRowProps {
   style: React.CSSProperties;
 }
 
-const CustomCheckbox: React.FC<{ checked: boolean; onChange: () => void }> = ({ checked, onChange }) => {
+const CustomCheckbox: React.FC<{ checked: boolean; onChange: () => void; accent: string }> = ({ checked, onChange, accent }) => {
   const [hov, setHov] = useState(false);
   return (
     <div
@@ -35,14 +37,14 @@ const CustomCheckbox: React.FC<{ checked: boolean; onChange: () => void }> = ({ 
       style={{
         width: 15, height: 15, borderRadius: 4, flexShrink: 0, cursor: "pointer",
         background: checked
-          ? "linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)"
-          : hov ? "rgba(139,92,246,0.12)" : "rgba(255,255,255,0.05)",
+          ? `linear-gradient(135deg, ${accent} 0%, ${accent} 100%)`
+          : hov ? hexToRgba(accent, 0.12) : "rgba(255,255,255,0.05)",
         border: checked
-          ? "1px solid #8B5CF6"
-          : hov ? "1px solid rgba(139,92,246,0.45)" : "1px solid rgba(255,255,255,0.18)",
+          ? `1px solid ${accent}`
+          : hov ? `1px solid ${hexToRgba(accent, 0.45)}` : "1px solid rgba(255,255,255,0.18)",
         display: "flex", alignItems: "center", justifyContent: "center",
         transition: "all 120ms ease",
-        boxShadow: checked ? "0 0 0 2px rgba(139,92,246,0.18)" : "none",
+        boxShadow: checked ? `0 0 0 2px ${hexToRgba(accent, 0.18)}` : "none",
       }}
     >
       {checked && <Check size={9} strokeWidth={3} style={{ color: "#fff" }} />}
@@ -51,6 +53,7 @@ const CustomCheckbox: React.FC<{ checked: boolean; onChange: () => void }> = ({ 
 };
 
 export const RepoRow: React.FC<RepoRowProps> = ({ repo, style }) => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const isSelected = useSelectionStore((s) => s.selectedIds.has(repo.id));
   const toggle = useSelectionStore((s) => s.toggle);
   const openSlideOver = useUIStore((s) => s.openSlideOver);
@@ -123,10 +126,10 @@ export const RepoRow: React.FC<RepoRowProps> = ({ repo, style }) => {
           height: 52, padding: "0 16px",
           cursor: "pointer", userSelect: "none",
           background: isSelected
-            ? "rgba(139,92,246,0.09)"
+            ? hexToRgba(accent, 0.09)
             : hovered ? "rgba(255,255,255,0.035)" : "transparent",
           borderBottom: "1px solid rgba(255,255,255,0.04)",
-          borderLeft: isSelected ? "2px solid #8B5CF6" : "2px solid transparent",
+          borderLeft: isSelected ? `2px solid ${accent}` : "2px solid transparent",
           transition: "background 100ms ease, border-color 100ms ease",
           position: "absolute",
         }}
@@ -135,7 +138,7 @@ export const RepoRow: React.FC<RepoRowProps> = ({ repo, style }) => {
         onClick={handleRowClick}
         onContextMenu={handleContextMenu}
       >
-        <CustomCheckbox checked={isSelected} onChange={() => toggle(repo.id)} />
+        <CustomCheckbox checked={isSelected} onChange={() => toggle(repo.id)} accent={accent} />
 
         <span style={{ color: "#2D3650", flexShrink: 0, display: "flex" }}>
           {repo.private ? <Lock size={11} /> : <Globe size={11} />}
@@ -209,7 +212,7 @@ export const RepoRow: React.FC<RepoRowProps> = ({ repo, style }) => {
           onClick={handleOpenUrl}
           style={{
             width: 24, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center",
-            color: hovered ? "#8B5CF6" : "#2D3650", transition: "color 140ms",
+            color: hovered ? accent : "#2D3650", transition: "color 140ms",
             padding: 4, borderRadius: 4, cursor: "pointer",
           }}
           title="Open on GitHub"

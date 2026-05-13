@@ -4,6 +4,7 @@ import {
   Tag, X, Keyboard, FlaskConical, Sliders, Palette, Bell,
 } from "lucide-react";
 import { useSettingsStore, applyAccentColor } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 import { GlassButton } from "../../components/glass/GlassButton";
 import { GlassInput } from "../../components/glass/GlassInput";
 import { useAccountStore } from "../../stores/accountStore";
@@ -43,8 +44,6 @@ export const SettingsPage: React.FC = () => {
   const customTagOptions = useRepoStore((s) => s.customTagOptions);
   const addCustomTagOption = useRepoStore((s) => s.addCustomTagOption);
   const removeCustomTagOption = useRepoStore((s) => s.removeCustomTagOption);
-
-  useEffect(() => { applyAccentColor(settings.accentColor); }, []);
 
   const [newPat, setNewPat] = useState("");
   const [newLabel, setNewLabel] = useState("");
@@ -266,8 +265,8 @@ export const SettingsPage: React.FC = () => {
                   <span key={tag} style={{
                     display: "inline-flex", alignItems: "center", gap: 5,
                     padding: "4px 8px 4px 10px", borderRadius: 6,
-                    background: "rgba(139,92,246,0.10)", border: "1px solid rgba(139,92,246,0.25)",
-                    fontSize: "0.75rem", fontWeight: 600, color: "#A78BFA",
+                    background: hexToRgba(settings.accentColor, 0.10), border: `1px solid ${hexToRgba(settings.accentColor, 0.25)}`,
+                    fontSize: "0.75rem", fontWeight: 600, color: settings.accentColor,
                     textTransform: "uppercase", letterSpacing: "0.04em",
                   }}>
                     {tag}
@@ -304,8 +303,8 @@ export const SettingsPage: React.FC = () => {
                   maxLength={32}
                   style={{
                     flex: 1, height: 36, borderRadius: 8, fontSize: "0.8125rem",
-                    background: "rgba(255,255,255,0.07)", border: "1px solid rgba(139,92,246,0.35)",
-                    boxShadow: "0 0 0 3px rgba(139,92,246,0.10)",
+                    background: "rgba(255,255,255,0.07)", border: `1px solid ${hexToRgba(settings.accentColor, 0.35)}`,
+                    boxShadow: `0 0 0 3px ${hexToRgba(settings.accentColor, 0.10)}`,
                     color: "#D4D8E8", padding: "0 12px", outline: "none",
                   }}
                 />
@@ -314,8 +313,8 @@ export const SettingsPage: React.FC = () => {
                   disabled={!newTagInput.trim()}
                   style={{
                     height: 36, padding: "0 14px", borderRadius: 8, flexShrink: 0,
-                    background: "rgba(139,92,246,0.18)", border: "1px solid rgba(139,92,246,0.35)",
-                    color: "#A78BFA", cursor: "pointer", fontSize: "0.8125rem", fontWeight: 600,
+                    background: hexToRgba(settings.accentColor, 0.18), border: `1px solid ${hexToRgba(settings.accentColor, 0.35)}`,
+                    color: settings.accentColor, cursor: "pointer", fontSize: "0.8125rem", fontWeight: 600,
                     opacity: newTagInput.trim() ? 1 : 0.4, display: "flex", alignItems: "center", gap: 5,
                   }}
                 >
@@ -338,19 +337,17 @@ export const SettingsPage: React.FC = () => {
                 style={{
                   marginTop: 4, height: 34, padding: "0 14px", borderRadius: 8,
                   display: "flex", alignItems: "center", gap: 6, cursor: "pointer", width: "fit-content",
-                  background: "rgba(139,92,246,0.08)", border: "1px dashed rgba(139,92,246,0.25)",
-                  color: "#7C6DB5", fontSize: "0.8125rem", fontWeight: 500,
+                  background: hexToRgba(settings.accentColor, 0.08), border: `1px dashed ${hexToRgba(settings.accentColor, 0.25)}`,
+                  color: settings.accentColor, fontSize: "0.8125rem", fontWeight: 500,
                   transition: "all 140ms",
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "rgba(139,92,246,0.14)";
-                  e.currentTarget.style.borderColor = "rgba(139,92,246,0.45)";
-                  e.currentTarget.style.color = "#A78BFA";
+                  e.currentTarget.style.background = hexToRgba(settings.accentColor, 0.14);
+                  e.currentTarget.style.borderColor = hexToRgba(settings.accentColor, 0.45);
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "rgba(139,92,246,0.08)";
-                  e.currentTarget.style.borderColor = "rgba(139,92,246,0.25)";
-                  e.currentTarget.style.color = "#7C6DB5";
+                  e.currentTarget.style.background = hexToRgba(settings.accentColor, 0.08);
+                  e.currentTarget.style.borderColor = hexToRgba(settings.accentColor, 0.25);
                 }}
               >
                 <Plus size={13} /> New custom tag
@@ -364,8 +361,8 @@ export const SettingsPage: React.FC = () => {
             <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
               <label style={{ flex: 1, fontSize: "0.875rem", color: "#9AA5BE" }}>Default grace window (seconds)</label>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <input type="range" min={0} max={300} value={settings.defaultGraceSeconds} onChange={(e) => setSetting("defaultGraceSeconds", Number(e.target.value))} style={{ width: 120, accentColor: "#8B5CF6" }} />
-                <span style={{ fontSize: "0.875rem", color: "#C4B5FD", fontWeight: 600, minWidth: 30 }}>{settings.defaultGraceSeconds}s</span>
+                <input type="range" min={0} max={300} value={settings.defaultGraceSeconds} onChange={(e) => setSetting("defaultGraceSeconds", Number(e.target.value))} style={{ width: 120, accentColor: settings.accentColor }} />
+                <span style={{ fontSize: "0.875rem", color: settings.accentColor, fontWeight: 600, minWidth: 30 }}>{settings.defaultGraceSeconds}s</span>
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
@@ -373,7 +370,7 @@ export const SettingsPage: React.FC = () => {
               <div style={{ display: "flex", gap: 6 }}>
                 {(["fast", "scheduled", "controlled"] as const).map((m) => (
                   <button key={m} type="button" onClick={() => setSetting("defaultExecutionMode", m)}
-                    style={{ padding: "4px 12px", borderRadius: 7, cursor: "pointer", border: "none", background: settings.defaultExecutionMode === m ? "rgba(139,92,246,0.2)" : "rgba(255,255,255,0.05)", color: settings.defaultExecutionMode === m ? "#C4B5FD" : "#7A8AAE", fontSize: "0.8125rem", fontWeight: 500, textTransform: "capitalize" }}>
+                    style={{ padding: "4px 12px", borderRadius: 7, cursor: "pointer", border: "none", background: settings.defaultExecutionMode === m ? hexToRgba(settings.accentColor, 0.2) : "rgba(255,255,255,0.05)", color: settings.defaultExecutionMode === m ? settings.accentColor : "#7A8AAE", fontSize: "0.8125rem", fontWeight: 500, textTransform: "capitalize" }}>
                     {m}
                   </button>
                 ))}
@@ -414,6 +411,33 @@ export const SettingsPage: React.FC = () => {
                   style={{ width: 90, height: 32, borderRadius: 8, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)", color: "#C8CDD8", fontSize: "0.875rem", padding: "0 10px", outline: "none", fontFamily: "monospace" }} />
               </div>
             </div>
+
+            <div style={{ height: 1, background: "rgba(255,255,255,0.05)" }} />
+
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
+              <div>
+                <p style={{ fontSize: "0.875rem", fontWeight: 600, color: "#4A5580" }}>Internal build tracing</p>
+                <p style={{ fontSize: "0.75rem", color: "#2D3450", marginTop: 3, maxWidth: 320 }}>
+                  Overlays a faint build identifier in the corner of the window. No functional effect — intended for verifying that a newly deployed build is active. You almost certainly do not want this.
+                </p>
+              </div>
+              <div
+                onClick={() => setSetting("showDevBuildStamp", !settings.showDevBuildStamp)}
+                style={{
+                  width: 38, height: 22, borderRadius: 11, position: "relative", cursor: "pointer", flexShrink: 0,
+                  background: settings.showDevBuildStamp ? hexToRgba(settings.accentColor, 0.5) : "rgba(255,255,255,0.10)",
+                  border: settings.showDevBuildStamp ? `1px solid ${hexToRgba(settings.accentColor, 0.7)}` : "1px solid rgba(255,255,255,0.15)",
+                  transition: "all 200ms ease",
+                }}
+              >
+                <div style={{
+                  position: "absolute", top: 2, left: settings.showDevBuildStamp ? 18 : 2,
+                  width: 16, height: 16, borderRadius: "50%",
+                  background: settings.showDevBuildStamp ? settings.accentColor : "#7A8AAE",
+                  transition: "left 200ms ease, background 200ms ease",
+                }} />
+              </div>
+            </div>
           </div>
         </Section>
 
@@ -441,15 +465,15 @@ export const SettingsPage: React.FC = () => {
                   }}
                   style={{
                     width: 38, height: 22, borderRadius: 11, position: "relative", cursor: "pointer",
-                    background: settings[key] ? "rgba(139,92,246,0.5)" : "rgba(255,255,255,0.10)",
-                    border: settings[key] ? "1px solid rgba(139,92,246,0.7)" : "1px solid rgba(255,255,255,0.15)",
+                    background: settings[key] ? hexToRgba(settings.accentColor, 0.5) : "rgba(255,255,255,0.10)",
+                    border: settings[key] ? `1px solid ${hexToRgba(settings.accentColor, 0.7)}` : "1px solid rgba(255,255,255,0.15)",
                     transition: "all 200ms ease",
                   }}
                 >
                   <div style={{
                     position: "absolute", top: 2, left: settings[key] ? 18 : 2,
                     width: 16, height: 16, borderRadius: "50%",
-                    background: settings[key] ? "#C4B5FD" : "#7A8AAE",
+                    background: settings[key] ? settings.accentColor : "#7A8AAE",
                     transition: "left 200ms ease, background 200ms ease",
                   }} />
                 </div>

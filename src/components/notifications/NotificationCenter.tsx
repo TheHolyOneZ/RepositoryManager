@@ -4,21 +4,25 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CheckCheck, Trash2, Bell, CheckCircle, AlertCircle, Zap, Info, X } from "lucide-react";
 import { useNotificationStore, type AppNotification } from "../../stores/notificationStore";
 import { formatDate } from "../../lib/utils/formatters";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 
-const TYPE_CONFIG: Record<AppNotification["type"], { icon: React.ReactNode; color: string }> = {
+const getTypeConfig = (accent: string): Record<AppNotification["type"], { icon: React.ReactNode; color: string }> => ({
   queue_done:           { icon: <CheckCircle size={13} />, color: "#10B981" },
   queue_failed:         { icon: <AlertCircle size={13} />, color: "#EF4444" },
-  automation_triggered: { icon: <Zap size={13} />,         color: "#8B5CF6" },
+  automation_triggered: { icon: <Zap size={13} />,         color: accent },
   new_dead_repos:       { icon: <AlertCircle size={13} />, color: "#F59E0B" },
   info:                 { icon: <Info size={13} />,         color: "#3B82F6" },
-};
+});
 
 interface NotificationCenterProps {
   open: boolean;
   onClose: () => void;
 }
 
-export const NotificationCenter: React.FC<NotificationCenterProps> = ({ open, onClose }) => {
+export const NotificationCenter: React.FC<NotificationCenterProps> = ({
+  open, onClose }) => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const notifications = useNotificationStore((s) => s.notifications);
   const markAllRead = useNotificationStore((s) => s.markAllRead);
   const clearAll = useNotificationStore((s) => s.clearAll);
@@ -65,8 +69,8 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ open, on
               <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
                 <div style={{
                   width: 30, height: 30, borderRadius: 8,
-                  background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.25)",
-                  display: "flex", alignItems: "center", justifyContent: "center", color: "#A78BFA",
+                  background: hexToRgba(accent, 0.15), border: `1px solid ${hexToRgba(accent, 0.25)}`,
+                  display: "flex", alignItems: "center", justifyContent: "center", color: accent,
                 }}>
                   <Bell size={13} />
                 </div>
@@ -75,7 +79,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ open, on
                     Notifications
                   </p>
                   {notifications.filter((n) => !n.read).length > 0 && (
-                    <p style={{ fontSize: "0.625rem", color: "#8B5CF6", marginTop: 1 }}>
+                    <p style={{ fontSize: "0.625rem", color: accent, marginTop: 1 }}>
                       {notifications.filter((n) => !n.read).length} unread
                     </p>
                   )}
@@ -161,7 +165,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ open, on
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   {notifications.map((n) => {
-                    const cfg = TYPE_CONFIG[n.type];
+                    const cfg = getTypeConfig(accent)[n.type];
                     return (
                       <button
                         key={n.id}
@@ -171,21 +175,21 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ open, on
                           display: "flex", alignItems: "flex-start", gap: 12,
                           padding: "12px 14px", borderRadius: 10, cursor: "pointer",
                           background: !n.read
-                            ? "rgba(139,92,246,0.08)"
+                            ? hexToRgba(accent, 0.08)
                             : "rgba(255,255,255,0.025)",
                           border: !n.read
-                            ? "1px solid rgba(139,92,246,0.20)"
+                            ? `1px solid ${hexToRgba(accent, 0.20)}`
                             : "1px solid rgba(255,255,255,0.06)",
                           transition: "all 130ms",
                         }}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.background = !n.read
-                            ? "rgba(139,92,246,0.12)"
+                            ? hexToRgba(accent, 0.12)
                             : "rgba(255,255,255,0.04)";
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.background = !n.read
-                            ? "rgba(139,92,246,0.08)"
+                            ? hexToRgba(accent, 0.08)
                             : "rgba(255,255,255,0.025)";
                         }}
                       >
@@ -215,7 +219,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ open, on
                           <span style={{
                             flexShrink: 0, marginTop: 6,
                             width: 7, height: 7, borderRadius: "50%",
-                            background: "#8B5CF6",
+                            background: accent,
                           }} />
                         )}
                       </button>

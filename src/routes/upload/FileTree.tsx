@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { ChevronRight, ChevronDown, Folder, FolderOpen, FileText, File } from "lucide-react";
 import type { FileEntry } from "../../lib/tauri/commands";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 
 function formatSize(bytes: number): string {
   if (bytes === 0) return "";
@@ -9,10 +11,10 @@ function formatSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function getFileIcon(name: string) {
+function getFileIcon(name: string, accent: string) {
   const ext = name.split(".").pop()?.toLowerCase() ?? "";
   const codeExts = ["ts", "tsx", "js", "jsx", "rs", "py", "go", "java", "cpp", "c", "cs", "rb", "swift", "kt"];
-  if (codeExts.includes(ext)) return <FileText size={12} style={{ color: "#8B5CF6", flexShrink: 0 }} />;
+  if (codeExts.includes(ext)) return <FileText size={12} style={{ color: accent, flexShrink: 0 }} />;
   return <File size={12} style={{ color: "#4A5580", flexShrink: 0 }} />;
 }
 
@@ -30,6 +32,7 @@ interface FileNodeProps {
 }
 
 const FileNode: React.FC<FileNodeProps> = ({ entry, selected, onToggle, depth, onCtxMenu }) => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const [expanded, setExpanded] = useState(depth < 2);
 
   if (entry.is_dir) {
@@ -57,7 +60,7 @@ const FileNode: React.FC<FileNodeProps> = ({ entry, selected, onToggle, depth, o
             ref={el => { if (el) el.indeterminate = someChecked; }}
             onChange={(e) => onToggle(allPaths, e.target.checked)}
             onClick={(e) => e.stopPropagation()}
-            style={{ width: 13, height: 13, accentColor: "#8B5CF6", flexShrink: 0, cursor: "pointer" }}
+            style={{ width: 13, height: 13, accentColor: accent, flexShrink: 0, cursor: "pointer" }}
           />
           <div
             style={{ display: "flex", alignItems: "center", gap: 5, flex: 1, minWidth: 0 }}
@@ -92,20 +95,20 @@ const FileNode: React.FC<FileNodeProps> = ({ entry, selected, onToggle, depth, o
         display: "flex", alignItems: "center", gap: 6,
         padding: "3px 8px", paddingLeft: `${8 + depth * 16}px`,
         borderRadius: 6,
-        background: isChecked ? "rgba(139,92,246,0.05)" : "transparent",
+        background: isChecked ? hexToRgba(accent, 0.05) : "transparent",
         transition: "background 120ms ease",
       }}
-      onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = isChecked ? "rgba(139,92,246,0.08)" : "rgba(255,255,255,0.03)"; }}
-      onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = isChecked ? "rgba(139,92,246,0.05)" : "transparent"; }}
+      onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = isChecked ? hexToRgba(accent, 0.08) : "rgba(255,255,255,0.03)"; }}
+      onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = isChecked ? hexToRgba(accent, 0.05) : "transparent"; }}
       onContextMenu={onCtxMenu ? (e) => { e.preventDefault(); onCtxMenu(e, entry, [entry.path]); } : undefined}
     >
       <input
         type="checkbox"
         checked={isChecked}
         onChange={(e) => onToggle([entry.path], e.target.checked)}
-        style={{ width: 13, height: 13, accentColor: "#8B5CF6", flexShrink: 0, cursor: "pointer" }}
+        style={{ width: 13, height: 13, accentColor: accent, flexShrink: 0, cursor: "pointer" }}
       />
-      {getFileIcon(entry.name)}
+      {getFileIcon(entry.name, accent)}
       <span style={{ fontSize: "0.8125rem", color: isChecked ? "#C8CDD8" : "#6B7494", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
         {entry.name}
       </span>

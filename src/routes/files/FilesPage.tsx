@@ -12,6 +12,8 @@ import type { RepoFile, FileOp } from "../../lib/tauri/commands";
 import { PendingOps } from "./PendingOps";
 import { useRepoStore } from "../../stores/repoStore";
 import { ContextMenu } from "../../components/shared/ContextMenu";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 import type { ContextMenuItemDef } from "../../components/shared/ContextMenu";
 
 function formatSize(b: number) {
@@ -20,11 +22,11 @@ function formatSize(b: number) {
   return `${(b / (1024 * 1024)).toFixed(1)}MB`;
 }
 
-function fileIcon(name: string) {
+function fileIcon(name: string, accent: string) {
   const ext = name.split(".").pop()?.toLowerCase() ?? "";
   const code = ["ts","tsx","js","jsx","rs","py","go","java","cpp","c","cs","rb","swift","kt","json","toml","yaml","yml","md"];
   return code.includes(ext)
-    ? <FileText size={12} style={{ color: "#8B5CF6", flexShrink: 0 }} />
+    ? <FileText size={12} style={{ color: accent, flexShrink: 0 }} />
     : <File size={12} style={{ color: "#4A5580", flexShrink: 0 }} />;
 }
 
@@ -95,6 +97,7 @@ interface TreeNodeComponentProps {
   onContextMenu: (e: React.MouseEvent, file: RepoFile) => void;
   onFileClick?: (file: RepoFile) => void;
   selectedPath?: string | null;
+  accent: string;
 }
 
 const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
@@ -103,7 +106,7 @@ const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
   editingPath, editingType, editValue, editInputRef,
   setEditValue, commitEdit, setEditingPath,
   startEdit, markDelete, onContextMenu,
-  onFileClick, selectedPath,
+  onFileClick, selectedPath, accent,
 }) => {
   const [expanded, setExpanded] = useState(depth < 2);
 
@@ -144,7 +147,7 @@ const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
             setEditValue={setEditValue} commitEdit={commitEdit}
             setEditingPath={setEditingPath} startEdit={startEdit}
             markDelete={markDelete} onContextMenu={onContextMenu}
-            onFileClick={onFileClick} selectedPath={selectedPath}
+            onFileClick={onFileClick} selectedPath={selectedPath} accent={accent}
           />
         ))}
       </div>
@@ -164,15 +167,15 @@ const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
         display: "flex", alignItems: "center", gap: 8,
         paddingLeft: 14 + depth * 16, paddingRight: 10,
         height: 28, transition: "background 100ms",
-        background: isSelected ? "rgba(139,92,246,0.14)" : isDeleted ? "rgba(239,68,68,0.04)" : "transparent",
+        background: isSelected ? hexToRgba(accent, 0.14) : isDeleted ? "rgba(239,68,68,0.04)" : "transparent",
         borderRadius: 6, cursor: "pointer",
       }}
       onClick={() => { if (!isEditing) onFileClick?.(file); }}
       onMouseEnter={e => { if (!isDeleted && !isSelected) (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.025)"; }}
-      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = isSelected ? "rgba(139,92,246,0.14)" : isDeleted ? "rgba(239,68,68,0.04)" : "transparent"; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = isSelected ? hexToRgba(accent, 0.14) : isDeleted ? "rgba(239,68,68,0.04)" : "transparent"; }}
       onContextMenu={e => { e.preventDefault(); onContextMenu(e, file); }}
     >
-      {fileIcon(node.name)}
+      {fileIcon(node.name, accent)}
 
       {isEditing ? (
         <input ref={editInputRef} value={editValue} onChange={e => setEditValue(e.target.value)}
@@ -223,6 +226,7 @@ interface CtxMenuState {
 }
 
 export const FilesPage: React.FC = () => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const repos = useRepoStore((s) => s.repos);
 
   const [targetRepo, setTargetRepo] = useState("");
@@ -570,13 +574,13 @@ export const FilesPage: React.FC = () => {
 
                 return (
                   <div key={file.path}
-                    style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 14px", transition: "background 100ms", cursor: "pointer", background: isSelected ? "rgba(139,92,246,0.14)" : isDeleted ? "rgba(239,68,68,0.04)" : "transparent" }}
+                    style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 14px", transition: "background 100ms", cursor: "pointer", background: isSelected ? hexToRgba(accent, 0.14) : isDeleted ? "rgba(239,68,68,0.04)" : "transparent" }}
                     onClick={() => { if (!isEditing) openFileInEditor(file); }}
                     onMouseEnter={e => { if (!isDeleted && !isSelected) (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.025)"; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = isSelected ? "rgba(139,92,246,0.14)" : isDeleted ? "rgba(239,68,68,0.04)" : "transparent"; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = isSelected ? hexToRgba(accent, 0.14) : isDeleted ? "rgba(239,68,68,0.04)" : "transparent"; }}
                     onContextMenu={e => handleFileCtxMenu(e, file)}
                   >
-                    {fileIcon(file.path)}
+                    {fileIcon(file.path, accent)}
                     {isEditing ? (
                       <input ref={editInputRef} value={editValue} onChange={e => setEditValue(e.target.value)}
                         onBlur={commitEdit}
@@ -635,6 +639,7 @@ export const FilesPage: React.FC = () => {
                       onContextMenu={handleFileCtxMenu}
                       onFileClick={openFileInEditor}
                       selectedPath={editorFile?.path ?? null}
+                      accent={accent}
                     />
                   ))}
                 </div>
@@ -655,19 +660,19 @@ export const FilesPage: React.FC = () => {
             >
 
               <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 10px", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0, minWidth: 0 }}>
-                <Code2 size={12} style={{ color: "#8B5CF6", flexShrink: 0 }} />
+                <Code2 size={12} style={{ color: accent, flexShrink: 0 }} />
                 <span style={{ fontSize: "0.78125rem", color: "#C8CDD8", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
                   {editorFile.path.split("/").pop()}
-                  {editorDirty && <span style={{ color: "#C4B5FD", marginLeft: 5, fontSize: "0.65rem" }}>●</span>}
+                  {editorDirty && <span style={{ color: accent, marginLeft: 5, fontSize: "0.65rem" }}>●</span>}
                 </span>
 
                 <button
                   onClick={saveEditorFile}
                   disabled={!editorDirty || editorSaving}
                   title={editorSaving ? "Saving…" : "Save (Ctrl+S)"}
-                  style={{ display: "flex", padding: "4px 5px", borderRadius: 5, cursor: editorDirty && !editorSaving ? "pointer" : "not-allowed", background: "none", border: "none", color: editorDirty ? "#C4B5FD" : "#3A4060", transition: "color 100ms", flexShrink: 0 }}
-                  onMouseEnter={e => { if (editorDirty) (e.currentTarget as HTMLButtonElement).style.color = "#A78BFA"; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = editorDirty ? "#C4B5FD" : "#3A4060"; }}
+                  style={{ display: "flex", padding: "4px 5px", borderRadius: 5, cursor: editorDirty && !editorSaving ? "pointer" : "not-allowed", background: "none", border: "none", color: editorDirty ? accent : "#3A4060", transition: "color 100ms", flexShrink: 0 }}
+                  onMouseEnter={e => { if (editorDirty) (e.currentTarget as HTMLButtonElement).style.color = accent; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = editorDirty ? accent : "#3A4060"; }}
                 >
                   {editorSaving
                     ? <RefreshCw size={13} style={{ animation: "spin 0.8s linear infinite" }} />
@@ -699,13 +704,13 @@ export const FilesPage: React.FC = () => {
               </div>
 
               {editorDirty && !editorSaving && (
-                <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 10px", borderBottom: "1px solid rgba(255,255,255,0.04)", flexShrink: 0, background: "rgba(139,92,246,0.04)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 10px", borderBottom: "1px solid rgba(255,255,255,0.04)", flexShrink: 0, background: hexToRgba(accent, 0.04) }}>
                   <input
                     value={editorCommitMsg}
                     onChange={e => setEditorCommitMsg(e.target.value)}
                     placeholder="Commit message…"
                     style={{ flex: 1, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 5, padding: "4px 8px", color: "#C8CDD8", fontSize: "0.72rem", outline: "none", fontFamily: "inherit" }}
-                    onFocus={e => { (e.target as HTMLInputElement).style.borderColor = "rgba(139,92,246,0.40)"; }}
+                    onFocus={e => { (e.target as HTMLInputElement).style.borderColor = hexToRgba(accent, 0.40); }}
                     onBlur={e => { (e.target as HTMLInputElement).style.borderColor = "rgba(255,255,255,0.07)"; }}
                   />
                 </div>
@@ -731,7 +736,7 @@ export const FilesPage: React.FC = () => {
 
               {editorLoading ? (
                 <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-                  <div style={{ width: 18, height: 18, borderRadius: "50%", border: "2px solid rgba(139,92,246,0.15)", borderTopColor: "#8B5CF6", animation: "spin 0.8s linear infinite" }} />
+                  <div style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${hexToRgba(accent, 0.15)}`, borderTopColor: accent, animation: "spin 0.8s linear infinite" }} />
                   <span style={{ fontSize: "0.8125rem", color: "#4A5580" }}>Loading…</span>
                 </div>
               ) : (

@@ -9,6 +9,8 @@ import { useRepoStore } from "../../stores/repoStore";
 import { useUIStore } from "../../stores/uiStore";
 import type { QueueAction, QueueItemInput } from "../../types/queue";
 import type { Repo } from "../../types/repo";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 
 
 type ScheduleFreq = "on-launch" | "daily" | "weekly";
@@ -114,6 +116,7 @@ interface CreateFormProps {
 }
 
 const CreateForm: React.FC<CreateFormProps> = ({ repos, onSave, onCancel }) => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const [label, setLabel]   = useState("");
   const [action, setAction] = useState<QueueAction>("archive");
   const [filter, setFilter] = useState<ScheduleFilter>("dead");
@@ -142,7 +145,7 @@ const CreateForm: React.FC<CreateFormProps> = ({ repos, onSave, onCancel }) => {
       exit={{ opacity: 0, y: -8 }}
       style={{
         borderRadius: 14, padding: 20,
-        background: "rgba(139,92,246,0.05)", border: "1px solid rgba(139,92,246,0.20)",
+        background: hexToRgba(accent, 0.05), border: `1px solid ${hexToRgba(accent, 0.20)}`,
         display: "flex", flexDirection: "column", gap: 14,
       }}
     >
@@ -162,7 +165,7 @@ const CreateForm: React.FC<CreateFormProps> = ({ repos, onSave, onCancel }) => {
             ...fieldStyle, cursor: "text",
             background: "rgba(255,255,255,0.04)",
           }}
-          onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(139,92,246,0.45)"; }}
+          onFocus={(e) => { e.currentTarget.style.borderColor = hexToRgba(accent, 0.45); }}
           onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.10)"; }}
         />
       </div>
@@ -217,7 +220,7 @@ const CreateForm: React.FC<CreateFormProps> = ({ repos, onSave, onCancel }) => {
         background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)",
         display: "flex", alignItems: "center", gap: 10,
       }}>
-        <AlertCircle size={13} style={{ color: "#8B5CF6", flexShrink: 0 }} />
+        <AlertCircle size={13} style={{ color: accent, flexShrink: 0 }} />
         <span style={{ fontSize: "0.75rem", color: "#6B7A9B" }}>
           This job would affect <strong style={{ color: "#D4D8E8" }}>{preview.length} repo{preview.length !== 1 ? "s" : ""}</strong> right now.
           Always goes through the confirmation modal before executing.
@@ -231,9 +234,9 @@ const CreateForm: React.FC<CreateFormProps> = ({ repos, onSave, onCancel }) => {
           disabled={!label.trim()}
           style={{
             height: 34, padding: "0 18px", borderRadius: 8, cursor: label.trim() ? "pointer" : "not-allowed",
-            background: label.trim() ? "linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)" : "rgba(139,92,246,0.10)",
+            background: label.trim() ? `linear-gradient(135deg, ${accent} 0%, ${accent} 100%)` : hexToRgba(accent, 0.10),
             border: "none", color: "#fff", fontSize: "0.8125rem", fontWeight: 600,
-            boxShadow: label.trim() ? "0 4px 14px rgba(139,92,246,0.35)" : "none",
+            boxShadow: label.trim() ? `0 4px 14px ${hexToRgba(accent, 0.35)}` : "none",
             transition: "all 150ms",
           }}
         >
@@ -266,6 +269,7 @@ interface ScheduleCardProps {
 }
 
 const ScheduleCard: React.FC<ScheduleCardProps> = ({ entry, repoCount, due, onToggle, onDelete, onRunNow }) => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const actionOpt = ACTION_OPTS.find((a) => a.value === entry.action);
   const freqOpt   = FREQ_OPTS.find((f) => f.value === entry.freq);
   const [hover, setHover] = useState<string | null>(null);
@@ -275,7 +279,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({ entry, repoCount, due, onTo
       style={{
         borderRadius: 12,
         background: entry.enabled ? "rgba(255,255,255,0.025)" : "rgba(255,255,255,0.012)",
-        border: `1px solid ${due && entry.enabled ? "rgba(139,92,246,0.25)" : "rgba(255,255,255,0.07)"}`,
+        border: `1px solid ${due && entry.enabled ? hexToRgba(accent, 0.25) : "rgba(255,255,255,0.07)"}`,
         padding: "14px 16px",
         display: "flex", alignItems: "flex-start", gap: 14,
         opacity: entry.enabled ? 1 : 0.55,
@@ -284,8 +288,8 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({ entry, repoCount, due, onTo
     >
       <div style={{
         width: 8, height: 8, borderRadius: "50%", flexShrink: 0, marginTop: 6,
-        background: !entry.enabled ? "#3A4560" : due ? "#8B5CF6" : "#10B981",
-        boxShadow: !entry.enabled ? "none" : due ? "0 0 8px rgba(139,92,246,0.6)" : "0 0 6px rgba(16,185,129,0.5)",
+        background: !entry.enabled ? "#3A4560" : due ? accent : "#10B981",
+        boxShadow: !entry.enabled ? "none" : due ? `0 0 8px ${hexToRgba(accent, 0.6)}` : "0 0 6px rgba(16,185,129,0.5)",
       }} />
 
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -297,7 +301,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({ entry, repoCount, due, onTo
             <span style={{
               padding: "1px 6px", borderRadius: 5,
               fontSize: "0.5625rem", fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase",
-              color: "#A78BFA", background: "rgba(139,92,246,0.14)", border: "1px solid rgba(139,92,246,0.25)",
+              color: accent, background: hexToRgba(accent, 0.14), border: `1px solid ${hexToRgba(accent, 0.25)}`,
             }}>
               Due
             </span>
@@ -323,9 +327,9 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({ entry, repoCount, due, onTo
           style={{
             width: 30, height: 30, borderRadius: 7, cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "center",
-            background: hover === "run" ? "rgba(139,92,246,0.18)" : "rgba(255,255,255,0.04)",
-            border: hover === "run" ? "1px solid rgba(139,92,246,0.30)" : "1px solid rgba(255,255,255,0.08)",
-            color: hover === "run" ? "#A78BFA" : "#6B7A9B",
+            background: hover === "run" ? hexToRgba(accent, 0.18) : "rgba(255,255,255,0.04)",
+            border: hover === "run" ? `1px solid ${hexToRgba(accent, 0.30)}` : "1px solid rgba(255,255,255,0.08)",
+            color: hover === "run" ? accent : "#6B7A9B",
             transition: "all 130ms",
           }}
         >
@@ -386,6 +390,7 @@ const Chip: React.FC<{ icon?: React.ReactNode; label: string; color: string }> =
 
 
 export const SchedulerPage: React.FC = () => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const repos     = useRepoStore((s) => s.repos);
   const openModal = useUIStore((s) => s.openModal);
 
@@ -451,8 +456,8 @@ export const SchedulerPage: React.FC = () => {
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
             <div style={{
               width: 32, height: 32, borderRadius: 9,
-              background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.25)",
-              display: "flex", alignItems: "center", justifyContent: "center", color: "#A78BFA",
+              background: hexToRgba(accent, 0.15), border: `1px solid ${hexToRgba(accent, 0.25)}`,
+              display: "flex", alignItems: "center", justifyContent: "center", color: accent,
             }}>
               <Calendar size={15} />
             </div>
@@ -477,10 +482,10 @@ export const SchedulerPage: React.FC = () => {
           style={{
             height: 34, padding: "0 16px", borderRadius: 9, cursor: "pointer",
             display: "flex", alignItems: "center", gap: 6, flexShrink: 0,
-            background: creating ? "rgba(139,92,246,0.10)" : "linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)",
+            background: creating ? hexToRgba(accent, 0.10) : `linear-gradient(135deg, ${accent} 0%, ${accent} 100%)`,
             border: "none", color: "#fff",
             fontSize: "0.8125rem", fontWeight: 600,
-            boxShadow: creating ? "none" : "0 4px 14px rgba(139,92,246,0.30)",
+            boxShadow: creating ? "none" : `0 4px 14px ${hexToRgba(accent, 0.30)}`,
             transition: "all 150ms",
           }}
         >
@@ -493,16 +498,16 @@ export const SchedulerPage: React.FC = () => {
         {dueCount > 0 && (
           <div style={{
             padding: "12px 16px", borderRadius: 10,
-            background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.22)",
+            background: hexToRgba(accent, 0.08), border: `1px solid ${hexToRgba(accent, 0.22)}`,
             display: "flex", alignItems: "center", gap: 10,
           }}>
             <div style={{
               width: 8, height: 8, borderRadius: "50%",
-              background: "#8B5CF6", boxShadow: "0 0 10px rgba(139,92,246,0.7)",
+              background: accent, boxShadow: `0 0 10px ${hexToRgba(accent, 0.7)}`,
               animation: "pulse 2s infinite",
               flexShrink: 0,
             }} />
-            <span style={{ fontSize: "0.8125rem", color: "#C4B5FD", fontWeight: 500 }}>
+            <span style={{ fontSize: "0.8125rem", color: accent, fontWeight: 500 }}>
               <strong>{dueCount} job{dueCount !== 1 ? "s" : ""}</strong> {dueCount === 1 ? "is" : "are"} due to run. Click Run to queue them for confirmation.
             </span>
           </div>
@@ -566,12 +571,12 @@ export const SchedulerPage: React.FC = () => {
               onClick={() => setCreating(true)}
               style={{
                 height: 36, padding: "0 20px", borderRadius: 9, cursor: "pointer",
-                background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.25)",
-                color: "#C4B5FD", fontSize: "0.8125rem", fontWeight: 600,
+                background: hexToRgba(accent, 0.12), border: `1px solid ${hexToRgba(accent, 0.25)}`,
+                color: accent, fontSize: "0.8125rem", fontWeight: 600,
                 display: "flex", alignItems: "center", gap: 6, transition: "all 140ms",
               }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(139,92,246,0.20)"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(139,92,246,0.12)"; }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = hexToRgba(accent, 0.20); }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = hexToRgba(accent, 0.12); }}
             >
               <Plus size={13} /> Create your first job
             </button>

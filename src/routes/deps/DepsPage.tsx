@@ -6,6 +6,8 @@ import { useRepoStore } from "../../stores/repoStore";
 import { useUIStore } from "../../stores/uiStore";
 import { ghScanMultipleReposDeps } from "../../lib/tauri/commands";
 import { formatInvokeError } from "../../lib/formatError";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 import type { RepoDependencies } from "../../types/governance";
 
 const ECO_COLOR: Record<string, string> = {
@@ -13,7 +15,8 @@ const ECO_COLOR: Record<string, string> = {
 };
 
 const EcoBadge: React.FC<{ eco: string }> = ({ eco }) => {
-  const c = ECO_COLOR[eco] ?? "#8B5CF6";
+  const accent = useSettingsStore((s) => s.accentColor);
+  const c = ECO_COLOR[eco] ?? accent;
   return (
     <span style={{ padding: "2px 7px", borderRadius: 5, fontSize: "0.5625rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: c, background: `${c}14`, border: `1px solid ${c}22` }}>
       {eco}
@@ -72,6 +75,7 @@ const ByRepoCard: React.FC<{ result: RepoDependencies }> = ({ result }) => {
 };
 
 export const DepsPage: React.FC = () => {
+  const storeAccent = useSettingsStore((s) => s.accentColor);
   const repos = useRepoStore((s) => s.repos);
   const addToast = useUIStore((s) => s.addToast);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -305,9 +309,9 @@ export const DepsPage: React.FC = () => {
                     <button key={eco} onClick={() => setEcoFilter(eco)}
                       style={{
                         height: 26, padding: "0 10px", borderRadius: 6, cursor: "pointer",
-                        background: ecoFilter === eco ? (c ? `${c}14` : "rgba(139,92,246,0.12)") : "transparent",
-                        border: ecoFilter === eco ? `1px solid ${c ?? "#8B5CF6"}30` : "1px solid transparent",
-                        color: ecoFilter === eco ? (c ?? "#C4B5FD") : "#4A5580",
+                        background: ecoFilter === eco ? (c ? `${c}14` : hexToRgba(storeAccent, 0.12)) : "transparent",
+                        border: ecoFilter === eco ? `1px solid ${c ?? storeAccent}30` : "1px solid transparent",
+                        color: ecoFilter === eco ? (c ?? storeAccent) : "#4A5580",
                         fontSize: "0.75rem", fontWeight: ecoFilter === eco ? 600 : 400,
                       }}
                     >{eco}</button>

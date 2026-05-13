@@ -6,6 +6,8 @@ import { open as dialogOpen } from "@tauri-apps/plugin-dialog";
 import { fanout } from "../../lib/utils/fanout";
 import { formatInvokeError } from "../../lib/formatError";
 import type { Repo } from "../../types/repo";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 
 const T = {
   tauri: {
@@ -352,6 +354,7 @@ interface Props {
 }
 
 export const CreateWorkflowPanel: React.FC<Props> = ({ selectedRepos }) => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const [template, setTemplate] = useState<TemplateKey | "upload">("tauri");
   const [yaml, setYaml] = useState(T.tauri.content);
   const [filename, setFilename] = useState(T.tauri.filename);
@@ -421,7 +424,7 @@ export const CreateWorkflowPanel: React.FC<Props> = ({ selectedRepos }) => {
       <div style={{ width: 268, flexShrink: 0, display: "flex", flexDirection: "column", borderRight: "1px solid rgba(255,255,255,0.065)", overflow: "hidden" }}>
 
 
-        <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "14px 13px 8px", scrollbarWidth: "thin" as const, scrollbarColor: "rgba(139,92,246,0.2) transparent" }}>
+        <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "14px 13px 8px", scrollbarWidth: "thin" as const, scrollbarColor: `${hexToRgba(accent, 0.2)} transparent` }}>
           <div style={{ padding: "8px 10px", borderRadius: 8, marginBottom: 12, background: "rgba(96,165,250,0.06)", border: "1px solid rgba(96,165,250,0.15)", display: "flex", gap: 8, alignItems: "flex-start" }}>
             <Info size={13} style={{ color: "#60A5FA", flexShrink: 0, marginTop: 1 }} />
             <p style={{ fontSize: "0.71rem", color: "#7A90B4", lineHeight: 1.55, margin: 0 }}>
@@ -433,11 +436,11 @@ export const CreateWorkflowPanel: React.FC<Props> = ({ selectedRepos }) => {
           <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
             {(Object.keys(T) as TemplateKey[]).map((key) => (
               <button key={key} onClick={() => selectTemplate(key)}
-                style={{ textAlign: "left", padding: "6px 9px", borderRadius: 7, cursor: "pointer", background: template === key ? "rgba(139,92,246,0.14)" : "transparent", border: template === key ? "1px solid rgba(139,92,246,0.28)" : "1px solid transparent", transition: "all 100ms" }}
+                style={{ textAlign: "left", padding: "6px 9px", borderRadius: 7, cursor: "pointer", background: template === key ? hexToRgba(accent, 0.14) : "transparent", border: template === key ? `1px solid ${hexToRgba(accent, 0.28)}` : "1px solid transparent", transition: "all 100ms" }}
                 onMouseEnter={e => { if (template !== key) (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.03)"; }}
                 onMouseLeave={e => { if (template !== key) (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
               >
-                <p style={{ margin: 0, fontSize: "0.8125rem", fontWeight: 600, color: template === key ? "#C4B5FD" : "#8A91A8" }}>{T[key].name}</p>
+                <p style={{ margin: 0, fontSize: "0.8125rem", fontWeight: 600, color: template === key ? accent : "#8A91A8" }}>{T[key].name}</p>
                 <p style={{ margin: "2px 0 0", fontSize: "0.6875rem", color: template === key ? "#7C6BAE" : "#3A4560", lineHeight: 1.4 }}>{T[key].description}</p>
               </button>
             ))}
@@ -466,7 +469,7 @@ export const CreateWorkflowPanel: React.FC<Props> = ({ selectedRepos }) => {
             <div>
               <label style={{ fontSize: "0.71rem", color: "#4A5580", display: "block", marginBottom: 3 }}>Filename</label>
               <input value={filename} onChange={e => setFilename(e.target.value)} style={{ ...INPUT_STYLE, width: "100%", height: 30 }}
-                onFocus={e => { (e.target as HTMLInputElement).style.borderColor = "rgba(139,92,246,0.4)"; }}
+                onFocus={e => { (e.target as HTMLInputElement).style.borderColor = hexToRgba(accent, 0.4); }}
                 onBlur={e => { (e.target as HTMLInputElement).style.borderColor = "rgba(255,255,255,0.10)"; }}
               />
               <p style={{ fontSize: "0.6rem", color: "#2D3450", marginTop: 2 }}>.github/workflows/{filename || "…"}</p>
@@ -482,8 +485,8 @@ export const CreateWorkflowPanel: React.FC<Props> = ({ selectedRepos }) => {
                   style={{
                     display: "flex", alignItems: "center", gap: 6, padding: "3px 8px 3px 5px",
                     borderRadius: 20, cursor: "pointer",
-                    background: useDefaultBranch ? "rgba(139,92,246,0.18)" : "rgba(255,255,255,0.05)",
-                    border: useDefaultBranch ? "1px solid rgba(139,92,246,0.35)" : "1px solid rgba(255,255,255,0.09)",
+                    background: useDefaultBranch ? hexToRgba(accent, 0.18) : "rgba(255,255,255,0.05)",
+                    border: useDefaultBranch ? `1px solid ${hexToRgba(accent, 0.35)}` : "1px solid rgba(255,255,255,0.09)",
                     transition: "all 150ms",
                   }}
                 >
@@ -491,7 +494,7 @@ export const CreateWorkflowPanel: React.FC<Props> = ({ selectedRepos }) => {
                   <span style={{
                     position: "relative", display: "inline-block",
                     width: 26, height: 14, borderRadius: 7, flexShrink: 0,
-                    background: useDefaultBranch ? "#7C3AED" : "rgba(255,255,255,0.10)",
+                    background: useDefaultBranch ? accent : "rgba(255,255,255,0.10)",
                     transition: "background 150ms",
                   }}>
 
@@ -503,7 +506,7 @@ export const CreateWorkflowPanel: React.FC<Props> = ({ selectedRepos }) => {
                       transition: "left 150ms",
                     }} />
                   </span>
-                  <span style={{ fontSize: "0.65rem", color: useDefaultBranch ? "#C4B5FD" : "#4A5580", fontWeight: 500, whiteSpace: "nowrap" }}>
+                  <span style={{ fontSize: "0.65rem", color: useDefaultBranch ? accent : "#4A5580", fontWeight: 500, whiteSpace: "nowrap" }}>
                     per-repo default
                   </span>
                 </button>
@@ -514,7 +517,7 @@ export const CreateWorkflowPanel: React.FC<Props> = ({ selectedRepos }) => {
                 </div>
               ) : (
                 <input value={branch} onChange={e => setBranch(e.target.value)} style={{ ...INPUT_STYLE, width: "100%", height: 30 }}
-                  onFocus={e => { (e.target as HTMLInputElement).style.borderColor = "rgba(139,92,246,0.4)"; }}
+                  onFocus={e => { (e.target as HTMLInputElement).style.borderColor = hexToRgba(accent, 0.4); }}
                   onBlur={e => { (e.target as HTMLInputElement).style.borderColor = "rgba(255,255,255,0.10)"; }}
                 />
               )}
@@ -523,7 +526,7 @@ export const CreateWorkflowPanel: React.FC<Props> = ({ selectedRepos }) => {
             <div>
               <label style={{ fontSize: "0.71rem", color: "#4A5580", display: "block", marginBottom: 3 }}>Commit message</label>
               <input value={commitMsg} onChange={e => setCommitMsg(e.target.value)} style={{ ...INPUT_STYLE, width: "100%", height: 30 }}
-                onFocus={e => { (e.target as HTMLInputElement).style.borderColor = "rgba(139,92,246,0.4)"; }}
+                onFocus={e => { (e.target as HTMLInputElement).style.borderColor = hexToRgba(accent, 0.4); }}
                 onBlur={e => { (e.target as HTMLInputElement).style.borderColor = "rgba(255,255,255,0.10)"; }}
               />
             </div>
@@ -533,16 +536,16 @@ export const CreateWorkflowPanel: React.FC<Props> = ({ selectedRepos }) => {
             <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 7, padding: "7px 10px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
                 <span style={{ fontSize: "0.71rem", color: "#7A88A6" }}>Creating…</span>
-                <span style={{ fontSize: "0.71rem", color: "#C4B5FD" }}>{progress.done}/{progress.total}</span>
+                <span style={{ fontSize: "0.71rem", color: accent }}>{progress.done}/{progress.total}</span>
               </div>
               <div style={{ height: 3, borderRadius: 2, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
-                <div style={{ height: "100%", borderRadius: 2, background: "linear-gradient(90deg, #8B5CF6, #7C3AED)", width: `${(progress.done / progress.total) * 100}%`, transition: "width 200ms" }} />
+                <div style={{ height: "100%", borderRadius: 2, background: `linear-gradient(90deg, ${accent}, ${accent})`, width: `${(progress.done / progress.total) * 100}%`, transition: "width 200ms" }} />
               </div>
             </div>
           )}
 
           <button onClick={handleCreate} disabled={!canCreate}
-            style={{ height: 34, borderRadius: 8, cursor: canCreate ? "pointer" : "not-allowed", fontWeight: 700, fontSize: "0.8125rem", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: canCreate ? "rgba(139,92,246,0.80)" : "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.40)", color: canCreate ? "#fff" : "#7C6BAE", transition: "all 130ms" }}>
+            style={{ height: 34, borderRadius: 8, cursor: canCreate ? "pointer" : "not-allowed", fontWeight: 700, fontSize: "0.8125rem", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: canCreate ? hexToRgba(accent, 0.80) : hexToRgba(accent, 0.15), border: `1px solid ${hexToRgba(accent, 0.40)}`, color: canCreate ? "#fff" : "#7C6BAE", transition: "all 130ms" }}>
             {running ? <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> : <ChevronRight size={13} />}
             {running ? "Creating…" : `Create in ${selectedRepos.length} repo${selectedRepos.length !== 1 ? "s" : ""}`}
           </button>
@@ -573,7 +576,7 @@ export const CreateWorkflowPanel: React.FC<Props> = ({ selectedRepos }) => {
       <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 14px", borderBottom: "1px solid rgba(255,255,255,0.05)", flexShrink: 0, background: "rgba(255,255,255,0.01)" }}>
           <span style={{ fontSize: "0.75rem", color: "#4A5580" }}>.github/workflows/</span>
-          <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#C4B5FD" }}>{filename || "workflow.yml"}</span>
+          <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: accent }}>{filename || "workflow.yml"}</span>
           <div style={{ flex: 1 }} />
           <span style={{ fontSize: "0.6875rem", color: "#2D3450" }}>Edit freely — this is what gets committed</span>
         </div>

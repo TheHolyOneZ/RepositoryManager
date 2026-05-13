@@ -1,5 +1,6 @@
 import React from "react";
 import type { LucideIcon } from "lucide-react";
+import { useSettingsStore } from "../../stores/settingsStore";
 
 type Width = "narrow" | "wide" | "full";
 
@@ -33,6 +34,7 @@ export const PageShell: React.FC<PageShellProps> = ({
   scroll = true,
   eyebrow = "Workspace",
 }) => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const outer = scroll
     ? "page-scroll"
     : "flex h-full min-h-0 flex-1 flex-col p-[var(--page-pad)]";
@@ -46,8 +48,8 @@ export const PageShell: React.FC<PageShellProps> = ({
               <div className="flex items-start gap-3.5">
                 {Icon && (
                   <div
-                    className="mt-0.5 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.03] text-[#A78BFA]"
-                    style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)" }}
+                    className="mt-0.5 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.03]"
+                    style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)", color: accent }}
                   >
                     <Icon size={20} strokeWidth={1.75} />
                   </div>

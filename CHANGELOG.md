@@ -1,5 +1,45 @@
 # Changelog
 
+## v0.6.0 — 2026-05-12
+
+### New Features
+
+---
+
+#### Multi-Account Context Switching — Full Overhaul
+
+Account and org switching is now a first-class operation that fully syncs the entire app to the selected account.
+
+- **Sidebar ContextSwitcher** now lists all connected GitHub accounts at the top of its dropdown, not just orgs — click any account to switch directly from the sidebar without using the top-right menu
+- **Account switch** calls `githubSwitchAccount` on the Rust backend first, swapping the active token before any data fetches — API calls no longer silently hit the wrong account
+- **Org context switch** resets filters, clears the selection, and closes any open panels (slideover, modal) automatically
+- **Account switch** additionally resets org context to personal, reloads the org list for the new account, and clears all UI state
+- **Global context refresh** (`useGlobalContextRefresh`) lives in AppShell and is always mounted — when `contextVersion` bumps on any switch, it re-fetches the repo list regardless of which page is currently visible, so every tab (Repos, PRs, Issues, Actions, Releases, Collaborators, Webhooks, Secrets, Dependabot, Deps Scanner) sees fresh data from the correct account
+- Stale repo list is cleared instantly on switch so pages show an empty state while the new data loads rather than showing the previous account's repos
+
+---
+
+### Bug Fixes
+
+- **Account switch not syncing backend**: clicking an account in the TopBar dropdown previously only updated frontend store state — the Rust backend's active token remained unchanged, causing all subsequent API calls to go to the wrong account
+- **Context switch leaving stale UI**: filters, repo selection, open slidevers, and open modals now all clear on every account or org context switch
+- **Off-tab repos not refreshing**: tabs other than `/repos` were never notified of context switches because `repoRefreshToken` was only watched by `ReposPage`; replaced with a `contextVersion` counter watched by an always-mounted global hook
+
+---
+
+### Bug Fixes (continued)
+
+- **Accent color picker had no effect**: `--accent` CSS variable was set but never read — every component hardcoded `#8B5CF6` as a literal string. Fixed by defining `--accent` and `--accent-rgb` in `:root` with defaults, updating `glass.css`, `globals.css`, and `design-tokens.css` to use these variables throughout (`btn-primary`, `glass-row.selected`, `glass-input:focus`, `nav-item.active`, `::selection`, `checkbox`, etc.), and converting key inline styles in `Sidebar` and `ContextSwitcher` to `var(--accent)` / `rgba(var(--accent-rgb), …)`
+- **Accent color not applied on startup**: `applyAccentColor` was only called when `SettingsPage` mounted — if you never visited Settings after a restart the color was always the default purple. `AppShell` now applies it reactively via a `useEffect` that subscribes to the stored `accentColor` on every render, including first mount
+- **All pages still showing purple after accent change**: a comprehensive audit replaced every remaining hardcoded `#8B5CF6` / `rgba(139,92,246,…)` inline style across all route and component files (Sidebar bottom section, RepoFilters health badges, NotificationCenter, RepoDetailSlideOver, SchedulerPage, MigrationPage, SettingsPage tag inputs, AboutPage) — every surface now reads from the dynamic accent store
+
+### Other Changes
+
+- **Internal build tracing toggle** added to Settings → Appearance: an opt-in overlay that shows a faint build identifier (`v1.4.3.N` where N is the active account index) in the top-left corner of the window — off by default, intended for verifying a newly deployed build is active
+- Version bumped to 0.6.0 across all config files (`package.json`, `Cargo.toml`, `tauri.conf.json`)
+
+---
+
 ## v0.5.0 — 2026-04-20
 
 ### New Features

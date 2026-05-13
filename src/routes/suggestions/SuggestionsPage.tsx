@@ -4,6 +4,8 @@ import { useRepoStore } from "../../stores/repoStore";
 import { useUIStore } from "../../stores/uiStore";
 import type { QueueItemInput } from "../../types/queue";
 import type { Repo } from "../../types/repo";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 
 interface Suggestion {
   id: string;
@@ -63,6 +65,7 @@ const SectionLabel: React.FC<{ kicker: string; title: string }> = ({ kicker, tit
 );
 
 export const SuggestionsPage: React.FC = () => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const repos = useRepoStore((s) => s.repos);
   const openModal = useUIStore((s) => s.openModal);
   const [hoveredPreset, setHoveredPreset] = useState<string | null>(null);
@@ -133,8 +136,8 @@ export const SuggestionsPage: React.FC = () => {
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
           <div style={{
             width: 32, height: 32, borderRadius: 9,
-            background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.25)",
-            display: "flex", alignItems: "center", justifyContent: "center", color: "#A78BFA",
+            background: hexToRgba(accent, 0.15), border: `1px solid ${hexToRgba(accent, 0.25)}`,
+            display: "flex", alignItems: "center", justifyContent: "center", color: accent,
           }}>
             <Lightbulb size={15} strokeWidth={2} />
           </div>

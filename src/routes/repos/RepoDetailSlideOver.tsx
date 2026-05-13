@@ -7,6 +7,8 @@ import { formatDateFull, formatBytes } from "../../lib/utils/formatters";
 import { useRepoStore } from "../../stores/repoStore";
 import { useUIStore } from "../../stores/uiStore";
 import { repoGetLanguages, openUrlExternal, type RepoLanguageStat } from "../../lib/tauri/commands";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 
 interface RepoDetailSlideOverProps {
   open: boolean;
@@ -17,12 +19,13 @@ interface RepoDetailSlideOverProps {
 const BUILTIN_TAG_COLORS: Record<string, string> = { keep: "#10B981", delete: "#EF4444", review: "#F59E0B" };
 const BUILTIN_TAGS = ["keep", "delete", "review"];
 
-function tagColor(tag: string): string {
-  return BUILTIN_TAG_COLORS[tag] ?? "#A78BFA";
+function tagColor(tag: string, accent: string): string {
+  return BUILTIN_TAG_COLORS[tag] ?? accent;
 }
-const HEALTH_COLORS: Record<string, string> = {
-  active: "#10B981", dormant: "#F59E0B", dead: "#EF4444", empty: "#6B7280", archived: "#8B5CF6",
-};
+function getHealthColor(status: string, accent: string): string {
+  const map: Record<string, string> = { active: "#10B981", dormant: "#F59E0B", dead: "#EF4444", empty: "#6B7280", archived: accent };
+  return map[status] ?? "#6B7280";
+}
 
 const langColors: Record<string, string> = {
   TypeScript: "#3178c6", JavaScript: "#f1e05a", Python: "#3572A5",
@@ -33,6 +36,7 @@ const langColors: Record<string, string> = {
 };
 
 export const RepoDetailSlideOver: React.FC<RepoDetailSlideOverProps> = ({ open, repo, onClose }) => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const updateRepoTag = useRepoStore((s) => s.updateRepoTag);
   const customTagOptions = useRepoStore((s) => s.customTagOptions);
   const openModal = useUIStore((s) => s.openModal);
@@ -110,9 +114,9 @@ export const RepoDetailSlideOver: React.FC<RepoDetailSlideOverProps> = ({ open, 
               <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
                 <div style={{
                   width: 32, height: 32, borderRadius: 8, flexShrink: 0,
-                  background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.25)",
+                  background: hexToRgba(accent, 0.15), border: `1px solid ${hexToRgba(accent, 0.25)}`,
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  color: "#A78BFA",
+                  color: accent,
                 }}>
                   {repo.private ? <Lock size={13} /> : <Globe size={13} />}
                 </div>
@@ -140,7 +144,7 @@ export const RepoDetailSlideOver: React.FC<RepoDetailSlideOverProps> = ({ open, 
                     border: "1px solid rgba(255,255,255,0.07)", transition: "all 140ms",
                     cursor: "pointer",
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.color = "#8B5CF6"; e.currentTarget.style.background = "rgba(139,92,246,0.10)"; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = accent; e.currentTarget.style.background = hexToRgba(accent, 0.10); }}
                   onMouseLeave={(e) => { e.currentTarget.style.color = "#4A5580"; e.currentTarget.style.background = "transparent"; }}
                 >
                   <ExternalLink size={13} />
@@ -168,12 +172,12 @@ export const RepoDetailSlideOver: React.FC<RepoDetailSlideOverProps> = ({ open, 
                   <span style={{
                     display: "inline-flex", alignItems: "center", gap: 5,
                     height: 22, padding: "0 8px", borderRadius: 6,
-                    background: `${HEALTH_COLORS[repo.health.status]}18`,
-                    border: `1px solid ${HEALTH_COLORS[repo.health.status]}30`,
-                    color: HEALTH_COLORS[repo.health.status],
+                    background: `${getHealthColor(repo.health.status, accent)}18`,
+                    border: `1px solid ${getHealthColor(repo.health.status, accent)}30`,
+                    color: getHealthColor(repo.health.status, accent),
                     fontSize: "0.6875rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "capitalize",
                   }}>
-                    <span style={{ width: 5, height: 5, borderRadius: "50%", background: HEALTH_COLORS[repo.health.status] }} />
+                    <span style={{ width: 5, height: 5, borderRadius: "50%", background: getHealthColor(repo.health.status, accent) }} />
                     {repo.health.status}
                     {repo.health.score != null && (
                       <span style={{ opacity: 0.6, fontSize: "0.625rem" }}>· {repo.health.score}</span>
@@ -218,7 +222,7 @@ export const RepoDetailSlideOver: React.FC<RepoDetailSlideOverProps> = ({ open, 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 20 }}>
                 {[
                   { label: "Stars", value: repo.stars.toLocaleString(), icon: <Star size={12} />, color: "#F59E0B" },
-                  { label: "Forks", value: repo.forks.toLocaleString(), icon: <GitFork size={12} />, color: "#8B5CF6" },
+                  { label: "Forks", value: repo.forks.toLocaleString(), icon: <GitFork size={12} />, color: accent },
                   { label: "Issues", value: String(repo.open_issues), icon: <AlertCircle size={12} />, color: "#EF4444" },
                   { label: "Size", value: formatBytes(repo.size_kb), icon: <HardDrive size={12} />, color: "#6B7A9B" },
                 ].map(({ label, value, icon, color }) => (
@@ -341,7 +345,7 @@ export const RepoDetailSlideOver: React.FC<RepoDetailSlideOverProps> = ({ open, 
                 {(repo.tags ?? []).length > 0 && (
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 8 }}>
                     {(repo.tags ?? []).map((t) => {
-                      const c = tagColor(t);
+                      const c = tagColor(t, accent);
                       return (
                         <span key={t} style={{
                           display: "inline-flex", alignItems: "center", gap: 5,
@@ -371,7 +375,7 @@ export const RepoDetailSlideOver: React.FC<RepoDetailSlideOverProps> = ({ open, 
 
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
                   {allTagOptions.filter((t) => !(repo.tags ?? []).includes(t)).map((t) => {
-                    const c = tagColor(t);
+                    const c = tagColor(t, accent);
                     return (
                       <button
                         key={t}

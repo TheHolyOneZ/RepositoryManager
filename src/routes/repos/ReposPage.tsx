@@ -16,6 +16,8 @@ import { formatInvokeError } from "../../lib/formatError";
 import { useTauriEvent } from "../../hooks/useTauriEvent";
 import { useOrgStore } from "../../stores/orgStore";
 import type { SortField } from "../../types/repo";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 
 const SORT_FIELDS: { field: SortField; label: string }[] = [
   { field: "name", label: "Name" },
@@ -26,6 +28,7 @@ const SORT_FIELDS: { field: SortField; label: string }[] = [
 ];
 
 export const ReposPage: React.FC = () => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const setRepos = useRepoStore((s) => s.setRepos);
   const setLoading = useRepoStore((s) => s.setLoading);
   const setFetchProgress = useRepoStore((s) => s.setFetchProgress);
@@ -91,6 +94,7 @@ export const ReposPage: React.FC = () => {
   });
 
   const repoRefreshToken = useUIStore((s) => s.repoRefreshToken);
+  const contextVersion = useUIStore((s) => s.contextVersion);
   const prevTokenRef = useRef(repoRefreshToken);
   const silentRefreshRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -157,8 +161,8 @@ export const ReposPage: React.FC = () => {
                 outline: "none", transition: "all 150ms",
               }}
               onFocus={(e) => {
-                e.currentTarget.style.border = "1px solid rgba(139,92,246,0.45)";
-                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(139,92,246,0.10)";
+                e.currentTarget.style.border = `1px solid ${hexToRgba(accent, 0.45)}`;
+                e.currentTarget.style.boxShadow = `0 0 0 3px ${hexToRgba(accent, 0.10)}`;
               }}
               onBlur={(e) => {
                 e.currentTarget.style.border = "1px solid transparent";
@@ -177,9 +181,9 @@ export const ReposPage: React.FC = () => {
                   style={{
                     display: "flex", alignItems: "center", gap: 4,
                     height: 28, padding: "0 10px", borderRadius: 6,
-                    background: active ? "rgba(139,92,246,0.14)" : "transparent",
-                    border: active ? "1px solid rgba(139,92,246,0.28)" : "1px solid transparent",
-                    color: active ? "#A78BFA" : "#4A5580",
+                    background: active ? hexToRgba(accent, 0.14) : "transparent",
+                    border: active ? `1px solid ${hexToRgba(accent, 0.28)}` : "1px solid transparent",
+                    color: active ? accent : "#4A5580",
                     fontSize: "0.75rem", fontWeight: active ? 600 : 400,
                     cursor: "pointer", transition: "all 130ms ease",
                   }}
@@ -189,8 +193,8 @@ export const ReposPage: React.FC = () => {
                   {label}
                   {active
                     ? (sort.direction === "asc"
-                        ? <ArrowUp size={9} style={{ color: "#A78BFA" }} />
-                        : <ArrowDown size={9} style={{ color: "#A78BFA" }} />)
+                        ? <ArrowUp size={9} style={{ color: accent }} />
+                        : <ArrowDown size={9} style={{ color: accent }} />)
                     : <ArrowUpDown size={9} style={{ color: "#2D3650" }} />}
                 </button>
               );
@@ -210,12 +214,12 @@ export const ReposPage: React.FC = () => {
             style={{
               display: "flex", alignItems: "center", gap: 5,
               height: 30, padding: "0 10px", borderRadius: 7,
-              background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.20)",
-              color: "#A78BFA", fontSize: "0.75rem", fontWeight: 500, cursor: "pointer",
+              background: hexToRgba(accent, 0.08), border: `1px solid ${hexToRgba(accent, 0.20)}`,
+              color: accent, fontSize: "0.75rem", fontWeight: 500, cursor: "pointer",
               transition: "all 140ms",
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(139,92,246,0.14)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(139,92,246,0.08)"; }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = hexToRgba(accent, 0.14); }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = hexToRgba(accent, 0.08); }}
           >
             <Wand2 size={12} /> Presets
           </button>

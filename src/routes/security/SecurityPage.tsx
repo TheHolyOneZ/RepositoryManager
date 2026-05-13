@@ -13,6 +13,8 @@ import {
   ghPortfolioSecuritySummary,
 } from "../../lib/tauri/commands";
 import { formatInvokeError } from "../../lib/formatError";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { hexToRgba } from "../../lib/utils/color";
 import type { DependabotAlert, RepoAlertSummary } from "../../types/governance";
 
 type TabId = "repo-alerts" | "portfolio" | "bulk-controls";
@@ -125,6 +127,7 @@ const MultiRepoPicker: React.FC<{
 
 
 const AlertRow: React.FC<{ alert: DependabotAlert }> = ({ alert }) => {
+  const accent = useSettingsStore((s) => s.accentColor);
   const [expanded, setExpanded] = useState(false);
   return (
     <div style={{ borderRadius: 9, border: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.02)", marginBottom: 4, overflow: "hidden", transition: "border-color 140ms" }}
@@ -161,7 +164,7 @@ const AlertRow: React.FC<{ alert: DependabotAlert }> = ({ alert }) => {
                   <span style={{ fontFamily: "monospace", fontSize: "0.75rem", color: "#6B7A9B", background: "rgba(255,255,255,0.04)", padding: "2px 8px", borderRadius: 5 }}>{alert.cve_id}</span>
                 )}
                 <a href={alert.html_url} target="_blank" rel="noopener noreferrer"
-                  style={{ display: "flex", alignItems: "center", gap: 4, fontSize: "0.75rem", color: "#8B5CF6", textDecoration: "none", marginLeft: "auto" }}
+                  style={{ display: "flex", alignItems: "center", gap: 4, fontSize: "0.75rem", color: accent, textDecoration: "none", marginLeft: "auto" }}
                   onClick={(e) => e.stopPropagation()}
                 >
                   <ExternalLink size={11} /> View on GitHub
