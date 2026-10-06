@@ -1,3 +1,21 @@
+> [!IMPORTANT]
+> ## ⚠️ ZRepoManager has been surpassed by [ZIT-Suite](https://zsync.eu/zit-suite)
+>
+> **ZIT-Suite is the ground-up rebuild of ZRepoManager.** It keeps every ZRepoManager feature, finishes the parts that were only stubbed here, and adds a lot more. This repo is no longer actively developed, so new features and fixes go into ZIT-Suite.
+>
+> **New in ZIT-Suite:**
+> - **Home workspace:** save versions, upload, get latest, branches and stashing, all without the Git CLI
+> - **Inbox:** cross-repo Issues & PRs with timelines, reactions and bulk triage
+> - **Actions board:** one CI dashboard for all repos, with logs and manual runs
+> - **Releases board:** see what has shipped and which commits are still pending, plus bulk release creation
+> - **Security posture:** Dependabot alerts, scanning status and fix plans for each repo
+> - **Scheduler:** recurring bulk actions (e.g. archive old repos weekly, rotate secrets monthly) with a dry-run preview
+> - **Code Audit, Insights, Search** and a collaborators matrix
+> - Persistent operation queue with a real dry-run, Ctrl+K command palette, tokens stored in the OS keychain, English/German UI
+>
+> **Download installers (.exe / .deb / .rpm):** https://zsync.eu/zit-suite
+> **Source code:** https://github.com/TheHolyOneZ/ZIT-Suite
+
 <div align="center">
 
 <img src="main.png" alt="ZRepoManager" width="100%" />
